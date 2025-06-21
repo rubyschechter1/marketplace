@@ -7,75 +7,71 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Traveler {
-  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email            String    @unique @db.VarChar(255)
-  firstName        String    @map("first_name") @db.VarChar(50)
-  lastName         String    @map("last_name") @db.VarChar(50)
-  bio              String?
-  avatarUrl        String?   @map("avatar_url") @db.VarChar(500)
-  createdAt        DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt        DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  password         String?   @db.VarChar(255)
-  items            Item[]
-  receivedMessages Message[] @relation("ReceivedMessages")
-  sentMessages     Message[] @relation("SentMessages")
-  offers           Offer[]
-
-  @@map("travelers")
-}
-
-model Item {
-  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String    @db.VarChar(200)
+model items {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String     @db.VarChar(200)
   description String?
-  category    String?   @db.VarChar(50)
-  condition   String?   @db.VarChar(50)
-  imageUrl    String?   @map("image_url") @db.VarChar(500)
-  createdBy   String?   @map("created_by") @db.Uuid
-  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
-  creator     Traveler? @relation(fields: [createdBy], references: [id], onUpdate: NoAction)
-  offers      Offer[]
-
-  @@map("items")
+  category    String?    @db.VarChar(50)
+  condition   String?    @db.VarChar(50)
+  image_url   String?    @db.VarChar(500)
+  created_by  String?    @db.Uuid
+  created_at  DateTime?  @default(now()) @db.Timestamptz(6)
+  travelers   travelers? @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+  offers      offers[]
 }
 
-model Offer {
-  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  travelerId   String?   @map("traveler_id") @db.Uuid
-  itemId       String?   @map("item_id") @db.Uuid
-  title        String    @db.VarChar(200)
-  description  String?
-  status       String?   @default("active") @db.VarChar(20)
-  latitude     Decimal   @db.Decimal(10, 8)
-  longitude    Decimal   @db.Decimal(11, 8)
-  locationName String?   @map("location_name") @db.VarChar(200)
-  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
-  expiresAt    DateTime? @map("expires_at") @db.Timestamptz(6)
-  messages     Message[]
-  item         Item?     @relation(fields: [itemId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  traveler     Traveler? @relation(fields: [travelerId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model messages {
+  id                                         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  offer_id                                   String?    @db.Uuid
+  sender_id                                  String?    @db.Uuid
+  recipient_id                               String?    @db.Uuid
+  content                                    String
+  is_read                                    Boolean?   @default(false)
+  created_at                                 DateTime?  @default(now()) @db.Timestamptz(6)
+  offers                                     offers?    @relation(fields: [offer_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  travelers_messages_recipient_idTotravelers travelers? @relation("messages_recipient_idTotravelers", fields: [recipient_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  travelers_messages_sender_idTotravelers    travelers? @relation("messages_sender_idTotravelers", fields: [sender_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([itemId], map: "idx_offers_item")
+  @@index([offer_id], map: "idx_messages_offer")
+  @@index([recipient_id, is_read], map: "idx_messages_recipient")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model offers {
+  id            String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  traveler_id   String?    @db.Uuid
+  item_id       String?    @db.Uuid
+  title         String     @db.VarChar(200)
+  description   String?
+  status        String?    @default("active") @db.VarChar(20)
+  latitude      Decimal    @db.Decimal(10, 8)
+  longitude     Decimal    @db.Decimal(11, 8)
+  location_name String?    @db.VarChar(200)
+  created_at    DateTime?  @default(now()) @db.Timestamptz(6)
+  expires_at    DateTime?  @db.Timestamptz(6)
+  messages      messages[]
+  items         items?     @relation(fields: [item_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  travelers     travelers? @relation(fields: [traveler_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([item_id], map: "idx_offers_item")
   @@index([latitude, longitude], map: "idx_offers_location")
   @@index([status], map: "idx_offers_status")
-  @@index([travelerId], map: "idx_offers_traveler")
-  @@map("offers")
+  @@index([traveler_id], map: "idx_offers_traveler")
 }
 
-model Message {
-  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  offerId     String?   @map("offer_id") @db.Uuid
-  senderId    String?   @map("sender_id") @db.Uuid
-  recipientId String?   @map("recipient_id") @db.Uuid
-  content     String
-  isRead      Boolean?  @default(false) @map("is_read")
-  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
-  offer       Offer?    @relation(fields: [offerId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  recipient   Traveler? @relation("ReceivedMessages", fields: [recipientId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  sender      Traveler? @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@index([offerId], map: "idx_messages_offer")
-  @@index([recipientId, isRead], map: "idx_messages_recipient")
-  @@map("messages")
+model travelers {
+  id                                        String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email                                     String     @unique @db.VarChar(255)
+  bio                                       String?
+  avatar_url                                String?    @db.VarChar(500)
+  created_at                                DateTime?  @default(now()) @db.Timestamptz(6)
+  updated_at                                DateTime?  @default(now()) @db.Timestamptz(6)
+  password                                  String?    @db.VarChar(255)
+  first_name                                String     @db.VarChar(50)
+  last_name                                 String     @db.VarChar(50)
+  items                                     items[]
+  messages_messages_recipient_idTotravelers messages[] @relation("messages_recipient_idTotravelers")
+  messages_messages_sender_idTotravelers    messages[] @relation("messages_sender_idTotravelers")
+  offers                                    offers[]
 }

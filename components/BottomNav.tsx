@@ -2,16 +2,16 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { User, Home, MessageCircle } from "lucide-react"
+import { Search, Home, MessageCircle } from "lucide-react"
 
 export default function BottomNav() {
   const pathname = usePathname()
 
   const navItems = [
     {
-      href: "/profile",
-      icon: User,
-      label: "Profile"
+      href: "/search",
+      icon: Search,
+      label: "Search"
     },
     {
       href: "/",

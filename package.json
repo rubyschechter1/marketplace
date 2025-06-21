@@ -30,5 +30,8 @@
     "react-dom": "^19.1.0",
     "tailwindcss": "^4.1.10",
     "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.10"
   }
 }

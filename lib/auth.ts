@@ -1,6 +1,9 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { compare } from "bcryptjs"
+import { compare, hash } from "bcryptjs"
+import { PrismaClient } from "@prisma/client"
+
+const prisma = new PrismaClient()
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -15,18 +18,44 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        // TODO: Replace with actual database lookup
-        // For now, this is a placeholder
-        const user = {
-          id: "1",
-          email: credentials.email,
-          name: "Test User"
+        const user = await prisma.traveler.findUnique({
+          where: {
+            email: credentials.email
+          }
+        })
+
+        if (!user || !user.password) {
+          return null
         }
 
-        return user
+        const isPasswordValid = await compare(credentials.password, user.password)
+
+        if (!isPasswordValid) {
+          return null
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.displayName || user.username
+        }
       }
     })
   ],
+  callbacks: {
+    session: ({ session, token }) => {
+      if (session?.user && token.sub) {
+        session.user.id = token.sub
+      }
+      return session
+    },
+    jwt: ({ user, token }) => {
+      if (user) {
+        token.uid = user.id
+      }
+      return token
+    }
+  },
   session: {
     strategy: "jwt"
   },

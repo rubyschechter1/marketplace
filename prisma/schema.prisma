@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Traveler {
+  id          String    @id @default(uuid())
+  email       String    @unique
+  username    String    @unique
+  password    String    // Added for authentication
+  displayName String?   @map("display_name")
+  bio         String?
+  avatarUrl   String?   @map("avatar_url")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  items       Item[]
+  offers      Offer[]
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+  
+  @@map("travelers")
+}
+
+model Item {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  category    String?
+  condition   String?
+  imageUrl    String?   @map("image_url")
+  createdBy   String?   @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  // Relations
+  creator     Traveler? @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  offers      Offer[]
+  
+  @@map("items")
+}
+
+model Offer {
+  id           String    @id @default(uuid())
+  travelerId   String    @map("traveler_id")
+  itemId       String    @map("item_id")
+  title        String
+  description  String?
+  status       String    @default("active")
+  latitude     Decimal   @db.Decimal(10, 8)
+  longitude    Decimal   @db.Decimal(11, 8)
+  locationName String?   @map("location_name")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  expiresAt    DateTime? @map("expires_at")
+  
+  // Relations
+  traveler     Traveler  @relation(fields: [travelerId], references: [id], onDelete: Cascade)
+  item         Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  messages     Message[]
+  
+  @@index([latitude, longitude])
+  @@index([travelerId])
+  @@index([itemId])
+  @@index([status])
+  @@map("offers")
+}
+
+model Message {
+  id          String   @id @default(uuid())
+  offerId     String   @map("offer_id")
+  senderId    String   @map("sender_id")
+  recipientId String   @map("recipient_id")
+  content     String
+  isRead      Boolean  @default(false) @map("is_read")
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  // Relations
+  offer       Offer    @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  sender      Traveler @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  recipient   Traveler @relation("ReceivedMessages", fields: [recipientId], references: [id], onDelete: Cascade)
+  
+  @@index([offerId])
+  @@index([recipientId, isRead])
+  @@map("messages")
+}

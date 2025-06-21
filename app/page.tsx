@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
-import LoginForm from "@/components/LoginForm"
+import AuthForms from "@/components/AuthForms"
 import SignOutButton from "@/components/SignOutButton"
 import Link from "next/link"
 
@@ -15,7 +15,7 @@ export default async function Home() {
           <p className="text-gray-600">Barter with fellow travelers</p>
         </div>
         
-        <LoginForm />
+        <AuthForms />
       </main>
     )
   }

@@ -37,7 +37,7 @@ export const authOptions: NextAuthOptions = {
         return {
           id: user.id,
           email: user.email,
-          name: user.displayName || user.username
+          name: `${user.firstName} ${user.lastName.charAt(0)}.`
         }
       }
     })

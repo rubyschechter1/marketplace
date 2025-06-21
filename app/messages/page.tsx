@@ -63,14 +63,14 @@ export default async function MessagesPage() {
                   <div className="flex items-start space-x-3">
                     <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
                       <span className="text-sm font-medium text-gray-600">
-                        {otherUser?.displayName?.[0]?.toUpperCase() || otherUser?.username[0].toUpperCase()}
+                        {otherUser?.firstName?.[0]?.toUpperCase() || 'U'}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start">
                         <div>
                           <p className="font-medium">
-                            {otherUser?.displayName || otherUser?.username}
+                            {otherUser?.firstName ? `${otherUser.firstName} ${otherUser.lastName[0]}.` : 'Unknown User'}
                           </p>
                           <p className="text-sm text-gray-500">
                             Re: {message.offer?.item?.name || message.offer?.title}

@@ -23,8 +23,8 @@ export async function GET(
         traveler: {
           select: {
             id: true,
-            username: true,
-            displayName: true,
+            firstName: true,
+            lastName: true,
             avatarUrl: true,
             bio: true
           }
@@ -88,8 +88,8 @@ export async function PUT(
         traveler: {
           select: {
             id: true,
-            username: true,
-            displayName: true
+            firstName: true,
+            lastName: true
           }
         }
       }

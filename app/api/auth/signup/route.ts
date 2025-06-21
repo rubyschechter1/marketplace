@@ -6,9 +6,9 @@ const prisma = new PrismaClient()
 
 export async function POST(req: Request) {
   try {
-    const { email, username, password } = await req.json()
+    const { email, firstName, lastName, password } = await req.json()
 
-    if (!email || !username || !password) {
+    if (!email || !firstName || !lastName || !password) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -18,16 +18,13 @@ export async function POST(req: Request) {
     // Check if user already exists
     const existingUser = await prisma.traveler.findFirst({
       where: {
-        OR: [
-          { email },
-          { username }
-        ]
+        email
       }
     })
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "User already exists with this email or username" },
+        { error: "User already exists with this email" },
         { status: 400 }
       )
     }
@@ -39,9 +36,9 @@ export async function POST(req: Request) {
     const user = await prisma.traveler.create({
       data: {
         email,
-        username,
-        password: hashedPassword,
-        displayName: username
+        firstName,
+        lastName,
+        password: hashedPassword
       }
     })
 
@@ -49,7 +46,8 @@ export async function POST(req: Request) {
       user: {
         id: user.id,
         email: user.email,
-        username: user.username
+        firstName: user.firstName,
+        lastName: user.lastName
       }
     })
   } catch (error) {

@@ -6,7 +6,27 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        black: '#000000',
+        gray: '#5e5e5e',
+        tan: '#ffebb5',
+      },
+      fontFamily: {
+        serif: ['Instrument Serif', 'serif'],
+      },
+      fontSize: {
+        'body': '15px',
+        'button': '15px',
+        'header': '25px',
+      },
+      borderRadius: {
+        'sm': '3px',
+      },
+      borderWidth: {
+        'thin': '0.5px',
+      }
+    },
   },
   plugins: [],
 }

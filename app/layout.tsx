@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "./providers/SessionProvider";
 
-const inter = Inter({ subsets: ["latin"] });
+const instrumentSerif = Instrument_Serif({ 
+  weight: '400',
+  subsets: ["latin"],
+  variable: '--font-instrument-serif'
+});
 
 export const metadata: Metadata = {
   title: "Marketplace - Barter for Travelers",
@@ -16,9 +20,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} min-h-screen bg-gray-50`}>
-        <div className="min-h-screen max-w-md mx-auto bg-white shadow-sm">
+    <html lang="en" className={instrumentSerif.variable}>
+      <body className={`${instrumentSerif.className} min-h-screen bg-tan`}>
+        <div className="min-h-screen max-w-md mx-auto bg-tan">
           <AuthProvider>{children}</AuthProvider>
         </div>
       </body>

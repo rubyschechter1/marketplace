@@ -26,7 +26,7 @@ export default function BottomNav() {
   ]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+    <nav className="fixed bottom-0 left-0 right-0 bg-tan border-t border-black">
       <div className="max-w-md mx-auto">
         <div className="flex justify-around items-center h-16">
           {navItems.map((item) => {
@@ -37,14 +37,13 @@ export default function BottomNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
+                className={`flex items-center justify-center flex-1 h-full transition-colors ${
                   isActive 
-                    ? "text-blue-500" 
-                    : "text-gray-500 hover:text-gray-700"
+                    ? "text-black" 
+                    : "text-gray hover:text-black"
                 }`}
               >
-                <Icon size={24} />
-                <span className="text-xs mt-1">{item.label}</span>
+                <Icon size={24} strokeWidth={1.5} />
               </Link>
             )
           })}

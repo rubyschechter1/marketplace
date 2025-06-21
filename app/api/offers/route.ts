@@ -43,8 +43,8 @@ export async function GET(req: Request) {
         traveler: {
           select: {
             id: true,
-            username: true,
-            displayName: true,
+            firstName: true,
+            lastName: true,
             avatarUrl: true
           }
         }
@@ -113,8 +113,8 @@ export async function POST(req: Request) {
         traveler: {
           select: {
             id: true,
-            username: true,
-            displayName: true
+            firstName: true,
+            lastName: true
           }
         }
       }

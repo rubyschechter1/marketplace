@@ -13,12 +13,19 @@ export async function PUT(req: Request) {
     }
 
     const data = await req.json()
-    const { displayName, bio, avatarUrl } = data
+    const { firstName, lastName, bio, avatarUrl } = data
 
     // Validate input
-    if (displayName && displayName.length > 100) {
+    if (firstName && firstName.length > 50) {
       return NextResponse.json(
-        { error: "Display name too long (max 100 characters)" },
+        { error: "First name too long (max 50 characters)" },
+        { status: 400 }
+      )
+    }
+
+    if (lastName && lastName.length > 50) {
+      return NextResponse.json(
+        { error: "Last name too long (max 50 characters)" },
         { status: 400 }
       )
     }
@@ -33,15 +40,16 @@ export async function PUT(req: Request) {
     const updatedUser = await prisma.traveler.update({
       where: { id: session.user.id },
       data: {
-        ...(displayName !== undefined && { displayName }),
+        ...(firstName !== undefined && { firstName }),
+        ...(lastName !== undefined && { lastName }),
         ...(bio !== undefined && { bio }),
         ...(avatarUrl !== undefined && { avatarUrl })
       },
       select: {
         id: true,
         email: true,
-        username: true,
-        displayName: true,
+        firstName: true,
+        lastName: true,
         bio: true,
         avatarUrl: true,
         createdAt: true,

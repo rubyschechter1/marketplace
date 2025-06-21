@@ -29,16 +29,16 @@ export async function GET(
         sender: {
           select: {
             id: true,
-            username: true,
-            displayName: true,
+            firstName: true,
+            lastName: true,
             avatarUrl: true
           }
         },
         recipient: {
           select: {
             id: true,
-            username: true,
-            displayName: true,
+            firstName: true,
+            lastName: true,
             avatarUrl: true
           }
         }
@@ -68,8 +68,8 @@ export async function GET(
         traveler: {
           select: {
             id: true,
-            username: true,
-            displayName: true
+            firstName: true,
+            lastName: true
           }
         }
       }

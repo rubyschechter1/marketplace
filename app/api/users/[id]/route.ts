@@ -20,8 +20,8 @@ export async function GET(
       where: { id },
       select: {
         id: true,
-        username: true,
-        displayName: true,
+        firstName: true,
+        lastName: true,
         bio: true,
         avatarUrl: true,
         createdAt: true,

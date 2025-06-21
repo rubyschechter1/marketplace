@@ -1,3 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply text-body;
+  }
+  
+  /* Remove default button styles */
+  button {
+    @apply font-serif;
+  }
+  
+  /* Ensure inputs use proper font */
+  input, textarea, select {
+    @apply font-serif;
+  }
+}

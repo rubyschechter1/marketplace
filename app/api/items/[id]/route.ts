@@ -22,8 +22,8 @@ export async function GET(
         creator: {
           select: {
             id: true,
-            username: true,
-            displayName: true
+            firstName: true,
+            lastName: true
           }
         },
         _count: {

@@ -51,16 +51,16 @@ export async function GET(req: Request) {
         sender: {
           select: {
             id: true,
-            username: true,
-            displayName: true,
+            firstName: true,
+            lastName: true,
             avatarUrl: true
           }
         },
         recipient: {
           select: {
             id: true,
-            username: true,
-            displayName: true,
+            firstName: true,
+            lastName: true,
             avatarUrl: true
           }
         },

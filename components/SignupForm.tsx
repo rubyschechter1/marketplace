@@ -3,11 +3,13 @@
 import { useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import Button from "./ui/Button"
 
 export default function SignupForm({ onSwitch }: { onSwitch: () => void }) {
   const [formData, setFormData] = useState({
     email: "",
-    username: "",
+    firstName: "",
+    lastName: "",
     password: "",
     confirmPassword: ""
   })
@@ -32,7 +34,8 @@ export default function SignupForm({ onSwitch }: { onSwitch: () => void }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: formData.email,
-          username: formData.username,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
           password: formData.password
         })
       })
@@ -67,7 +70,7 @@ export default function SignupForm({ onSwitch }: { onSwitch: () => void }) {
     <div className="w-full max-w-sm mx-auto">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium mb-2">
+          <label htmlFor="email" className="block text-body text-gray mb-2">
             Email
           </label>
           <input
@@ -75,27 +78,46 @@ export default function SignupForm({ onSwitch }: { onSwitch: () => void }) {
             type="email"
             value={formData.email}
             onChange={(e) => setFormData({...formData, email: e.target.value})}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-black rounded-sm text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan"
+            placeholder="Enter your email"
             required
           />
         </div>
 
-        <div>
-          <label htmlFor="username" className="block text-sm font-medium mb-2">
-            Username
-          </label>
-          <input
-            id="username"
-            type="text"
-            value={formData.username}
-            onChange={(e) => setFormData({...formData, username: e.target.value})}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="firstName" className="block text-body text-gray mb-2">
+              First Name
+            </label>
+            <input
+              id="firstName"
+              type="text"
+              value={formData.firstName}
+              onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+              className="w-full px-3 py-2 border border-black rounded-sm text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan"
+              placeholder="First"
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="lastName" className="block text-body text-gray mb-2">
+              Last Name
+            </label>
+            <input
+              id="lastName"
+              type="text"
+              value={formData.lastName}
+              onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+              className="w-full px-3 py-2 border border-black rounded-sm text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan"
+              placeholder="Last"
+              required
+            />
+          </div>
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium mb-2">
+          <label htmlFor="password" className="block text-body text-gray mb-2">
             Password
           </label>
           <input
@@ -103,14 +125,15 @@ export default function SignupForm({ onSwitch }: { onSwitch: () => void }) {
             type="password"
             value={formData.password}
             onChange={(e) => setFormData({...formData, password: e.target.value})}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-black rounded-sm text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan"
+            placeholder="Create a password"
             required
             minLength={6}
           />
         </div>
 
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2">
+          <label htmlFor="confirmPassword" className="block text-body text-gray mb-2">
             Confirm Password
           </label>
           <input
@@ -118,29 +141,31 @@ export default function SignupForm({ onSwitch }: { onSwitch: () => void }) {
             type="password"
             value={formData.confirmPassword}
             onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-black rounded-sm text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan"
+            placeholder="Confirm your password"
             required
             minLength={6}
           />
         </div>
 
         {error && (
-          <div className="text-red-500 text-sm">{error}</div>
+          <div className="text-red-600 text-body">{error}</div>
         )}
 
-        <button
+        <Button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          fullWidth
+          variant="primary"
         >
           {isLoading ? "Creating account..." : "Sign Up"}
-        </button>
+        </Button>
 
-        <p className="text-center text-sm text-gray-600">
+        <p className="text-center text-body text-gray">
           Already have an account?{" "}
           <button
             type="button"
-            className="text-blue-500 hover:underline"
+            className="text-black underline hover:no-underline"
             onClick={onSwitch}
           >
             Sign in

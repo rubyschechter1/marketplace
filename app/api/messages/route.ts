@@ -59,8 +59,8 @@ export async function POST(req: Request) {
         sender: {
           select: {
             id: true,
-            username: true,
-            displayName: true,
+            firstName: true,
+            lastName: true,
             avatarUrl: true
           }
         }

@@ -84,3 +84,31 @@ A barter marketplace for travelers with:
 - Schema defined in `prisma/schema.prisma`
 - Migrations managed through `npx prisma migrate dev`
 - Database introspection with `npx prisma db pull`
+
+## API Endpoints
+
+### Offers
+- `GET /api/offers` - List nearby offers (lat, lng, status, page, limit)
+- `POST /api/offers` - Create new offer
+- `GET /api/offers/[id]` - Get specific offer
+- `PUT /api/offers/[id]` - Update offer
+- `DELETE /api/offers/[id]` - Delete offer
+- `GET /api/offers/mine` - Get user's own offers
+
+### Items
+- `POST /api/items` - Create new item
+- `GET /api/items/[id]` - Get specific item
+- `GET /api/items/mine` - Get user's created items
+
+### Messages
+- `POST /api/messages` - Send a message
+- `GET /api/messages/conversations` - List all conversations
+- `GET /api/messages/offers/[offerId]` - Get messages for offer
+- `PUT /api/messages/[id]/read` - Mark message as read
+
+### Users
+- `GET /api/users/[id]` - Get public user profile
+- `GET /api/users/me` - Get current user full profile
+- `PUT /api/users/profile` - Update own profile
+
+Note: Search radius is hard-coded to 10km

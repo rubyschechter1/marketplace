@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import AuthForms from "@/components/AuthForms"
 import SignOutButton from "@/components/SignOutButton"
+import AuthLayout from "@/components/AuthLayout"
 import Link from "next/link"
 
 export default async function Home() {
@@ -21,36 +22,31 @@ export default async function Home() {
   }
 
   return (
-    <main className="min-h-screen p-4 max-w-md mx-auto">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold">Marketplace</h1>
-        <SignOutButton />
-      </div>
-      
-      <p className="text-gray-600 mb-8">Welcome, {session.user?.email}!</p>
-      
-      <div className="space-y-4">
-        <Link
-          href="/offers"
-          className="block w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-colors text-center"
-        >
-          Browse Nearby Offers
-        </Link>
+    <AuthLayout>
+      <main className="p-4 max-w-md mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-2xl font-bold">Marketplace</h1>
+          <SignOutButton />
+        </div>
         
-        <Link
-          href="/offers/new"
-          className="block w-full bg-green-500 text-white p-3 rounded-lg hover:bg-green-600 transition-colors text-center"
-        >
-          Create an Offer
-        </Link>
+        <p className="text-gray-600 mb-8">Welcome, {session.user?.email}!</p>
         
-        <Link
-          href="/profile"
-          className="block w-full border border-gray-300 p-3 rounded-lg hover:bg-gray-50 transition-colors text-center"
-        >
-          My Profile
-        </Link>
-      </div>
-    </main>
+        <div className="space-y-4">
+          <Link
+            href="/offers"
+            className="block w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-colors text-center"
+          >
+            Browse Nearby Offers
+          </Link>
+          
+          <Link
+            href="/offers/new"
+            className="block w-full bg-green-500 text-white p-3 rounded-lg hover:bg-green-600 transition-colors text-center"
+          >
+            Create an Offer
+          </Link>
+        </div>
+      </main>
+    </AuthLayout>
   )
 }

@@ -79,4 +79,8 @@ A barter marketplace for travelers with:
 - Status tracking (active/completed/cancelled)
 - Performance indexes for location queries
 
-See `schema.sql` for full implementation
+### Database Management
+- **Prisma ORM** is the single source of truth for schema
+- Schema defined in `prisma/schema.prisma`
+- Migrations managed through `npx prisma migrate dev`
+- Database introspection with `npx prisma db pull`

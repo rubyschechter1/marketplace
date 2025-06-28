@@ -246,13 +246,14 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                         </div>
                       </div>
                     </div>
-                    {isOwner && (
-                      <button className="ml-4 border border-black px-3 py-1 rounded-sm text-sm hover:bg-white transition-colors whitespace-nowrap">
-                        accept trade
-                      </button>
-                    )}
                   </div>
-                  <div className="flex justify-end mt-2">
+                  <div className="flex justify-between items-end mt-3">
+                    <button
+                      onClick={() => router.push(`/messages/${offer.id}/${trade.id}`)}
+                      className="border border-black px-3 py-1 rounded-sm text-sm hover:bg-white transition-colors"
+                    >
+                      start message
+                    </button>
                     <div className="text-xs text-gray flex items-center">
                       <MapPin size={10} className="mr-1" />
                       {offer.locationName || "Unknown"} · {distance}

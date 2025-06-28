@@ -8,7 +8,7 @@ import { MapPin } from "lucide-react"
 import { cookies } from "next/headers"
 
 async function getUserOffers() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const response = await fetch(`${process.env.NEXTAUTH_URL}/api/offers/mine?status=active&limit=5`, {
     headers: {
       cookie: cookieStore.toString(),
@@ -111,14 +111,6 @@ export default async function Home() {
               ))
             )}
           </div>
-          {userOffers.length > 0 && (
-            <Link 
-              href="/offers/mine"
-              className="block text-center text-body text-gray hover:text-black mt-4"
-            >
-              View all your offers →
-            </Link>
-          )}
         </div>
       </main>
     </AuthLayout>

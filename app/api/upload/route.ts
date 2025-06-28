@@ -28,8 +28,12 @@ export async function POST(req: Request) {
       )
     }
 
+    // Generate unique filename with UUID
+    const fileExtension = file.name.split('.').pop()
+    const uniqueFilename = `${crypto.randomUUID()}.${fileExtension}`
+    
     // Upload to Vercel Blob
-    const blob = await put(file.name, file, {
+    const blob = await put(uniqueFilename, file, {
       access: 'public',
     })
 

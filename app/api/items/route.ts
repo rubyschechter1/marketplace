@@ -29,7 +29,9 @@ export async function POST(req: Request) {
         category,
         condition,
         imageUrl,
-        createdBy: session.user.id
+        travelers: {
+          connect: { id: session.user.id }
+        }
       }
     })
 

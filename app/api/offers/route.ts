@@ -100,8 +100,12 @@ export async function POST(req: Request) {
 
     const offer = await prisma.offers.create({
       data: {
-        travelerId: session.user.id,
-        itemId,
+        traveler: {
+          connect: { id: session.user.id }
+        },
+        item: {
+          connect: { id: itemId }
+        },
         title,
         description,
         lookingFor: lookingFor || [],

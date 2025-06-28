@@ -71,29 +71,34 @@ export default async function OfferPage({ params }: { params: Promise<{ id: stri
               <span className="italic">{offer.item?.name || offer.title}</span>
             </div>
             
-            <div className="text-body mb-4">
-              Looking for:
-              <div className="flex flex-wrap gap-2 mt-2">
-                <button 
-                  className={`border ${isOwner ? 'border-gray text-gray cursor-default' : 'border-black hover:bg-white'} px-3 py-1 rounded-sm text-sm transition-colors`}
-                  disabled={isOwner}
-                >
-                  iphone charger
-                </button>
-                <button 
-                  className={`border ${isOwner ? 'border-gray text-gray cursor-default' : 'border-black hover:bg-white'} px-3 py-1 rounded-sm text-sm transition-colors`}
-                  disabled={isOwner}
-                >
-                  travel tips
-                </button>
-                <button 
-                  className={`border ${isOwner ? 'border-gray text-gray cursor-default' : 'border-black hover:bg-white'} px-3 py-1 rounded-sm text-sm transition-colors`}
-                  disabled={isOwner}
-                >
-                  offer
-                </button>
+            {offer.lookingFor && offer.lookingFor.length > 0 && (
+              <div className="text-body mb-4">
+                Looking for:
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {offer.lookingFor.map((item: string, index: number) => (
+                    <button 
+                      key={index}
+                      className={`border ${isOwner ? 'border-gray text-gray cursor-default' : 'border-black hover:bg-white'} px-3 py-1 rounded-sm text-sm transition-colors`}
+                      disabled={isOwner}
+                      onClick={() => {
+                        if (!isOwner) {
+                          // TODO: Implement propose trade functionality
+                          console.log('Propose trade for:', item)
+                        }
+                      }}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+            
+            {offer.description && (
+              <div className="text-body mb-4">
+                {offer.description}
+              </div>
+            )}
 
             <div className="flex items-center text-gray text-sm">
               <MapPin size={14} className="mr-1" />

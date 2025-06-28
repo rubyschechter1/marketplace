@@ -45,6 +45,7 @@ model offers {
   itemId           String?           @map("item_id") @db.Uuid
   title            String            @db.VarChar(200)
   description      String?
+  lookingFor       String[]          @map("looking_for")
   status           String?           @default("active") @db.VarChar(20)
   latitude         Decimal           @db.Decimal(10, 8)
   longitude        Decimal           @db.Decimal(11, 8)

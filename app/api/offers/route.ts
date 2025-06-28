@@ -74,7 +74,7 @@ export async function POST(req: Request) {
     }
 
     const data = await req.json()
-    const { itemId, title, description, latitude, longitude, locationName } = data
+    const { itemId, title, description, lookingFor, latitude, longitude, locationName } = data
 
     if (!itemId || !title || latitude == null || longitude == null) {
       return NextResponse.json(
@@ -104,6 +104,7 @@ export async function POST(req: Request) {
         itemId,
         title,
         description,
+        lookingFor: lookingFor || [],
         latitude,
         longitude,
         locationName

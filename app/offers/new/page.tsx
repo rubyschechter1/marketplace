@@ -123,7 +123,8 @@ export default function NewOfferPage() {
         body: JSON.stringify({
           itemId: item.id,
           title: formData.offeringTitle,
-          description: `Looking for: ${formData.seekingItems.filter(i => i).join(", ")}`,
+          description: formData.offeringDescription,
+          lookingFor: formData.seekingItems.filter(i => i),
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           locationName: "Current Location"
@@ -199,6 +200,13 @@ export default function NewOfferPage() {
               onChange={(e) => setFormData({...formData, offeringTitle: e.target.value})}
               className="w-full p-4 border border-black rounded-sm bg-transparent placeholder-gray text-body focus:outline-none focus:ring-1 focus:ring-black"
               required
+            />
+            <textarea
+              placeholder="add description (optional)"
+              value={formData.offeringDescription}
+              onChange={(e) => setFormData({...formData, offeringDescription: e.target.value})}
+              className="w-full p-4 mt-3 border border-black rounded-sm bg-transparent placeholder-gray text-body focus:outline-none focus:ring-1 focus:ring-black resize-none"
+              rows={3}
             />
           </div>
 

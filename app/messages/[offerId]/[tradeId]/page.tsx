@@ -105,17 +105,23 @@ export default function MessagePage({ params }: { params: Promise<{ offerId: str
 
     setSending(true)
     try {
+      // Determine recipient based on who is sending
+      const recipientId = session?.user?.id === tradeData.proposer.id 
+        ? tradeData.offer.traveler.id 
+        : tradeData.proposer.id
+
       const response = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           offerId: offerId,
+          recipientId: recipientId,
           content: newMessage
         })
       })
 
       if (response.ok) {
-        const message = await response.json()
+        const { message } = await response.json()
         setMessages([...messages, message])
         setNewMessage("")
       }
@@ -214,6 +220,12 @@ export default function MessagePage({ params }: { params: Promise<{ offerId: str
           <textarea
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                handleSendMessage()
+              }
+            }}
             placeholder={`Write a message to ${otherUser.firstName}`}
             className="w-full p-3 border border-black rounded-sm resize-none h-20 mb-3 text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black"
           />
@@ -221,7 +233,7 @@ export default function MessagePage({ params }: { params: Promise<{ offerId: str
             <button
               onClick={handleSendMessage}
               disabled={!newMessage.trim() || sending}
-              className="bg-black text-white px-4 py-2 rounded-sm hover:bg-gray transition-colors disabled:bg-gray disabled:cursor-not-allowed flex items-center text-sm"
+              className="bg-tan text-black border border-black px-4 py-2 rounded-sm hover:bg-white transition-colors disabled:bg-gray disabled:cursor-not-allowed flex items-center text-sm"
             >
               {sending ? "Sending..." : "Send"}
               <Send size={16} className="ml-2" />

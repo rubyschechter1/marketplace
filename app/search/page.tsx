@@ -1,15 +1,64 @@
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
-import { redirect } from "next/navigation"
-import AuthLayout from "@/components/AuthLayout"
-import { Search as SearchIcon } from "lucide-react"
+"use client"
 
-export default async function SearchPage() {
-  const session = await getServerSession(authOptions)
-  
-  if (!session) {
-    redirect("/")
+import { useEffect, useState } from "react"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import AuthLayout from "@/components/AuthLayout"
+import { Search as SearchIcon, MapPin } from "lucide-react"
+import Link from "next/link"
+
+interface Offer {
+  id: string
+  title: string
+  locationName: string
+  item: {
+    name: string
+    imageUrl?: string
   }
+  traveler: {
+    id: string
+    firstName: string
+    lastName: string
+  }
+}
+
+export default function SearchPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const [offers, setOffers] = useState<Offer[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
+
+  useEffect(() => {
+    if (status === "loading") return
+    if (status === "unauthenticated") {
+      router.push('/')
+      return
+    }
+
+    fetchOffers()
+  }, [status, router])
+
+  const fetchOffers = async () => {
+    try {
+      // Pass 0,0 for lat/lng to get all offers (will remove distance filtering)
+      const response = await fetch('/api/offers?lat=0&lng=0&status=active')
+      if (response.ok) {
+        const data = await response.json()
+        setOffers(data.offers || [])
+      }
+    } catch (error) {
+      console.error('Error fetching offers:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const filteredOffers = offers.filter(offer => 
+    searchTerm === "" || 
+    offer.item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    offer.title.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   return (
     <AuthLayout>
@@ -22,6 +71,8 @@ export default async function SearchPage() {
           <input
             type="text"
             placeholder="Search for items..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-3 border border-black rounded-sm text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan"
           />
         </div>
@@ -45,11 +96,43 @@ export default async function SearchPage() {
           </div>
         </div>
 
-        {/* Search Results Placeholder */}
+        {/* Search Results */}
         <div className="space-y-4">
-          <p className="text-body text-gray text-center py-12">
-            Start searching to find items near you
-          </p>
+          {loading ? (
+            <p className="text-body text-gray text-center py-12">Loading offers...</p>
+          ) : filteredOffers.length === 0 ? (
+            <p className="text-body text-gray text-center py-12">
+              {searchTerm ? "No items match your search" : "No active offers available"}
+            </p>
+          ) : (
+            filteredOffers.map((offer) => (
+              <Link key={offer.id} href={`/offers/${offer.id}`}>
+                <div className="border border-black rounded-sm p-4 hover:bg-tan transition-colors cursor-pointer">
+                  <div className="flex items-start gap-4">
+                    {offer.item.imageUrl ? (
+                      <img
+                        src={offer.item.imageUrl}
+                        alt={offer.item.name}
+                        className="w-20 h-20 object-cover rounded-sm flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-20 h-20 bg-gray/20 rounded-sm flex-shrink-0" />
+                    )}
+                    <div className="flex-1">
+                      <h3 className="text-body font-normal mb-1">{offer.item.name}</h3>
+                      <p className="text-sm text-gray mb-2">
+                        by {offer.traveler.firstName} {offer.traveler.lastName}
+                      </p>
+                      <div className="flex items-center text-xs text-gray">
+                        <MapPin size={12} className="mr-1" />
+                        {offer.locationName || "Unknown location"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))
+          )}
         </div>
       </main>
     </AuthLayout>

@@ -83,10 +83,10 @@ export async function GET(req: Request) {
     })
 
     const unreadMap = new Map(
-      unreadCounts.map(c => [c.offerId, c._count])
+      unreadCounts.map((c: any) => [c.offerId, c._count])
     )
 
-    const conversationsWithUnread = enrichedConversations.map(conv => ({
+    const conversationsWithUnread = enrichedConversations.map((conv: any) => ({
       ...conv,
       unreadCount: unreadMap.get(conv.offerId) || 0
     }))

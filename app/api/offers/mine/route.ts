@@ -18,7 +18,7 @@ export async function GET(req: Request) {
     const limit = parseInt(searchParams.get("limit") || "20")
     const skip = (page - 1) * limit
 
-    const offers = await prisma.offer.findMany({
+    const offers = await prisma.offers.findMany({
       where: {
         travelerId: session.user.id,
         ...(status && { status })
@@ -36,7 +36,14 @@ export async function GET(req: Request) {
       take: limit
     })
 
-    return NextResponse.json({ offers })
+    // Transform to match expected format
+    const transformedOffers = offers.map(offer => ({
+      ...offer,
+      latitude: offer.latitude?.toNumber(),
+      longitude: offer.longitude?.toNumber(),
+    }))
+
+    return NextResponse.json({ offers: transformedOffers })
   } catch (error) {
     console.error("Error fetching user offers:", error)
     return NextResponse.json(

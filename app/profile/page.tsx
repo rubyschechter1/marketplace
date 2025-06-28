@@ -14,7 +14,7 @@ export default async function ProfilePage() {
     redirect("/")
   }
 
-  const user = await prisma.traveler.findUnique({
+  const user = await prisma.travelers.findUnique({
     where: { id: session.user.id }
   })
 

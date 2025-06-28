@@ -18,7 +18,7 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        const user = await prisma.traveler.findUnique({
+        const user = await prisma.travelers.findUnique({
           where: {
             email: credentials.email
           }

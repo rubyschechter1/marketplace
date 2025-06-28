@@ -76,7 +76,7 @@ export default async function Home() {
                 </p>
               </div>
             ) : (
-              userOffers.map((offer) => (
+              userOffers.map((offer: any) => (
                 <Link
                   key={offer.id}
                   href={`/offers/${offer.id}`}

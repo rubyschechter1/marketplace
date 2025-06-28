@@ -11,12 +11,7 @@ export async function GET(
 ) {
   const { id } = await params;
   try {
-    const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const offer = await prisma.offer.findUnique({
+    const offer = await prisma.offers.findUnique({
       where: { id },
       include: {
         item: true,
@@ -28,7 +23,24 @@ export async function GET(
             avatarUrl: true,
             bio: true
           }
-        }
+        },
+        proposedTrades: {
+          where: { status: 'pending' },
+          include: {
+            proposer: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                avatarUrl: true,
+              },
+            },
+            offeredItem: true,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
       }
     })
 
@@ -36,7 +48,12 @@ export async function GET(
       return NextResponse.json({ error: "Offer not found" }, { status: 404 })
     }
 
-    return NextResponse.json({ offer })
+    // Transform to match expected format
+    return NextResponse.json({
+      ...offer,
+      latitude: offer.latitude?.toNumber(),
+      longitude: offer.longitude?.toNumber(),
+    })
   } catch (error) {
     console.error("Error fetching offer:", error)
     return NextResponse.json(
@@ -61,7 +78,7 @@ export async function PUT(
     const { title, description, status, locationName } = data
 
     // Verify offer belongs to user
-    const existingOffer = await prisma.offer.findFirst({
+    const existingOffer = await prisma.offers.findFirst({
       where: {
         id,
         travelerId: session.user.id
@@ -75,7 +92,7 @@ export async function PUT(
       )
     }
 
-    const offer = await prisma.offer.update({
+    const offer = await prisma.offers.update({
       where: { id },
       data: {
         ...(title && { title }),
@@ -117,7 +134,7 @@ export async function DELETE(
     }
 
     // Verify offer belongs to user
-    const offer = await prisma.offer.findFirst({
+    const offer = await prisma.offers.findFirst({
       where: {
         id,
         travelerId: session.user.id
@@ -131,7 +148,7 @@ export async function DELETE(
       )
     }
 
-    await prisma.offer.delete({
+    await prisma.offers.delete({
       where: { id }
     })
 

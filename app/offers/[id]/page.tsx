@@ -1,37 +1,63 @@
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
+"use client"
+
+import { useEffect, useState } from "react"
+import { useSession } from "next-auth/react"
 import AuthLayout from "@/components/AuthLayout"
 import Link from "next/link"
 import { MapPin, ChevronLeft } from "lucide-react"
-import { redirect } from "next/navigation"
+import { useRouter } from "next/navigation"
 
-async function getOfferDetails(id: string) {
-  const response = await fetch(`${process.env.NEXTAUTH_URL}/api/offers/${id}`, {
-    cache: 'no-store'
-  })
-  
-  if (!response.ok) {
-    return null
+export default function OfferPage({ params }: { params: Promise<{ id: string }> }) {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const [offer, setOffer] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [offerId, setOfferId] = useState<string>("")
+
+  useEffect(() => {
+    params.then(p => setOfferId(p.id))
+  }, [params])
+
+  useEffect(() => {
+    if (status === "loading") return
+    if (status === "unauthenticated") {
+      router.push('/')
+      return
+    }
+
+    async function fetchOffer() {
+      if (!offerId) return
+      
+      try {
+        const response = await fetch(`/api/offers/${offerId}`)
+        if (!response.ok) {
+          router.push('/')
+          return
+        }
+        const data = await response.json()
+        setOffer(data)
+      } catch (error) {
+        console.error('Error fetching offer:', error)
+        router.push('/')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchOffer()
+  }, [offerId, status, router])
+
+  if (loading || !offer) {
+    return (
+      <AuthLayout>
+        <div className="max-w-md mx-auto p-6">
+          <p>Loading...</p>
+        </div>
+      </AuthLayout>
+    )
   }
-  
-  return response.json()
-}
 
-export default async function OfferPage({ params }: { params: Promise<{ id: string }> }) {
-  const session = await getServerSession(authOptions)
-  
-  if (!session) {
-    redirect('/')
-  }
-
-  const { id } = await params
-  const offer = await getOfferDetails(id)
-  
-  if (!offer) {
-    redirect('/')
-  }
-
-  const isOwner = session.user?.id === offer.traveler?.id
+  const isOwner = session?.user?.id === offer.traveler?.id
   const displayName = isOwner ? "You" : `${offer.traveler?.firstName} ${offer.traveler?.lastName}`
   
   // Mock location data for now

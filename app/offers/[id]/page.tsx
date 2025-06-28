@@ -17,7 +17,6 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submittedItem, setSubmittedItem] = useState<string | null>(null)
   const [userProposedItem, setUserProposedItem] = useState<string | null>(null)
-  const [existingConversations, setExistingConversations] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     params.then(p => setOfferId(p.id))
@@ -50,27 +49,6 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
           if (userTrade) {
             setUserProposedItem(userTrade.offeredItem?.name)
           }
-        }
-        
-        // Check for existing conversations for each proposed trade
-        if (data.proposedTrades && session?.user?.id === data.traveler?.id) {
-          const conversationChecks = await Promise.all(
-            data.proposedTrades.map(async (trade: any) => {
-              try {
-                const response = await fetch(`/api/messages/offers/${offerId}?proposedTradeId=${trade.id}`)
-                if (response.ok) {
-                  const { messages } = await response.json()
-                  return messages.length > 0 ? trade.id : null
-                }
-              } catch (error) {
-                console.error('Error checking messages:', error)
-              }
-              return null
-            })
-          )
-          
-          const conversationsSet = new Set(conversationChecks.filter((id): id is string => id !== null))
-          setExistingConversations(conversationsSet)
         }
       } catch (error) {
         console.error('Error fetching offer:', error)
@@ -272,34 +250,13 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                   <div className="flex justify-between items-end mt-3">
                     {isOwner && (
                       <button
-                        onClick={async () => {
-                          if (existingConversations.has(trade.id)) {
-                            // Conversation exists, go directly to it
-                            router.push(`/messages/${offer.id}/${trade.id}`)
-                          } else {
-                            // Create initial message if needed
-                            try {
-                              const recipientId = trade.proposer.id
-                              await fetch('/api/messages', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                  offerId: offer.id,
-                                  recipientId: recipientId,
-                                  proposedTradeId: trade.id,
-                                  content: `Hi! I'm interested in your offer to trade ${trade.offeredItem?.name} for my ${offer.item?.name || offer.title}.`
-                                })
-                              })
-                              router.push(`/messages/${offer.id}/${trade.id}`)
-                            } catch (error) {
-                              console.error('Error creating initial message:', error)
-                              router.push(`/messages/${offer.id}/${trade.id}`)
-                            }
-                          }
+                        onClick={() => {
+                          // Just navigate to the conversation - no need for initial message
+                          router.push(`/messages/${offer.id}/${trade.id}`)
                         }}
                         className="border border-black px-3 py-1 rounded-sm text-sm hover:bg-white transition-colors"
                       >
-                        {existingConversations.has(trade.id) ? 'go to message' : 'start message'}
+                        message
                       </button>
                     )}
                     <div className={`text-xs text-gray flex items-center ${!isOwner ? 'ml-auto' : ''}`}>

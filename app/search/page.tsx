@@ -45,7 +45,10 @@ export default function SearchPage() {
       const response = await fetch('/api/offers?lat=0&lng=0&status=active')
       if (response.ok) {
         const data = await response.json()
+        console.log('Fetched offers:', data)
         setOffers(data.offers || [])
+      } else {
+        console.error('Failed to fetch offers:', response.status, await response.text())
       }
     } catch (error) {
       console.error('Error fetching offers:', error)
@@ -54,11 +57,12 @@ export default function SearchPage() {
     }
   }
 
-  const filteredOffers = offers.filter(offer => 
-    searchTerm === "" || 
-    offer.item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    offer.title.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredOffers = offers.filter(offer => {
+    if (!offer.item) return false // Skip offers without items
+    return searchTerm === "" || 
+      offer.item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      offer.title.toLowerCase().includes(searchTerm.toLowerCase())
+  })
 
   return (
     <AuthLayout>

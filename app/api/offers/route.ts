@@ -26,18 +26,22 @@ export async function GET(req: Request) {
     const latDelta = SEARCH_RADIUS_KM / 111
     const lngDelta = SEARCH_RADIUS_KM / (111 * Math.cos(lat * Math.PI / 180))
 
+    // If lat and lng are both 0, skip distance filtering
+    const whereClause: any = { status }
+    
+    if (lat !== 0 || lng !== 0) {
+      whereClause.latitude = {
+        gte: lat - latDelta,
+        lte: lat + latDelta
+      }
+      whereClause.longitude = {
+        gte: lng - lngDelta,
+        lte: lng + lngDelta
+      }
+    }
+
     const offers = await prisma.offers.findMany({
-      where: {
-        status,
-        latitude: {
-          gte: lat - latDelta,
-          lte: lat + latDelta
-        },
-        longitude: {
-          gte: lng - lngDelta,
-          lte: lng + lngDelta
-        }
-      },
+      where: whereClause,
       include: {
         item: true,
         traveler: {

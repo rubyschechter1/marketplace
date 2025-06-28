@@ -16,15 +16,26 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // Get optional proposedTradeId from query params
+    const url = new URL(req.url)
+    const proposedTradeId = url.searchParams.get('proposedTradeId')
+
+    // Build where clause
+    const whereClause: any = {
+      offerId,
+      OR: [
+        { senderId: session.user.id },
+        { recipientId: session.user.id }
+      ]
+    }
+    
+    if (proposedTradeId) {
+      whereClause.proposedTradeId = proposedTradeId
+    }
+
     // Verify user has access to these messages
     const messages = await prisma.messages.findMany({
-      where: {
-        offerId,
-        OR: [
-          { senderId: session.user.id },
-          { recipientId: session.user.id }
-        ]
-      },
+      where: whereClause,
       include: {
         sender: {
           select: {

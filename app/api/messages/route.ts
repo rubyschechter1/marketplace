@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     }
 
     const data = await req.json()
-    const { offerId, recipientId, content } = data
+    const { offerId, recipientId, content, proposedTradeId } = data
 
     if (!offerId || !recipientId || !content) {
       return NextResponse.json(
@@ -53,7 +53,8 @@ export async function POST(req: Request) {
         offerId,
         senderId: session.user.id,
         recipientId,
-        content
+        content,
+        proposedTradeId
       },
       include: {
         sender: {

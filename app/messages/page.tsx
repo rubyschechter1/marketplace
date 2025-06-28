@@ -1,40 +1,85 @@
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
-import { redirect } from "next/navigation"
+"use client"
+
+import { useEffect, useState } from "react"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import AuthLayout from "@/components/AuthLayout"
-import { PrismaClient } from "@prisma/client"
 
-const prisma = new PrismaClient()
+interface Conversation {
+  id: string
+  offerId: string
+  senderId: string
+  recipientId: string
+  proposedTradeId: string | null
+  content: string
+  createdAt: string
+  sender: {
+    id: string
+    firstName: string
+    lastName: string
+  }
+  recipient: {
+    id: string
+    firstName: string
+    lastName: string
+  }
+  offer: {
+    id: string
+    title: string
+    item?: {
+      name: string
+    }
+  }
+}
 
-export default async function MessagesPage() {
-  const session = await getServerSession(authOptions)
-  
-  if (!session) {
-    redirect("/")
+export default function MessagesPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const [conversations, setConversations] = useState<Conversation[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (status === "loading") return
+    if (status === "unauthenticated") {
+      router.push('/')
+      return
+    }
+
+    async function fetchConversations() {
+      try {
+        const response = await fetch('/api/messages/conversations')
+        if (response.ok) {
+          const data = await response.json()
+          setConversations(data.conversations || [])
+        }
+      } catch (error) {
+        console.error('Error fetching conversations:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchConversations()
+  }, [status, router])
+
+  const handleConversationClick = (message: Conversation) => {
+    if (message.proposedTradeId) {
+      router.push(`/messages/${message.offerId}/${message.proposedTradeId}`)
+    } else {
+      // Fallback to offer page if no proposed trade
+      router.push(`/offers/${message.offerId}`)
+    }
   }
 
-  // Get conversations (unique offer/user combinations)
-  const conversations = await prisma.messages.findMany({
-    where: {
-      OR: [
-        { senderId: session.user.id },
-        { recipientId: session.user.id }
-      ]
-    },
-    include: {
-      sender: true,
-      recipient: true,
-      offer: {
-        include: {
-          item: true
-        }
-      }
-    },
-    orderBy: {
-      createdAt: 'desc'
-    },
-    distinct: ['offerId']
-  })
+  if (loading) {
+    return (
+      <AuthLayout>
+        <main className="p-4 max-w-md mx-auto">
+          <p>Loading...</p>
+        </main>
+      </AuthLayout>
+    )
+  }
 
   return (
     <AuthLayout>
@@ -51,13 +96,14 @@ export default async function MessagesPage() {
         ) : (
           <div className="space-y-3">
             {conversations.map((message) => {
-              const otherUser = message.senderId === session.user.id 
+              const otherUser = message.senderId === session?.user?.id 
                 ? message.recipient 
                 : message.sender
               
               return (
                 <div
                   key={message.id}
+                  onClick={() => handleConversationClick(message)}
                   className="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow cursor-pointer"
                 >
                   <div className="flex items-start space-x-3">
@@ -70,7 +116,7 @@ export default async function MessagesPage() {
                       <div className="flex justify-between items-start">
                         <div>
                           <p className="font-medium">
-                            {otherUser?.firstName ? `${otherUser.firstName} ${otherUser.lastName[0]}.` : 'Unknown User'}
+                            {otherUser?.firstName ? `${otherUser.firstName} ${otherUser.lastName}` : 'Unknown User'}
                           </p>
                           <p className="text-sm text-gray-500">
                             Re: {message.offer?.item?.name || message.offer?.title}

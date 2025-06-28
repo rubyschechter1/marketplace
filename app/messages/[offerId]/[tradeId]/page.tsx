@@ -116,6 +116,7 @@ export default function MessagePage({ params }: { params: Promise<{ offerId: str
         body: JSON.stringify({
           offerId: offerId,
           recipientId: recipientId,
+          proposedTradeId: tradeId,
           content: newMessage
         })
       })

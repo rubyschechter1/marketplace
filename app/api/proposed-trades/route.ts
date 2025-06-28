@@ -5,6 +5,46 @@ import { PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()
 
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      )
+    }
+
+    const searchParams = request.nextUrl.searchParams
+    const offerId = searchParams.get('offerId')
+    const userId = searchParams.get('userId')
+
+    if (!offerId || !userId) {
+      return NextResponse.json(
+        { error: "Missing required parameters" },
+        { status: 400 }
+      )
+    }
+
+    // Find the proposed trade for this offer and user
+    const proposedTrade = await prisma.proposedTrades.findFirst({
+      where: {
+        offerId: offerId,
+        proposerId: userId
+      }
+    })
+
+    return NextResponse.json({ proposedTrade })
+  } catch (error) {
+    console.error("Error fetching proposed trade:", error)
+    return NextResponse.json(
+      { error: "Failed to fetch proposed trade" },
+      { status: 500 }
+    )
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)

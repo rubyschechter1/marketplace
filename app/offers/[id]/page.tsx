@@ -67,7 +67,7 @@ export default async function OfferPage({ params }: { params: Promise<{ id: stri
           {/* Offer Details Box */}
           <div className="border border-black rounded-sm p-4 mb-6">
             <div className="text-body mb-3">
-              <span className="font-normal">{displayName}</span> are offering a{' '}
+              <span className="font-normal">{displayName}</span> {isOwner ? 'are' : 'is'} offering a{' '}
               <span className="italic">{offer.item?.name || offer.title}</span>
             </div>
             

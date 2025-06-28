@@ -9,7 +9,7 @@ export default function SignupForm({ onSwitch }: { onSwitch: () => void }) {
   const [formData, setFormData] = useState({
     email: "",
     firstName: "",
-    lastName: "",
+    lastInitial: "",
     password: "",
     confirmPassword: ""
   })
@@ -35,7 +35,7 @@ export default function SignupForm({ onSwitch }: { onSwitch: () => void }) {
         body: JSON.stringify({
           email: formData.email,
           firstName: formData.firstName,
-          lastName: formData.lastName,
+          lastName: formData.lastInitial + ".",
           password: formData.password
         })
       })
@@ -101,17 +101,23 @@ export default function SignupForm({ onSwitch }: { onSwitch: () => void }) {
           </div>
 
           <div>
-            <label htmlFor="lastName" className="block text-body text-gray mb-2">
-              Last Name
+            <label htmlFor="lastInitial" className="block text-body text-gray mb-2">
+              Last Initial
             </label>
             <input
-              id="lastName"
+              id="lastInitial"
               type="text"
-              value={formData.lastName}
-              onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+              value={formData.lastInitial}
+              onChange={(e) => {
+                const value = e.target.value.toUpperCase()
+                if (value.length <= 1 && /^[A-Z]?$/.test(value)) {
+                  setFormData({...formData, lastInitial: value})
+                }
+              }}
               className="w-full px-3 py-2 border border-black rounded-sm text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan"
-              placeholder="Last"
+              placeholder="L"
               required
+              maxLength={1}
             />
           </div>
         </div>

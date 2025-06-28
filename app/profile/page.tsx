@@ -35,7 +35,7 @@ export default async function ProfilePage() {
             <div className="w-32 h-32 bg-gray/20 rounded-full flex items-center justify-center mb-4 text-4xl">
               {user.firstName[0].toUpperCase()}
             </div>
-            <h1 className="text-header font-normal">{user.firstName} {user.lastName[0]}.</h1>
+            <h1 className="text-header font-normal">{user.firstName} {user.lastName}</h1>
           </div>
 
           {/* Profile Info */}

@@ -12,15 +12,15 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const user = await prisma.traveler.findUnique({
+    const user = await prisma.travelers.findUnique({
       where: { id: session.user.id },
       include: {
         _count: {
           select: {
             offers: true,
             items: true,
-            sentMessages: true,
-            receivedMessages: {
+            messagesSent: true,
+            messagesReceived: {
               where: { isRead: false }
             }
           }

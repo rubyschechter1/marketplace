@@ -22,7 +22,7 @@ export async function POST(req: Request) {
       )
     }
 
-    const item = await prisma.item.create({
+    const item = await prisma.items.create({
       data: {
         name,
         description,

@@ -14,7 +14,7 @@ export default async function MessagesPage() {
   }
 
   // Get conversations (unique offer/user combinations)
-  const conversations = await prisma.message.findMany({
+  const conversations = await prisma.messages.findMany({
     where: {
       OR: [
         { senderId: session.user.id },

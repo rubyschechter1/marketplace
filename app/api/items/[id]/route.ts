@@ -16,10 +16,10 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const item = await prisma.item.findUnique({
+    const item = await prisma.items.findUnique({
       where: { id },
       include: {
-        creator: {
+        travelers: {
           select: {
             id: true,
             firstName: true,

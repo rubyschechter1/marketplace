@@ -17,7 +17,7 @@ export async function PUT(
     }
 
     // Verify message exists and user is recipient
-    const message = await prisma.message.findFirst({
+    const message = await prisma.messages.findFirst({
       where: {
         id,
         recipientId: session.user.id
@@ -31,7 +31,7 @@ export async function PUT(
       )
     }
 
-    const updatedMessage = await prisma.message.update({
+    const updatedMessage = await prisma.messages.update({
       where: { id },
       data: { isRead: true }
     })

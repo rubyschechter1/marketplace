@@ -17,14 +17,15 @@ async function getOfferDetails(id: string) {
   return response.json()
 }
 
-export default async function OfferPage({ params }: { params: { id: string } }) {
+export default async function OfferPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   
   if (!session) {
     redirect('/')
   }
 
-  const offer = await getOfferDetails(params.id)
+  const { id } = await params
+  const offer = await getOfferDetails(id)
   
   if (!offer) {
     redirect('/')

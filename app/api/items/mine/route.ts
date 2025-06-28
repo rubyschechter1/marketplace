@@ -12,7 +12,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const items = await prisma.item.findMany({
+    const items = await prisma.items.findMany({
       where: {
         createdBy: session.user.id
       },

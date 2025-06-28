@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     }
 
     // Check if user already exists
-    const existingUser = await prisma.traveler.findFirst({
+    const existingUser = await prisma.travelers.findFirst({
       where: {
         email
       }
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     const hashedPassword = await hash(password, 12)
 
     // Create user
-    const user = await prisma.traveler.create({
+    const user = await prisma.travelers.create({
       data: {
         email,
         firstName,

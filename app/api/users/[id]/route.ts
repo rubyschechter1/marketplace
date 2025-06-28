@@ -16,7 +16,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const user = await prisma.traveler.findUnique({
+    const user = await prisma.travelers.findUnique({
       where: { id },
       select: {
         id: true,

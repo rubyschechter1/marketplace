@@ -17,7 +17,7 @@ export async function GET(
     }
 
     // Verify user has access to these messages
-    const messages = await prisma.message.findMany({
+    const messages = await prisma.messages.findMany({
       where: {
         offerId,
         OR: [
@@ -49,7 +49,7 @@ export async function GET(
     })
 
     // Mark messages as read if user is recipient
-    await prisma.message.updateMany({
+    await prisma.messages.updateMany({
       where: {
         offerId,
         recipientId: session.user.id,
@@ -61,7 +61,7 @@ export async function GET(
     })
 
     // Get offer details
-    const offer = await prisma.offer.findUnique({
+    const offer = await prisma.offers.findUnique({
       where: { id: offerId },
       include: {
         item: true,

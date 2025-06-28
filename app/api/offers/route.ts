@@ -26,7 +26,7 @@ export async function GET(req: Request) {
     const latDelta = SEARCH_RADIUS_KM / 111
     const lngDelta = SEARCH_RADIUS_KM / (111 * Math.cos(lat * Math.PI / 180))
 
-    const offers = await prisma.offer.findMany({
+    const offers = await prisma.offers.findMany({
       where: {
         status,
         latitude: {
@@ -84,7 +84,7 @@ export async function POST(req: Request) {
     }
 
     // Verify item belongs to user
-    const item = await prisma.item.findFirst({
+    const item = await prisma.items.findFirst({
       where: {
         id: itemId,
         createdBy: session.user.id
@@ -98,7 +98,7 @@ export async function POST(req: Request) {
       )
     }
 
-    const offer = await prisma.offer.create({
+    const offer = await prisma.offers.create({
       data: {
         travelerId: session.user.id,
         itemId,

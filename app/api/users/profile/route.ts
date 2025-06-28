@@ -37,7 +37,7 @@ export async function PUT(req: Request) {
       )
     }
 
-    const updatedUser = await prisma.traveler.update({
+    const updatedUser = await prisma.travelers.update({
       where: { id: session.user.id },
       data: {
         ...(firstName !== undefined && { firstName }),

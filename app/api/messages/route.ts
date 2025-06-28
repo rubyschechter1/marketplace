@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     }
 
     // Verify offer exists and user is either owner or messaging the owner
-    const offer = await prisma.offer.findUnique({
+    const offer = await prisma.offers.findUnique({
       where: { id: offerId },
       include: { traveler: true }
     })
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
       )
     }
 
-    const message = await prisma.message.create({
+    const message = await prisma.messages.create({
       data: {
         offerId,
         senderId: session.user.id,

@@ -41,7 +41,7 @@ export async function GET(req: Request) {
     // Get additional data for each conversation
     const conversationIds = (conversations as any[]).map(c => c.id)
     
-    const enrichedConversations = await prisma.message.findMany({
+    const enrichedConversations = await prisma.messages.findMany({
       where: {
         id: {
           in: conversationIds
@@ -73,7 +73,7 @@ export async function GET(req: Request) {
     })
 
     // Count unread messages for each conversation
-    const unreadCounts = await prisma.message.groupBy({
+    const unreadCounts = await prisma.messages.groupBy({
       by: ['offerId'],
       where: {
         recipientId: session.user.id,

@@ -37,7 +37,7 @@ export async function GET(req: Request) {
     })
 
     // Transform to match expected format
-    const transformedOffers = offers.map(offer => ({
+    const transformedOffers = offers.map((offer: any) => ({
       ...offer,
       latitude: offer.latitude?.toNumber(),
       longitude: offer.longitude?.toNumber(),

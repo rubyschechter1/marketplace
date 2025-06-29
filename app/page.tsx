@@ -31,7 +31,11 @@ export default async function Home() {
     return (
       <main className="min-h-screen p-4 max-w-md mx-auto flex flex-col justify-center">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Marketplace</h1>
+          <img 
+            src="/images/brownhat.png" 
+            alt="Marketplace" 
+            className="w-48 h-48 mx-auto mb-4 object-contain"
+          />
           <p className="text-gray-600">Barter with fellow travelers</p>
         </div>
         

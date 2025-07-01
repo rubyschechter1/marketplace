@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import AuthLayout from "@/components/AuthLayout"
+import ProfileThumbnail from "@/components/ProfileThumbnail"
 import Link from "next/link"
 import { MapPin, ChevronLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -234,9 +235,11 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                 <div key={trade.id} className="border border-black rounded-sm p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start">
-                      <Link href={`/users/${trade.proposer?.id}`} className="w-10 h-10 bg-gray/20 rounded-full flex items-center justify-center text-sm mr-3 flex-shrink-0 hover:bg-gray/30 transition-colors">
-                        {trade.proposer?.firstName?.[0] || 'U'}
-                      </Link>
+                      <ProfileThumbnail 
+                        user={trade.proposer}
+                        size="sm"
+                        className="mr-3"
+                      />
                       <div className="flex-1">
                         <div className="text-body">
                           <span className="font-normal">

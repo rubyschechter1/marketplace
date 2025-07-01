@@ -33,7 +33,7 @@ export default function OfferCard({ offer, currentUserId }: OfferCardProps) {
       <ProfileThumbnail 
         user={offer.traveler}
         size="sm"
-        clickable={!isOwnOffer}
+        clickable={true}
       />
 
       {/* Card content */}

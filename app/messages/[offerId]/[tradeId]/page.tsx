@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import AuthLayout from "@/components/AuthLayout"
+import ProfileThumbnail from "@/components/ProfileThumbnail"
 import { ChevronLeft, Send } from "lucide-react"
 import Link from "next/link"
 
@@ -171,9 +172,11 @@ export default function MessagePage({ params }: { params: Promise<{ offerId: str
         <div className="flex-1 overflow-y-auto p-4">
           {/* Initial trade proposal message */}
           <div className="flex items-start mb-4">
-            <Link href={`/users/${tradeData.proposer.id}`} className="w-8 h-8 bg-gray/20 rounded-full flex items-center justify-center text-xs mr-3 flex-shrink-0 hover:bg-gray/30 transition-colors">
-              {tradeData.proposer.firstName[0]}
-            </Link>
+            <ProfileThumbnail 
+              user={tradeData.proposer} 
+              size="sm" 
+              className="mr-3" 
+            />
             <div className="flex-1">
               <div className="bg-tan border border-black rounded-sm p-3">
                 <p className="text-body">
@@ -200,9 +203,11 @@ export default function MessagePage({ params }: { params: Promise<{ offerId: str
             const isOwnMessage = message.senderId === session?.user?.id
             return (
               <div key={message.id} className={`flex items-start mb-4 ${isOwnMessage ? 'flex-row-reverse' : ''}`}>
-                <Link href={`/users/${message.sender.id}`} className={`w-8 h-8 bg-gray/20 rounded-full flex items-center justify-center text-xs ${isOwnMessage ? 'ml-3' : 'mr-3'} flex-shrink-0 hover:bg-gray/30 transition-colors`}>
-                  {message.sender.firstName[0]}
-                </Link>
+                <ProfileThumbnail 
+                  user={message.sender} 
+                  size="sm" 
+                  className={isOwnMessage ? 'ml-3' : 'mr-3'} 
+                />
                 <div className={`flex-1 ${isOwnMessage ? 'text-right' : ''}`}>
                   <div className={`inline-block ${isOwnMessage ? 'bg-black text-white' : 'bg-tan border border-black'} rounded-sm p-3`}>
                     <p className="text-body">{message.content}</p>

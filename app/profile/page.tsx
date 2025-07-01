@@ -92,7 +92,11 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
 
         {/* Profile Editor Component - Only for own profile */}
         {isOwnProfile ? (
-          <ProfileEditor user={user} />
+          <ProfileEditor user={{
+            id: user.id,
+            bio: user.bio,
+            languages: user.languages
+          }} />
         ) : (
           <>
             {/* Read-only About Section for other users */}

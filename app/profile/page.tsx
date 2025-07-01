@@ -24,18 +24,26 @@ async function getUserWithOffers(userId: string) {
   return user
 }
 
-export default async function ProfilePage() {
+export default async function ProfilePage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
   const session = await getServerSession(authOptions)
+  const params = await searchParams
   
-  if (!session) {
+  // Determine which user to display
+  const userId = params.id || session?.user?.id
+  
+  // If no userId available (not logged in and no id param), redirect to home
+  if (!userId) {
     redirect("/")
   }
 
-  const user = await getUserWithOffers(session.user.id)
+  const user = await getUserWithOffers(userId)
 
   if (!user) {
     redirect("/")
   }
+  
+  // Check if viewing own profile
+  const isOwnProfile = session?.user?.id === user.id
 
   // Get list of offered items
   const offeredItems = user.offers.map(offer => offer.item?.name).filter(Boolean)
@@ -73,18 +81,42 @@ export default async function ProfilePage() {
           </div>
         </div>
 
-        {/* Email Section */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <p className="text-sm">Email: {user.email}</p>
-            {/* <button className="text-sm bg-tan px-3 py-1 rounded-sm border border-black hover:bg-white transition-colors">
-              Change email
-            </button> */}
+        {/* Email Section - Only show for own profile */}
+        {isOwnProfile && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between">
+              <p className="text-sm">Email: {user.email}</p>
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Profile Editor Component */}
-        <ProfileEditor user={user} />
+        {/* Profile Editor Component - Only for own profile */}
+        {isOwnProfile ? (
+          <ProfileEditor user={user} />
+        ) : (
+          <>
+            {/* Read-only About Section for other users */}
+            {user.bio && (
+              <div className="mb-6">
+                <h2 className="text-lg mb-3">About</h2>
+                <div className="border border-black rounded-sm p-4">
+                  <p className="text-sm whitespace-pre-line">
+                    {user.bio}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Read-only Languages Section for other users */}
+            {user.languages && user.languages.length > 0 && (
+              <div className="mb-6">
+                <h2 className="text-lg mb-3">
+                  Speaks {user.languages.join(', ')}
+                </h2>
+              </div>
+            )}
+          </>
+        )}
 
         {/* Offered Items Section */}
         <div className="mb-6">
@@ -104,10 +136,12 @@ export default async function ProfilePage() {
           </p>
         </div>
 
-        {/* Sign Out Button */}
-        <div className="w-full">
-          <SignOutButton className="w-full bg-tan text-black border border-black rounded-sm py-3 text-sm hover:bg-black hover:text-tan transition-colors" />
-        </div>
+        {/* Sign Out Button - Only for own profile */}
+        {isOwnProfile && (
+          <div className="w-full">
+            <SignOutButton className="w-full bg-tan text-black border border-black rounded-sm py-3 text-sm hover:bg-black hover:text-tan transition-colors" />
+          </div>
+        )}
       </main>
     </AuthLayout>
   )

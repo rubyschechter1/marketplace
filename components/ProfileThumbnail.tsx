@@ -40,7 +40,7 @@ export default function ProfileThumbnail({
 
   if (clickable) {
     return (
-      <Link href={`/users/${user.id}`} className={combinedClasses}>
+      <Link href={`/profile?id=${user.id}`} className={combinedClasses}>
         {content}
       </Link>
     )

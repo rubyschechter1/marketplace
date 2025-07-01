@@ -64,7 +64,7 @@ export default function MessagesPage() {
 
   const handleConversationClick = (message: Conversation) => {
     if (message.proposedTradeId) {
-      router.push(`/messages/${message.offerId}/${message.proposedTradeId}`)
+      router.push(`/messages/${message.offerId}/${message.proposedTradeId}?from=messages`)
     } else {
       // Fallback to offer page if no proposed trade
       router.push(`/offers/${message.offerId}`)

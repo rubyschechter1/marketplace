@@ -252,7 +252,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                       <button
                         onClick={() => {
                           // Just navigate to the conversation - no need for initial message
-                          router.push(`/messages/${offer.id}/${trade.id}`)
+                          router.push(`/messages/${offer.id}/${trade.id}?from=home`)
                         }}
                         className="bg-tan text-black border border-black px-3 py-1 rounded-sm text-sm hover:bg-black hover:text-tan transition-colors"
                       >

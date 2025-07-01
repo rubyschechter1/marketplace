@@ -46,11 +46,18 @@ interface TradeData {
   }
 }
 
-export default function MessagePage({ params }: { params: Promise<{ offerId: string, tradeId: string }> }) {
+export default function MessagePage({ 
+  params,
+  searchParams 
+}: { 
+  params: Promise<{ offerId: string, tradeId: string }>,
+  searchParams: Promise<{ from?: string }>
+}) {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [offerId, setOfferId] = useState<string>("")
   const [tradeId, setTradeId] = useState<string>("")
+  const [fromPage, setFromPage] = useState<string>("")
   const [messages, setMessages] = useState<Message[]>([])
   const [tradeData, setTradeData] = useState<TradeData | null>(null)
   const [newMessage, setNewMessage] = useState("")
@@ -62,7 +69,10 @@ export default function MessagePage({ params }: { params: Promise<{ offerId: str
       setOfferId(p.offerId)
       setTradeId(p.tradeId)
     })
-  }, [params])
+    searchParams.then(sp => {
+      setFromPage(sp.from || 'home')
+    })
+  }, [params, searchParams])
 
   useEffect(() => {
     if (status === "loading") return
@@ -155,17 +165,30 @@ export default function MessagePage({ params }: { params: Promise<{ offerId: str
       <div className="max-w-md mx-auto h-screen flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-gray/20 flex items-center">
-          <Link href={`/offers/${offerId}`} className="mr-3">
+          <button 
+            onClick={() => {
+              if (fromPage === 'messages') {
+                router.push('/messages')
+              } else if (fromPage === 'search') {
+                router.push('/search')
+              } else {
+                router.push('/')
+              }
+            }}
+            className="mr-3"
+          >
             <ChevronLeft size={24} />
+          </button>
+          <Link href={`/offers/${offerId}`} className="flex items-center flex-1">
+            {tradeData.offer.item?.imageUrl && (
+              <img
+                src={tradeData.offer.item.imageUrl}
+                alt={itemName}
+                className="w-10 h-10 object-cover rounded-sm mr-3"
+              />
+            )}
+            <h1 className="text-header font-normal">{itemName}</h1>
           </Link>
-          {tradeData.offer.item?.imageUrl && (
-            <img
-              src={tradeData.offer.item.imageUrl}
-              alt={itemName}
-              className="w-10 h-10 object-cover rounded-sm mr-3"
-            />
-          )}
-          <h1 className="text-header font-normal flex-1">{itemName}</h1>
         </div>
 
         {/* Messages */}
@@ -202,14 +225,14 @@ export default function MessagePage({ params }: { params: Promise<{ offerId: str
           {messages.map((message) => {
             const isOwnMessage = message.senderId === session?.user?.id
             return (
-              <div key={message.id} className={`flex items-start mb-4 ${isOwnMessage ? 'flex-row-reverse' : ''}`}>
+              <div key={message.id} className="flex items-start mb-4">
                 <ProfileThumbnail 
                   user={message.sender} 
                   size="sm" 
-                  className={isOwnMessage ? 'ml-3' : 'mr-3'} 
+                  className="mr-3" 
                 />
-                <div className={`flex-1 ${isOwnMessage ? 'text-right' : ''}`}>
-                  <div className={`inline-block ${isOwnMessage ? 'bg-black text-white' : 'bg-tan border border-black'} rounded-sm p-3`}>
+                <div className="flex-1">
+                  <div className="bg-tan border border-black rounded-sm p-3">
                     <p className="text-body">{message.content}</p>
                   </div>
                   <p className="text-xs text-gray mt-1">

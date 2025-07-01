@@ -26,7 +26,10 @@ export async function GET(req: Request) {
       include: {
         item: true,
         _count: {
-          select: { messages: true }
+          select: { 
+            messages: true,
+            proposedTrades: true 
+          }
         }
       },
       orderBy: {

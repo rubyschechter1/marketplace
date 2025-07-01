@@ -1,7 +1,8 @@
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import AuthForms from "@/components/AuthForms"
-import SignOutButton from "@/components/SignOutButton"
+import ProfileThumbnail from "@/components/ProfileThumbnail"
+import OfferCard from "@/components/OfferCard"
 import AuthLayout from "@/components/AuthLayout"
 import Link from "next/link"
 import { MapPin } from "lucide-react"
@@ -50,73 +51,59 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
   return (
     <AuthLayout>
       <main className="p-6 max-w-md mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-header font-normal">Marketplace</h1>
-          <Link 
-            href="/profile"
-            className="w-10 h-10 bg-gray/20 rounded-full flex items-center justify-center text-sm hover:bg-gray/30 transition-colors"
-          >
-            {session.user?.name?.[0] || 'U'}
-          </Link>
+        {/* Location header */}
+        <div className="flex items-center gap-3 mb-8">
+          <ProfileThumbnail 
+            user={{
+              id: session.user.id,
+              firstName: session.user.name?.split(' ')[0] || 'User',
+              lastName: session.user.name?.split(' ')[1] || '',
+            }}
+            size="sm"
+          />
+          <p className="text-body">You are currently in Bali, Indonesia</p>
         </div>
         
-        <p className="text-body text-gray mb-8">
-          {params.welcome === 'new' 
-            ? `Welcome, ${session.user?.name?.split(' ')[0]}!`
-            : `Welcome back, ${session.user?.name?.split(' ')[0]}!`
-          }
-        </p>
-        
-        <Link
-          href="/offers/new"
-          className="block w-full bg-tan text-black border border-black p-4 rounded-sm hover:bg-black hover:text-tan transition-colors text-center text-button mb-8"
-        >
-          Offer an item
-        </Link>
+        {/* Action buttons */}
+        <div className="space-y-4 mb-8">
+          <Link
+            href="/offers/new"
+            className="block w-full bg-tan text-black border border-black p-4 rounded-md hover:bg-black hover:text-tan transition-colors text-center text-button"
+          >
+            Offer an item
+          </Link>
+          <button
+            className="block w-full bg-tan text-black border border-black p-4 rounded-md hover:bg-black hover:text-tan transition-colors text-center text-button opacity-50 cursor-not-allowed"
+            disabled
+          >
+            Post an ask
+          </button>
+        </div>
 
         {/* Your offered items */}
         <div>
-          <h2 className="text-body font-normal mb-4">Your offered items</h2>
-          <div className="space-y-3">
+          <h2 className="text-lg font-normal mb-4">Your offered items</h2>
+          <div className="space-y-4">
             {userOffers.length === 0 ? (
-              <div className="border border-thin rounded-sm p-6">
+              <div className="border border-thin rounded-md p-6">
                 <p className="text-body text-gray text-center">
                   You haven't offered any items yet
                 </p>
               </div>
             ) : (
               userOffers.map((offer: any) => (
-                <Link
+                <OfferCard 
                   key={offer.id}
-                  href={`/offers/${offer.id}`}
-                  className="block border border-black rounded-sm overflow-hidden hover:bg-white transition-colors"
-                >
-                  <div className="flex">
-                    {offer.item?.imageUrl && (
-                      <img
-                        src={offer.item.imageUrl}
-                        alt={offer.item.name}
-                        className="w-24 h-24 object-cover border-r border-black"
-                      />
-                    )}
-                    <div className="flex-1 p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="text-body font-normal">{offer.item?.name || offer.title}</h3>
-                        {offer._count.messages > 0 && (
-                          <span className="text-xs bg-black text-white px-2 py-1 rounded-sm">
-                            {offer._count.messages} message{offer._count.messages !== 1 ? 's' : ''}
-                          </span>
-                        )}
-                      </div>
-                      {offer.locationName && (
-                        <div className="flex items-center text-gray text-sm">
-                          <MapPin size={14} className="mr-1" />
-                          {offer.locationName}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </Link>
+                  offer={{
+                    ...offer,
+                    traveler: {
+                      id: session.user.id,
+                      firstName: session.user.name?.split(' ')[0] || 'User',
+                      lastName: session.user.name?.split(' ')[1] || '',
+                    }
+                  }}
+                  currentUserId={session.user.id}
+                />
               ))
             )}
           </div>

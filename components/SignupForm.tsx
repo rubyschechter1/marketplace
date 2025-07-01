@@ -56,7 +56,7 @@ export default function SignupForm({ onSwitch }: { onSwitch: () => void }) {
       if (result?.error) {
         setError("Failed to sign in after signup")
       } else {
-        router.push("/")
+        router.push("/?welcome=new")
         router.refresh()
       }
     } catch (error: any) {

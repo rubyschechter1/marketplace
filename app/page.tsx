@@ -5,7 +5,7 @@ import SignOutButton from "@/components/SignOutButton"
 import AuthLayout from "@/components/AuthLayout"
 import Link from "next/link"
 import { MapPin } from "lucide-react"
-import { cookies } from "next/headers"
+import { cookies, headers } from "next/headers"
 
 async function getUserOffers() {
   const cookieStore = await cookies()
@@ -24,7 +24,7 @@ async function getUserOffers() {
   return data.offers || []
 }
 
-export default async function Home() {
+export default async function Home({ searchParams }: { searchParams: { welcome?: string } }) {
   const session = await getServerSession(authOptions)
 
   if (!session) {
@@ -59,7 +59,12 @@ export default async function Home() {
           </Link>
         </div>
         
-        <p className="text-body text-gray mb-8">Welcome back, {session.user?.name?.split(' ')[0]}!</p>
+        <p className="text-body text-gray mb-8">
+          {searchParams.welcome === 'new' 
+            ? `Welcome, ${session.user?.name?.split(' ')[0]}!`
+            : `Welcome back, ${session.user?.name?.split(' ')[0]}!`
+          }
+        </p>
         
         <Link
           href="/offers/new"

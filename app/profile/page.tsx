@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import AuthLayout from "@/components/AuthLayout"
 import SignOutButton from "@/components/SignOutButton"
 import ProfileEditor from "@/components/ProfileEditor"
+import ProfileHeader from "@/components/ProfileHeader"
 import { PrismaClient } from "@prisma/client"
 import { Star, Check } from "lucide-react"
 
@@ -51,35 +52,8 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
   return (
     <AuthLayout>
       <main className="p-6 max-w-md mx-auto">
-        {/* Profile Header */}
-        <div className="flex flex-col items-center mb-6">
-          {/* Avatar */}
-          {user.avatarUrl ? (
-            <img 
-              src={user.avatarUrl} 
-              alt={`${user.firstName}'s avatar`}
-              className="w-20 h-20 rounded-full object-cover mb-3"
-            />
-          ) : (
-            <div className="w-20 h-20 bg-gray/20 rounded-full flex items-center justify-center mb-3 text-2xl">
-              {user.firstName[0].toUpperCase()}
-            </div>
-          )}
-          
-          {/* Name with Verified Badge */}
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-xl font-normal">{user.firstName} {user.lastName}</h1>
-            <span className="text-sm text-gray italic">Verified</span>
-          </div>
-
-          {/* Star Rating */}
-          <div className="flex items-center gap-1">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <Star key={star} size={16} className="fill-black text-black" />
-            ))}
-            <span className="text-sm ml-1">5.0</span>
-          </div>
-        </div>
+        {/* Profile Header Component */}
+        <ProfileHeader user={user} isOwnProfile={isOwnProfile} />
 
         {/* Email Section - Only show for own profile */}
         {isOwnProfile && (

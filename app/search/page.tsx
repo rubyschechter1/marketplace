@@ -85,16 +85,16 @@ export default function SearchPage() {
         <div className="mb-8">
           <p className="text-body text-gray mb-3">Filters</p>
           <div className="flex gap-2 flex-wrap">
-            <button className="px-4 py-2 border border-black rounded-sm text-body hover:bg-white transition-colors">
+            <button className="px-4 py-2 bg-tan text-black border border-black rounded-sm text-body hover:bg-black hover:text-tan transition-colors">
               All Items
             </button>
-            <button className="px-4 py-2 border border-thin rounded-sm text-body text-gray hover:border-black hover:text-black transition-colors">
+            <button className="px-4 py-2 bg-tan border border-thin rounded-sm text-body text-gray hover:bg-black hover:text-tan hover:border-black transition-colors">
               Camping
             </button>
-            <button className="px-4 py-2 border border-thin rounded-sm text-body text-gray hover:border-black hover:text-black transition-colors">
+            <button className="px-4 py-2 bg-tan border border-thin rounded-sm text-body text-gray hover:bg-black hover:text-tan hover:border-black transition-colors">
               Travel
             </button>
-            <button className="px-4 py-2 border border-thin rounded-sm text-body text-gray hover:border-black hover:text-black transition-colors">
+            <button className="px-4 py-2 bg-tan border border-thin rounded-sm text-body text-gray hover:bg-black hover:text-tan hover:border-black transition-colors">
               Electronics
             </button>
           </div>

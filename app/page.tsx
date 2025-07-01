@@ -24,8 +24,9 @@ async function getUserOffers() {
   return data.offers || []
 }
 
-export default async function Home({ searchParams }: { searchParams: { welcome?: string } }) {
+export default async function Home({ searchParams }: { searchParams: Promise<{ welcome?: string }> }) {
   const session = await getServerSession(authOptions)
+  const params = await searchParams
 
   if (!session) {
     return (
@@ -60,7 +61,7 @@ export default async function Home({ searchParams }: { searchParams: { welcome?:
         </div>
         
         <p className="text-body text-gray mb-8">
-          {searchParams.welcome === 'new' 
+          {params.welcome === 'new' 
             ? `Welcome, ${session.user?.name?.split(' ')[0]}!`
             : `Welcome back, ${session.user?.name?.split(' ')[0]}!`
           }
@@ -68,7 +69,7 @@ export default async function Home({ searchParams }: { searchParams: { welcome?:
         
         <Link
           href="/offers/new"
-          className="block w-full bg-tan text-black border border-black p-4 rounded-sm hover:bg-white transition-colors text-center text-button mb-8"
+          className="block w-full bg-tan text-black border border-black p-4 rounded-sm hover:bg-black hover:text-tan transition-colors text-center text-button mb-8"
         >
           Offer an item
         </Link>

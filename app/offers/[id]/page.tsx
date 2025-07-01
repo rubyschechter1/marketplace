@@ -171,16 +171,16 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                       key={index}
                       className={`border px-3 py-1 rounded-sm text-sm transition-colors ${
                         isOwner 
-                          ? 'border-gray text-gray cursor-default' 
+                          ? 'bg-tan border-gray text-gray cursor-default' 
                           : userProposedItem
                           ? userProposedItem === item
-                            ? 'bg-black text-white border-black cursor-default'
-                            : 'border-gray text-gray cursor-default'
+                            ? 'bg-black text-tan border-black cursor-default'
+                            : 'bg-tan border-gray text-gray cursor-default'
                           : submittedItem === item
-                          ? 'bg-black text-white border-black'
+                          ? 'bg-black text-tan border-black'
                           : selectedItem === item
-                          ? 'bg-black text-white border-black hover:bg-gray hover:border-gray'
-                          : 'border-black hover:bg-white'
+                          ? 'bg-black text-tan border-black hover:bg-tan hover:text-black hover:border-black'
+                          : 'bg-tan text-black border-black hover:bg-black hover:text-tan'
                       }`}
                       disabled={isOwner || !!userProposedItem}
                       onClick={() => {
@@ -202,7 +202,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                     <button
                       onClick={handleSubmitOffer}
                       disabled={isSubmitting}
-                      className="bg-black text-white px-4 py-2 rounded-sm hover:bg-gray transition-colors disabled:bg-gray disabled:cursor-not-allowed text-sm"
+                      className="bg-tan text-black border border-black px-4 py-2 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                     >
                       {isSubmitting ? "Submitting..." : "Submit offer"}
                     </button>
@@ -254,7 +254,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                           // Just navigate to the conversation - no need for initial message
                           router.push(`/messages/${offer.id}/${trade.id}`)
                         }}
-                        className="border border-black px-3 py-1 rounded-sm text-sm hover:bg-white transition-colors"
+                        className="bg-tan text-black border border-black px-3 py-1 rounded-sm text-sm hover:bg-black hover:text-tan transition-colors"
                       >
                         message
                       </button>

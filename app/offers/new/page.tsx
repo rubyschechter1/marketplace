@@ -182,7 +182,7 @@ export default function NewOfferPage() {
             ) : (
               <label
                 htmlFor="photo-upload"
-                className="w-full border border-black rounded-sm p-4 flex items-center justify-center hover:bg-white transition-colors cursor-pointer block"
+                className="w-full bg-tan border border-black rounded-sm p-4 flex items-center justify-center hover:bg-black hover:text-tan transition-colors cursor-pointer block"
               >
                 <Plus size={20} className="mr-2" />
                 <span className="text-body">Add a photo</span>
@@ -198,14 +198,14 @@ export default function NewOfferPage() {
               placeholder="add item title (e.g. blue tennis shoes)"
               value={formData.offeringTitle}
               onChange={(e) => setFormData({...formData, offeringTitle: e.target.value})}
-              className="w-full p-4 border border-black rounded-sm bg-transparent placeholder-gray text-body focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full p-4 border border-black rounded-sm bg-tan placeholder-gray text-body focus:outline-none focus:ring-1 focus:ring-black"
               required
             />
             <textarea
               placeholder="add description (optional)"
               value={formData.offeringDescription}
               onChange={(e) => setFormData({...formData, offeringDescription: e.target.value})}
-              className="w-full p-4 mt-3 border border-black rounded-sm bg-transparent placeholder-gray text-body focus:outline-none focus:ring-1 focus:ring-black resize-none"
+              className="w-full p-4 mt-3 border border-black rounded-sm bg-tan placeholder-gray text-body focus:outline-none focus:ring-1 focus:ring-black resize-none"
               rows={3}
             />
           </div>
@@ -221,7 +221,7 @@ export default function NewOfferPage() {
                     placeholder="add item name (e.g. travel tips)"
                     value={item}
                     onChange={(e) => handleSeekingItemChange(index, e.target.value)}
-                    className="w-full p-4 border border-black rounded-sm bg-transparent placeholder-gray text-body focus:outline-none focus:ring-1 focus:ring-black"
+                    className="w-full p-4 border border-black rounded-sm bg-tan placeholder-gray text-body focus:outline-none focus:ring-1 focus:ring-black"
                   />
                   {formData.seekingItems.length > 1 && (
                     <button
@@ -238,7 +238,7 @@ export default function NewOfferPage() {
               <button
                 type="button"
                 onClick={handleAddSeekingItem}
-                className="w-full border border-black rounded-sm p-4 flex items-center justify-center hover:bg-white transition-colors"
+                className="w-full bg-tan text-black border border-black rounded-sm p-4 flex items-center justify-center hover:bg-black hover:text-tan transition-colors"
               >
                 <Plus size={20} className="mr-2" />
                 <span className="text-body">Add item</span>

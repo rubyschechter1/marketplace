@@ -16,9 +16,9 @@ export default function Button({
   const baseStyles = 'py-3 px-6 text-button rounded-sm transition-colors font-normal'
   
   const variants = {
-    primary: 'bg-black text-white border border-black hover:bg-gray',
-    secondary: 'bg-tan text-black border border-black hover:bg-white',
-    outline: 'bg-transparent text-black border border-black hover:bg-tan'
+    primary: 'bg-tan text-black border border-black hover:bg-black hover:text-tan',
+    secondary: 'bg-tan text-black border border-black hover:bg-black hover:text-tan',
+    outline: 'bg-transparent text-black border border-black hover:bg-black hover:text-tan'
   }
   
   const widthClass = fullWidth ? 'w-full' : ''

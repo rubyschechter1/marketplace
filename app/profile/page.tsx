@@ -106,7 +106,7 @@ export default async function ProfilePage() {
 
         {/* Sign Out Button */}
         <div className="w-full">
-          <SignOutButton className="w-full bg-tan border border-black rounded-sm py-3 text-sm hover:bg-white transition-colors" />
+          <SignOutButton className="w-full bg-tan text-black border border-black rounded-sm py-3 text-sm hover:bg-black hover:text-tan transition-colors" />
         </div>
       </main>
     </AuthLayout>

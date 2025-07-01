@@ -189,7 +189,7 @@ export default function MessagePage({ params }: { params: Promise<{ offerId: str
           {/* Accept trade button (only for offer owner) */}
           {session?.user?.id === tradeData.offer.traveler.id && (
             <div className="mb-4">
-              <button className="w-full bg-black text-white p-3 rounded-sm hover:bg-gray transition-colors">
+              <button className="w-full bg-tan text-black border border-black p-3 rounded-sm hover:bg-black hover:text-tan transition-colors">
                 accept trade
               </button>
             </div>
@@ -228,13 +228,13 @@ export default function MessagePage({ params }: { params: Promise<{ offerId: str
               }
             }}
             placeholder={`Write a message to ${otherUser.firstName}`}
-            className="w-full p-3 border border-black rounded-sm resize-none h-20 mb-3 text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black"
+            className="w-full p-3 border border-black rounded-sm resize-none h-20 mb-3 text-body bg-tan placeholder-gray focus:outline-none focus:ring-1 focus:ring-black"
           />
           <div className="flex justify-end">
             <button
               onClick={handleSendMessage}
               disabled={!newMessage.trim() || sending}
-              className="bg-tan text-black border border-black px-4 py-2 rounded-sm hover:bg-white transition-colors disabled:bg-gray disabled:cursor-not-allowed flex items-center text-sm"
+              className="bg-tan text-black border border-black px-4 py-2 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm"
             >
               {sending ? "Sending..." : "Send"}
               <Send size={16} className="ml-2" />

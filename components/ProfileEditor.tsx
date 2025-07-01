@@ -90,14 +90,14 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
             <button
               onClick={handleSaveBio}
               disabled={loading}
-              className="text-sm bg-tan px-4 py-2 rounded-sm border border-black hover:bg-white transition-colors disabled:opacity-50"
+              className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
             >
               {loading ? "Saving..." : "Save"}
             </button>
             <button
               onClick={handleCancelBio}
               disabled={loading}
-              className="text-sm bg-tan px-4 py-2 rounded-sm border border-black hover:bg-white transition-colors disabled:opacity-50"
+              className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
@@ -130,7 +130,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
             <button
               onClick={handleAddLanguage}
               disabled={loading || !newLanguage.trim()}
-              className="text-sm bg-tan px-4 py-2 rounded-sm border border-black hover:bg-white transition-colors disabled:opacity-50"
+              className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
             >
               {loading ? "Adding..." : "Add"}
             </button>
@@ -141,7 +141,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
                 setError("")
               }}
               disabled={loading}
-              className="text-sm bg-tan px-4 py-2 rounded-sm border border-black hover:bg-white transition-colors disabled:opacity-50"
+              className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
@@ -149,7 +149,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
         ) : (
           <button
             onClick={() => setIsAddingLanguage(true)}
-            className="text-sm bg-tan px-4 py-2 rounded-sm border border-black hover:bg-white transition-colors"
+            className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors"
           >
             Add language
           </button>

@@ -12,13 +12,13 @@ export default function AuthForms() {
       <div className="w-full max-w-sm mx-auto space-y-4">
         <button
           onClick={() => setMode('login')}
-          className="w-full py-3 px-6 text-button rounded-sm transition-colors font-normal bg-tan text-black border border-black hover:bg-white"
+          className="w-full py-3 px-6 text-button rounded-sm transition-colors font-normal bg-tan text-black border border-black hover:bg-black hover:text-tan"
         >
           Log In
         </button>
         <button
           onClick={() => setMode('signup')}
-          className="w-full py-3 px-6 text-button rounded-sm transition-colors font-normal bg-tan text-black border border-black hover:bg-white"
+          className="w-full py-3 px-6 text-button rounded-sm transition-colors font-normal bg-tan text-black border border-black hover:bg-black hover:text-tan"
         >
           Sign Up
         </button>

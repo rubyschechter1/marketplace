@@ -162,21 +162,11 @@ export default function SignupForm({ onSwitch }: { onSwitch: () => void }) {
           type="submit"
           disabled={isLoading}
           fullWidth
-          variant="primary"
+          variant="secondary"
         >
           {isLoading ? "Creating account..." : "Sign Up"}
         </Button>
 
-        <p className="text-center text-body text-gray">
-          Already have an account?{" "}
-          <button
-            type="button"
-            className="text-black underline hover:no-underline"
-            onClick={onSwitch}
-          >
-            Sign in
-          </button>
-        </p>
       </form>
     </div>
   )

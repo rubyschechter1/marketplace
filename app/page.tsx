@@ -36,7 +36,6 @@ export default async function Home() {
             alt="Marketplace" 
             className="w-48 h-48 mx-auto mb-4 object-contain"
           />
-          <p className="text-gray-600">Barter with fellow travelers</p>
         </div>
         
         <AuthForms />

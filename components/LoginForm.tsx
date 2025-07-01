@@ -78,21 +78,11 @@ export default function LoginForm({ onSwitch }: { onSwitch: () => void }) {
           type="submit"
           disabled={isLoading}
           fullWidth
-          variant="primary"
+          variant="secondary"
         >
-          {isLoading ? "Signing in..." : "Sign In"}
+          {isLoading ? "Logging in..." : "Log In"}
         </Button>
 
-        <p className="text-center text-body text-gray">
-          Don't have an account?{" "}
-          <button
-            type="button"
-            className="text-black underline hover:no-underline"
-            onClick={onSwitch}
-          >
-            Sign up
-          </button>
-        </p>
       </form>
     </div>
   )

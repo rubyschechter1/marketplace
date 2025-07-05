@@ -30,10 +30,12 @@ interface TradeData {
   offeredItem: {
     id: string
     name: string
+    imageUrl?: string
   }
   offer: {
     id: string
     title: string
+    type?: string
     traveler: {
       id: string
       firstName: string
@@ -180,9 +182,10 @@ export default function MessagePage({
             <ChevronLeft size={24} />
           </button>
           <Link href={`/offers/${offerId}`} className="flex items-center flex-1">
-            {tradeData.offer.item?.imageUrl && (
+            {/* Show offer item image for regular offers, or proposed item image for asks */}
+            {(tradeData.offer.item?.imageUrl || tradeData.offeredItem?.imageUrl) && (
               <img
-                src={tradeData.offer.item.imageUrl}
+                src={tradeData.offer.item?.imageUrl || tradeData.offeredItem?.imageUrl}
                 alt={itemName}
                 className="w-10 h-10 object-cover rounded-sm mr-3"
               />

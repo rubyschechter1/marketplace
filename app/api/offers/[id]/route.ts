@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { PrismaClient } from "@prisma/client"
+import { transformOfferWithLocation } from "@/lib/prisma-transforms"
 
 const prisma = new PrismaClient()
 
@@ -11,6 +12,14 @@ export async function GET(
 ) {
   const { id } = await params;
   try {
+    // Get session to check if user owns the offer
+    const session = await getServerSession(authOptions)
+    
+    // Extract location parameters from URL
+    const { searchParams } = new URL(req.url)
+    const lat = searchParams.get("lat") ? parseFloat(searchParams.get("lat")!) : undefined
+    const lng = searchParams.get("lng") ? parseFloat(searchParams.get("lng")!) : undefined
+    
     const offer = await prisma.offers.findUnique({
       where: { id },
       include: {
@@ -48,12 +57,18 @@ export async function GET(
       return NextResponse.json({ error: "Offer not found" }, { status: 404 })
     }
 
-    // Transform to match expected format
-    return NextResponse.json({
-      ...offer,
-      latitude: offer.latitude?.toNumber(),
-      longitude: offer.longitude?.toNumber(),
-    })
+    // Check if user owns the offer
+    const isOwnOffer = session?.user?.id === offer.travelerId
+    
+    // Transform offer with location and distance calculation
+    const transformedOffer = transformOfferWithLocation(
+      offer,
+      lat,
+      lng,
+      isOwnOffer
+    )
+    
+    return NextResponse.json(transformedOffer)
   } catch (error) {
     console.error("Error fetching offer:", error)
     return NextResponse.json(

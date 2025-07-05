@@ -7,10 +7,12 @@ import ProfileThumbnail from "@/components/ProfileThumbnail"
 import Link from "next/link"
 import { MapPin, ChevronLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useLocation } from "@/contexts/LocationContext"
 
 export default function OfferPage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { location } = useLocation()
   const [offer, setOffer] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [offerId, setOfferId] = useState<string>("")
@@ -36,7 +38,13 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
       if (!offerId) return
       
       try {
-        const response = await fetch(`/api/offers/${offerId}`)
+        // Build URL with location parameters if available
+        let url = `/api/offers/${offerId}`
+        if (location.latitude && location.longitude) {
+          url += `?lat=${location.latitude}&lng=${location.longitude}`
+        }
+        
+        const response = await fetch(url)
         if (!response.ok) {
           router.push('/')
           return
@@ -62,7 +70,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
     }
 
     fetchOffer()
-  }, [offerId, status, router, session?.user?.id])
+  }, [offerId, status, router, session?.user?.id, location.latitude, location.longitude])
 
   const handleSubmitOffer = async () => {
     const itemName = isOtherSelected ? customItemText : selectedItem

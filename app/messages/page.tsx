@@ -119,7 +119,7 @@ export default function MessagesPage() {
                   {/* Show offer item image for regular offers, or proposed item image for asks */}
                   {(message.offer?.item?.imageUrl || message.proposedTrade?.offeredItem?.imageUrl) ? (
                     <img
-                      src={message.offer?.item?.imageUrl || message.proposedTrade?.offeredItem?.imageUrl}
+                      src={message.offer?.item?.imageUrl || message.proposedTrade?.offeredItem?.imageUrl || ''}
                       alt={message.offer?.item?.name || message.proposedTrade?.offeredItem?.name || 'Item'}
                       className="w-16 h-16 object-cover rounded-md flex-shrink-0"
                     />

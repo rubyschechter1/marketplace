@@ -165,7 +165,7 @@ export default function MessagePage({
 
   return (
     <AuthLayout>
-      <div className="max-w-md mx-auto h-screen flex flex-col">
+      <div className="max-w-md mx-auto flex flex-col min-h-screen pb-16">
         {/* Header */}
         <div className="p-4 border-b border-gray/20 flex items-center">
           <button 
@@ -248,18 +248,16 @@ export default function MessagePage({
           })}
         </div>
 
-        {/* Offer deleted message */}
-        {tradeData.offer.status === 'deleted' && (
-          <div className="bg-gray/10 border-t border-gray/20 p-4">
-            <p className="text-center text-gray text-sm">
-              {tradeData.offer.type === 'ask' ? 'Ask' : 'Offer'} deleted
-            </p>
-          </div>
-        )}
-
-        {/* Message input - hide if offer is deleted */}
-        {tradeData.offer.status !== 'deleted' && (
-          <div className="p-4 border-t border-gray/20">
+        {/* Bottom section - either deleted message or input */}
+        <div className="border-t border-gray/20">
+          {tradeData.offer.status === 'deleted' ? (
+            <div className="bg-gray/10 p-4">
+              <p className="text-center text-gray text-sm">
+                {tradeData.offer.type === 'ask' ? 'Ask' : 'Offer'} deleted
+              </p>
+            </div>
+          ) : (
+            <div className="p-4">
             <textarea
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
@@ -283,7 +281,8 @@ export default function MessagePage({
               </button>
             </div>
           </div>
-        )}
+          )}
+        </div>
       </div>
     </AuthLayout>
   )

@@ -121,7 +121,7 @@ export default function MessagesPage() {
                       {message.offer?.item?.name || message.offer?.title}
                     </h3>
                     <p className="text-sm italic text-gray">
-                      [{otherUser?.firstName || 'Unknown'}]: {message.content}
+                      {otherUser?.firstName || 'Unknown'}: {message.content}
                     </p>
                   </div>
                 </div>

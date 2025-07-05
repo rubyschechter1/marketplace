@@ -18,6 +18,8 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submittedItem, setSubmittedItem] = useState<string | null>(null)
   const [userProposedItem, setUserProposedItem] = useState<string | null>(null)
+  const [isOtherSelected, setIsOtherSelected] = useState(false)
+  const [customItemText, setCustomItemText] = useState("")
 
   useEffect(() => {
     params.then(p => setOfferId(p.id))
@@ -63,7 +65,8 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
   }, [offerId, status, router, session?.user?.id])
 
   const handleSubmitOffer = async () => {
-    if (!selectedItem) return
+    const itemName = isOtherSelected ? customItemText : selectedItem
+    if (!itemName) return
     
     setIsSubmitting(true)
     try {
@@ -72,7 +75,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: selectedItem,
+          name: itemName,
           description: ''
         })
       })
@@ -98,9 +101,11 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
       }
       
       // Mark this item as submitted and refresh the offer
-      setSubmittedItem(selectedItem)
-      setUserProposedItem(selectedItem)
+      setSubmittedItem(itemName)
+      setUserProposedItem(itemName)
       setSelectedItem(null)
+      setIsOtherSelected(false)
+      setCustomItemText("")
       
       // Refresh offer data to show new proposed trade
       const response = await fetch(`/api/offers/${offerId}`)
@@ -207,22 +212,65 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                       onClick={() => {
                         if (!isOwner && !userProposedItem && submittedItem !== item) {
                           setSelectedItem(selectedItem === item ? null : item)
+                          setIsOtherSelected(false)
+                          setCustomItemText("")
                         }
                       }}
                     >
                       {item}
                     </button>
                   ))}
+                  
+                  {/* Other option */}
+                  <button 
+                    className={`border px-3 py-1 rounded-sm text-sm transition-colors ${
+                      isOwner 
+                        ? 'bg-tan border-gray text-gray cursor-default' 
+                        : userProposedItem
+                        ? 'bg-tan border-gray text-gray cursor-default'
+                        : isOtherSelected
+                        ? 'bg-black text-tan border-black hover:bg-tan hover:text-black hover:border-black'
+                        : 'bg-tan text-black border-black hover:bg-black hover:text-tan'
+                    }`}
+                    disabled={isOwner || !!userProposedItem}
+                    onClick={() => {
+                      if (!isOwner && !userProposedItem) {
+                        setIsOtherSelected(!isOtherSelected)
+                        setSelectedItem(null)
+                        if (!isOtherSelected) {
+                          setCustomItemText("")
+                        }
+                      }
+                    }}
+                  >
+                    other
+                  </button>
                 </div>
                 
-                {selectedItem && !submittedItem && !userProposedItem && (
+                {(selectedItem || isOtherSelected) && !submittedItem && !userProposedItem && (
                   <div className="mt-4">
-                    <div className="text-body mb-3">
-                      You are offering <span className="italic">{selectedItem}</span>
-                    </div>
+                    {isOtherSelected ? (
+                      <>
+                        <div className="text-body mb-3">
+                          What are you offering?
+                        </div>
+                        <input
+                          type="text"
+                          value={customItemText}
+                          onChange={(e) => setCustomItemText(e.target.value)}
+                          placeholder="Enter item name"
+                          className="w-full p-3 mb-3 border border-black rounded-sm bg-tan placeholder-gray text-body focus:outline-none focus:ring-1 focus:ring-black"
+                          autoFocus
+                        />
+                      </>
+                    ) : (
+                      <div className="text-body mb-3">
+                        You are offering <span className="italic">{selectedItem}</span>
+                      </div>
+                    )}
                     <button
                       onClick={handleSubmitOffer}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || (isOtherSelected && !customItemText.trim())}
                       className="bg-tan text-black border border-black px-4 py-2 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                     >
                       {isSubmitting ? "Submitting..." : "Submit offer"}

@@ -163,8 +163,10 @@ export async function DELETE(
       )
     }
 
-    await prisma.offers.delete({
-      where: { id }
+    // Soft delete by updating status
+    await prisma.offers.update({
+      where: { id },
+      data: { status: 'deleted' }
     })
 
     return NextResponse.json({ success: true })

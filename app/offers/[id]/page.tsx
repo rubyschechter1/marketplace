@@ -118,6 +118,28 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
     }
   }
 
+  const handleDeleteOffer = async () => {
+    if (!confirm('Are you sure you want to delete this offer?')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/offers/${offerId}`, {
+        method: 'DELETE'
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete offer')
+      }
+
+      router.push('/')
+      router.refresh()
+    } catch (error) {
+      alert('Failed to delete offer')
+      console.error('Delete error:', error)
+    }
+  }
+
   const handleSubmitOffer = async () => {
     const itemName = isOtherSelected ? customItemText : selectedItem
     if (!itemName) return
@@ -471,6 +493,18 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
               )}
             </div>
           </div>
+
+          {/* Delete button - only for owner */}
+          {isOwner && (
+            <div className="mt-8 mb-4">
+              <button
+                onClick={handleDeleteOffer}
+                className="w-full bg-tan text-black border border-black p-3 rounded-sm hover:bg-red-600 hover:text-white hover:border-red-600 transition-colors"
+              >
+                Delete {offer.type === 'ask' ? 'ask' : 'offer'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </AuthLayout>

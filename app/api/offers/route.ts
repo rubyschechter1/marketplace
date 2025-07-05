@@ -19,6 +19,7 @@ export async function GET(req: Request) {
     const lat = parseFloat(searchParams.get("lat") || "0")
     const lng = parseFloat(searchParams.get("lng") || "0")
     const status = searchParams.get("status") || "active"
+    const type = searchParams.get("type") // 'offer', 'ask', or null for all
     const page = parseInt(searchParams.get("page") || "1")
     const limit = parseInt(searchParams.get("limit") || "20")
     const skip = (page - 1) * limit
@@ -34,6 +35,11 @@ export async function GET(req: Request) {
       NOT: {
         travelerId: session.user.id
       }
+    }
+    
+    // Add type filter if specified
+    if (type) {
+      whereClause.type = type
     }
     
     if (lat !== 0 || lng !== 0) {
@@ -99,58 +105,84 @@ export async function POST(req: Request) {
     }
 
     const data = await req.json()
-    const { itemId, title, description, lookingFor, latitude, longitude, locationName } = data
+    const { type = "offer", itemId, title, description, askDescription, lookingFor, latitude, longitude, locationName } = data
 
-    if (!itemId || !title || latitude == null || longitude == null) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      )
-    }
-
-    // Verify item belongs to user
-    const item = await prisma.items.findFirst({
-      where: {
-        id: itemId,
-        createdBy: session.user.id
+    // Validation based on type
+    if (type === "offer") {
+      if (!itemId || !title || latitude == null || longitude == null) {
+        return NextResponse.json(
+          { error: "Missing required fields for offer" },
+          { status: 400 }
+        )
       }
-    })
 
-    if (!item) {
+      // Verify item belongs to user
+      const item = await prisma.items.findFirst({
+        where: {
+          id: itemId,
+          createdBy: session.user.id
+        }
+      })
+
+      if (!item) {
+        return NextResponse.json(
+          { error: "Item not found or unauthorized" },
+          { status: 404 }
+        )
+      }
+    } else if (type === "ask") {
+      if (!title || !askDescription || latitude == null || longitude == null) {
+        return NextResponse.json(
+          { error: "Missing required fields for ask" },
+          { status: 400 }
+        )
+      }
+    } else {
       return NextResponse.json(
-        { error: "Item not found or unauthorized" },
-        { status: 404 }
+        { error: "Invalid type. Must be 'offer' or 'ask'" },
+        { status: 400 }
       )
     }
 
     // Geocode the coordinates to get city and country
     const geocodeResult = await geocodeCoordinates(latitude, longitude)
 
-    const offer = await prisma.offers.create({
-      data: {
-        traveler: {
-          connect: { id: session.user.id }
-        },
-        item: {
-          connect: { id: itemId }
-        },
-        title,
-        description,
-        lookingFor: lookingFor || [],
-        latitude,
-        longitude,
-        locationName,
-        city: geocodeResult.city,
-        country: geocodeResult.country,
-        displayLocation: geocodeResult.displayLocation
+    // Build create data based on type
+    const createData: any = {
+      traveler: {
+        connect: { id: session.user.id }
       },
+      type,
+      title,
+      description,
+      lookingFor: lookingFor || [],
+      latitude,
+      longitude,
+      locationName,
+      city: geocodeResult.city,
+      country: geocodeResult.country,
+      displayLocation: geocodeResult.displayLocation
+    }
+
+    // Add type-specific fields
+    if (type === "offer") {
+      createData.item = {
+        connect: { id: itemId }
+      }
+    } else if (type === "ask") {
+      createData.askDescription = askDescription
+    }
+
+    const offer = await prisma.offers.create({
+      data: createData,
       include: {
         item: true,
         traveler: {
           select: {
             id: true,
             firstName: true,
-            lastName: true
+            lastName: true,
+            avatarUrl: true
           }
         }
       }

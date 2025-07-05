@@ -140,8 +140,8 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
           </Link>
         </div>
 
-        {/* Image */}
-        {offer.item?.imageUrl && (
+        {/* Image - only for regular offers */}
+        {offer.type !== 'ask' && offer.item?.imageUrl && (
           <div className="relative aspect-square">
             <img
               src={offer.item.imageUrl}
@@ -154,7 +154,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
         {/* Content */}
         <div className="p-6">
           {/* Title */}
-          <h1 className="text-header font-normal mb-6">{offer.item?.name || offer.title}</h1>
+          <h1 className="text-header font-normal mb-6">{offer.title}</h1>
 
           {/* Offer Details Box with Profile Thumbnail */}
           <div className="flex items-start gap-3 mb-6">
@@ -167,13 +167,25 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
             )}
             <div className="flex-1 border border-black rounded-sm p-4">
               <div className="text-body mb-3">
-                <span className="font-normal">{displayName}</span> {isOwner ? 'are' : 'is'} offering a{' '}
-                <span className="italic">{offer.item?.name || offer.title}</span>
+                {offer.type === 'ask' ? (
+                  <>
+                    <span className="font-normal">{displayName}</span> {isOwner ? 'are' : 'is'} asking for{' '}
+                    <span className="italic">{offer.title}</span>
+                    {offer.askDescription && (
+                      <div className="mt-2 text-sm text-gray">{offer.askDescription}</div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <span className="font-normal">{displayName}</span> {isOwner ? 'are' : 'is'} offering a{' '}
+                    <span className="italic">{offer.item?.name || offer.title}</span>
+                  </>
+                )}
               </div>
             
             {offer.lookingFor && offer.lookingFor.length > 0 && (
               <div className="text-body mb-4">
-                Looking for:
+                {offer.type === 'ask' ? 'Can offer:' : 'Looking for:'}
                 <div className="flex flex-wrap gap-2 mt-2">
                   {offer.lookingFor.map((item: string, index: number) => (
                     <button 

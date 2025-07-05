@@ -5,10 +5,13 @@ import { MapPin } from "lucide-react"
 interface OfferCardProps {
   offer: {
     id: string
+    type?: string
+    title?: string
     item?: {
       name: string
       imageUrl?: string | null
     }
+    askDescription?: string | null
     traveler: {
       id: string
       firstName: string
@@ -47,15 +50,29 @@ export default function OfferCard({ offer, currentUserId }: OfferCardProps) {
         <div className="flex items-start gap-3">
           {/* Content */}
           <div className="flex-1">
-            <p className="text-body mb-2">
-              {isOwnOffer ? 'You are' : `${offer.traveler.firstName} is`} offering{' '}
-              <span className="italic">{offer.item?.name || 'item'}</span>
-            </p>
+            {offer.type === 'ask' ? (
+              <>
+                <p className="text-body mb-2">
+                  {isOwnOffer ? 'You are' : `${offer.traveler.firstName} is`} asking for{' '}
+                  <span className="italic">{offer.title || 'item'}</span>
+                </p>
+                {offer.askDescription && (
+                  <p className="text-sm text-gray mb-2">{offer.askDescription}</p>
+                )}
+              </>
+            ) : (
+              <p className="text-body mb-2">
+                {isOwnOffer ? 'You are' : `${offer.traveler.firstName} is`} offering{' '}
+                <span className="italic">{offer.item?.name || 'item'}</span>
+              </p>
+            )}
 
-            {/* Looking for section */}
+            {/* Looking for section (for offers) or Offering section (for asks) */}
             {offer.lookingFor && offer.lookingFor.length > 0 && (
               <div className="mb-3">
-                <p className="text-sm text-gray mb-2">Looking for:</p>
+                <p className="text-sm text-gray mb-2">
+                  {offer.type === 'ask' ? 'Can offer:' : 'Looking for:'}
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {offer.lookingFor.map((item, index) => (
                     <span 
@@ -81,8 +98,8 @@ export default function OfferCard({ offer, currentUserId }: OfferCardProps) {
             )}
           </div>
 
-          {/* Item image */}
-          {offer.item?.imageUrl && (
+          {/* Item image - only for offers */}
+          {offer.type !== 'ask' && offer.item?.imageUrl && (
             <img 
               src={offer.item.imageUrl}
               alt={offer.item.name}

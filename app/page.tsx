@@ -90,22 +90,22 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
           >
             Offer an item
           </Link>
-          <button
-            className="block w-full bg-tan text-black border border-black p-4 rounded-md hover:bg-black hover:text-tan transition-colors text-center text-button opacity-50 cursor-not-allowed"
-            disabled
+          <Link
+            href="/asks/new"
+            className="block w-full bg-tan text-black border border-black p-4 rounded-md hover:bg-black hover:text-tan transition-colors text-center text-button"
           >
             Post an ask
-          </button>
+          </Link>
         </div>
 
         {/* Your offered items */}
         <div>
-          <h2 className="text-lg font-normal mb-4">Your offered items</h2>
+          <h2 className="text-lg font-normal mb-4">Your offered items & asks</h2>
           <div className="space-y-4">
             {userOffers.length === 0 ? (
               <div className="border border-thin rounded-md p-6">
                 <p className="text-body text-gray text-center">
-                  You haven't offered any items yet
+                  You haven't created any offers or asks yet
                 </p>
               </div>
             ) : (

@@ -51,6 +51,12 @@ export async function GET(req: Request) {
             lastName: true,
             avatarUrl: true
           }
+        },
+        _count: {
+          select: {
+            messages: true,
+            proposedTrades: true
+          }
         }
       },
       orderBy: {

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import AuthLayout from "@/components/AuthLayout"
 import { Search as SearchIcon, MapPin } from "lucide-react"
 import Link from "next/link"
+import OfferCard from "@/components/OfferCard"
 
 interface Offer {
   id: string
@@ -110,31 +111,11 @@ export default function SearchPage() {
             </p>
           ) : (
             filteredOffers.map((offer) => (
-              <Link key={offer.id} href={`/offers/${offer.id}`}>
-                <div className="border border-black rounded-sm p-4 hover:bg-tan transition-colors cursor-pointer">
-                  <div className="flex items-start gap-4">
-                    {offer.item.imageUrl ? (
-                      <img
-                        src={offer.item.imageUrl}
-                        alt={offer.item.name}
-                        className="w-20 h-20 object-cover rounded-sm flex-shrink-0"
-                      />
-                    ) : (
-                      <div className="w-20 h-20 bg-gray/20 rounded-sm flex-shrink-0" />
-                    )}
-                    <div className="flex-1">
-                      <h3 className="text-body font-normal mb-1">{offer.item.name}</h3>
-                      <p className="text-sm text-gray mb-2">
-                        by {offer.traveler.firstName} {offer.traveler.lastName}
-                      </p>
-                      <div className="flex items-center text-xs text-gray">
-                        <MapPin size={12} className="mr-1" />
-                        {offer.locationName || "Unknown location"}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Link>
+              <OfferCard 
+                key={offer.id} 
+                offer={offer} 
+                currentUserId={session?.user?.id || ''} 
+              />
             ))
           )}
         </div>

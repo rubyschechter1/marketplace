@@ -28,6 +28,7 @@ interface Conversation {
     title: string
     item?: {
       name: string
+      imageUrl?: string | null
     }
   }
 }
@@ -104,32 +105,24 @@ export default function MessagesPage() {
                 <div
                   key={message.id}
                   onClick={() => handleConversationClick(message)}
-                  className="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow cursor-pointer"
+                  className="flex items-center gap-3"
                 >
-                  <div className="flex items-start space-x-3">
-                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-sm font-medium text-gray-600">
-                        {otherUser?.firstName?.[0]?.toUpperCase() || 'U'}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-medium">
-                            {otherUser?.firstName ? `${otherUser.firstName} ${otherUser.lastName}` : 'Unknown User'}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            Re: {message.offer?.item?.name || message.offer?.title}
-                          </p>
-                        </div>
-                        <span className="text-xs text-gray-400">
-                          {message.createdAt ? new Date(message.createdAt).toLocaleDateString() : ""}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-600 mt-1 truncate">
-                        {message.content}
-                      </p>
-                    </div>
+                  {message.offer?.item?.imageUrl ? (
+                    <img
+                      src={message.offer.item.imageUrl}
+                      alt={message.offer.item.name}
+                      className="w-16 h-16 object-cover rounded-md flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 bg-gray/20 rounded-md flex-shrink-0" />
+                  )}
+                  <div className="flex-1 bg-tan border border-black rounded-sm p-4 hover:bg-tan/80 transition-colors cursor-pointer">
+                    <h3 className="text-body font-normal mb-1">
+                      {message.offer?.item?.name || message.offer?.title}
+                    </h3>
+                    <p className="text-sm italic text-gray">
+                      [{otherUser?.firstName || 'Unknown'}]: {message.content}
+                    </p>
                   </div>
                 </div>
               )

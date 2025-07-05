@@ -9,8 +9,8 @@
 export function transformDecimalFields<T extends Record<string, any>>(
   obj: T,
   fields: string[]
-): T {
-  const transformed = { ...obj }
+): any {
+  const transformed: any = { ...obj }
   fields.forEach(field => {
     if (transformed[field]?.toNumber) {
       transformed[field] = transformed[field].toNumber()

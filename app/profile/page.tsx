@@ -50,7 +50,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
   const isOwnProfile = session?.user?.id === user.id
 
   // Get list of offered items
-  const offeredItems = user.offers.map(offer => offer.item?.name).filter(Boolean)
+  const offeredItems = user.offers.map((offer: any) => offer.item?.name).filter(Boolean)
 
   return (
     <AuthLayout>

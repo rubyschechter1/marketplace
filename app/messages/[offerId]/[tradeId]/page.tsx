@@ -36,6 +36,7 @@ interface TradeData {
     id: string
     title: string
     type?: string
+    status?: string
     traveler: {
       id: string
       firstName: string
@@ -215,8 +216,8 @@ export default function MessagePage({
             </div>
           </div>
 
-          {/* Accept trade button (only for offer owner) */}
-          {session?.user?.id === tradeData.offer.traveler.id && (
+          {/* Accept trade button (only for offer owner and if offer not deleted) */}
+          {session?.user?.id === tradeData.offer.traveler.id && tradeData.offer.status !== 'deleted' && (
             <div className="mb-4">
               <button className="w-full bg-tan text-black border border-black p-3 rounded-sm hover:bg-black hover:text-tan transition-colors">
                 accept trade
@@ -247,31 +248,42 @@ export default function MessagePage({
           })}
         </div>
 
-        {/* Message input */}
-        <div className="p-4 border-t border-gray/20">
-          <textarea
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault()
-                handleSendMessage()
-              }
-            }}
-            placeholder={`Write a message to ${otherUser.firstName}`}
-            className="w-full p-3 border border-black rounded-sm resize-none h-20 mb-3 text-body bg-tan placeholder-gray focus:outline-none focus:ring-1 focus:ring-black"
-          />
-          <div className="flex justify-end">
-            <button
-              onClick={handleSendMessage}
-              disabled={!newMessage.trim() || sending}
-              className="bg-tan text-black border border-black px-4 py-2 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm"
-            >
-              {sending ? "Sending..." : "Send"}
-              <Send size={16} className="ml-2" />
-            </button>
+        {/* Offer deleted message */}
+        {tradeData.offer.status === 'deleted' && (
+          <div className="bg-gray/10 border-t border-gray/20 p-4">
+            <p className="text-center text-gray text-sm">
+              {tradeData.offer.type === 'ask' ? 'Ask' : 'Offer'} deleted
+            </p>
           </div>
-        </div>
+        )}
+
+        {/* Message input - hide if offer is deleted */}
+        {tradeData.offer.status !== 'deleted' && (
+          <div className="p-4 border-t border-gray/20">
+            <textarea
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  handleSendMessage()
+                }
+              }}
+              placeholder={`Write a message to ${otherUser.firstName}`}
+              className="w-full p-3 border border-black rounded-sm resize-none h-20 mb-3 text-body bg-tan placeholder-gray focus:outline-none focus:ring-1 focus:ring-black"
+            />
+            <div className="flex justify-end">
+              <button
+                onClick={handleSendMessage}
+                disabled={!newMessage.trim() || sending}
+                className="bg-tan text-black border border-black px-4 py-2 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm"
+              >
+                {sending ? "Sending..." : "Send"}
+                <Send size={16} className="ml-2" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </AuthLayout>
   )

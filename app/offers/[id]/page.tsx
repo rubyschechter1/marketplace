@@ -209,6 +209,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
 
   const isOwner = session?.user?.id === offer.traveler?.id
   const displayName = isOwner ? "You" : `${offer.traveler?.firstName} ${offer.traveler?.lastName}`
+  const isDeleted = offer.status === 'deleted'
 
   return (
     <AuthLayout>
@@ -237,8 +238,17 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
           {/* Title */}
           <h1 className="text-header font-normal mb-3">{offer.title}</h1>
           
+          {/* Deleted status banner */}
+          {isDeleted && (
+            <div className="bg-gray/10 border border-gray/20 rounded-sm p-3 mb-6">
+              <p className="text-center text-gray">
+                This {offer.type === 'ask' ? 'ask' : 'offer'} has been deleted
+              </p>
+            </div>
+          )}
+          
           {/* Description - moved outside the box */}
-          {offer.description && (
+          {offer.description && !isDeleted && (
             <div className="text-body mb-6">
               {offer.description}
             </div>
@@ -271,7 +281,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                 )}
               </div>
             
-            {offer.lookingFor && offer.lookingFor.length > 0 && (
+            {offer.lookingFor && offer.lookingFor.length > 0 && !isDeleted && (
               <div className="text-body mb-4">
                 {offer.type === 'ask' ? 'Can offer:' : 'Looking for:'}
                 <div className="flex flex-wrap gap-2 mt-2">
@@ -494,8 +504,8 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
             </div>
           </div>
 
-          {/* Delete button - only for owner */}
-          {isOwner && (
+          {/* Delete button - only for owner and not already deleted */}
+          {isOwner && !isDeleted && (
             <div className="mt-8 mb-4">
               <button
                 onClick={handleDeleteOffer}

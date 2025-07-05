@@ -57,6 +57,11 @@ export async function GET(
       return NextResponse.json({ error: "Offer not found" }, { status: 404 })
     }
 
+    // Check if offer is deleted and user is not the owner
+    if (offer.status === 'deleted' && session?.user?.id !== offer.travelerId) {
+      return NextResponse.json({ error: "Offer not found" }, { status: 404 })
+    }
+
     // Check if user owns the offer
     const isOwnOffer = session?.user?.id === offer.travelerId
     

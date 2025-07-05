@@ -27,7 +27,12 @@ export async function GET(req: Request) {
     const lngDelta = SEARCH_RADIUS_KM / (111 * Math.cos(lat * Math.PI / 180))
 
     // If lat and lng are both 0, skip distance filtering
-    const whereClause: any = { status }
+    const whereClause: any = { 
+      status,
+      NOT: {
+        travelerId: session.user.id
+      }
+    }
     
     if (lat !== 0 || lng !== 0) {
       whereClause.latitude = {

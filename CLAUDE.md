@@ -112,3 +112,34 @@ A barter marketplace for travelers with:
 - `PUT /api/users/profile` - Update own profile
 
 Note: Search radius is hard-coded to 10km
+
+## Layout Guidelines
+
+### Bottom Navigation
+- The `BottomNav` component is fixed at the bottom with height of 64px (h-16 / 4rem)
+- All pages need bottom padding to prevent content from being hidden behind the navigation
+
+### AuthLayout Usage
+The `AuthLayout` component wraps authenticated pages and supports two variants:
+
+1. **Default variant** (most pages):
+   ```tsx
+   <AuthLayout>
+     {/* Automatically adds pb-16 to account for bottom nav */}
+   </AuthLayout>
+   ```
+
+2. **fullHeight variant** (special layouts like conversation view):
+   ```tsx
+   <AuthLayout variant="fullHeight">
+     {/* No automatic bottom padding - manage it yourself */}
+   </AuthLayout>
+   ```
+
+### When to use each variant:
+- **Default**: Standard pages with scrollable content (home, messages list, offer details)
+- **fullHeight**: Pages with custom layouts that manage their own spacing (conversation view with fixed header/footer)
+
+### Important: 
+- If using `fullHeight` variant, remember to add `pb-16` where needed to prevent content hiding
+- The conversation view uses a flex layout with its own `pb-16` to handle the special message input area

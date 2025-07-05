@@ -192,7 +192,7 @@ export default function MessagePage({
 
   if (loading || !tradeData) {
     return (
-      <AuthLayout>
+      <AuthLayout variant="fullHeight">
         <div className="max-w-md mx-auto p-6">
           <p>Loading...</p>
         </div>
@@ -207,7 +207,7 @@ export default function MessagePage({
   const itemName = tradeData.offer.item?.name || tradeData.offer.title
 
   return (
-    <AuthLayout>
+    <AuthLayout variant="fullHeight">
       <div className="max-w-md mx-auto flex flex-col min-h-screen pb-16">
         {/* Header */}
         <div className="p-4 border-b border-gray/20 flex items-center">

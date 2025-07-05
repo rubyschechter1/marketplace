@@ -98,27 +98,59 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
           </Link>
         </div>
 
-        {/* Your offered items */}
-        <div>
-          <h2 className="text-lg font-normal mb-4">Your offered items & asks</h2>
-          <div className="space-y-4">
-            {userOffers.length === 0 ? (
-              <div className="border border-thin rounded-md p-6">
-                <p className="text-body text-gray text-center">
-                  You haven't created any offers or asks yet
-                </p>
+        {/* Separate offers and asks */}
+        {(() => {
+          const offers = userOffers.filter((offer: any) => offer.type !== 'ask')
+          const asks = userOffers.filter((offer: any) => offer.type === 'ask')
+          
+          return (
+            <>
+              {/* Your offers */}
+              <div className="mb-8">
+                <h2 className="text-lg font-normal mb-4">Your offered items</h2>
+                <div className="space-y-4">
+                  {offers.length === 0 ? (
+                    <div className="border border-thin rounded-md p-6">
+                      <p className="text-body text-gray text-center">
+                        You haven't created any offers yet
+                      </p>
+                    </div>
+                  ) : (
+                    offers.map((offer: any) => (
+                      <OfferCard 
+                        key={offer.id}
+                        offer={offer}
+                        currentUserId={session.user.id}
+                      />
+                    ))
+                  )}
+                </div>
               </div>
-            ) : (
-              userOffers.map((offer: any) => (
-                <OfferCard 
-                  key={offer.id}
-                  offer={offer}
-                  currentUserId={session.user.id}
-                />
-              ))
-            )}
-          </div>
-        </div>
+              
+              {/* Your asks */}
+              <div>
+                <h2 className="text-lg font-normal mb-4">Your asks</h2>
+                <div className="space-y-4">
+                  {asks.length === 0 ? (
+                    <div className="border border-thin rounded-md p-6">
+                      <p className="text-body text-gray text-center">
+                        You haven't created any asks yet
+                      </p>
+                    </div>
+                  ) : (
+                    asks.map((ask: any) => (
+                      <OfferCard 
+                        key={ask.id}
+                        offer={ask}
+                        currentUserId={session.user.id}
+                      />
+                    ))
+                  )}
+                </div>
+              </div>
+            </>
+          )
+        })()}
       </main>
     </AuthLayout>
   )

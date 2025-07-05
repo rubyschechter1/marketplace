@@ -413,12 +413,14 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                   <div className="flex-1 border border-black rounded-sm p-4">
                     <div className="flex items-start gap-3">
                       <div className="flex-1">
-                        <div className="text-body mb-2">
-                          <span className="font-normal">
-                            {trade.proposer?.firstName} {trade.proposer?.lastName}
-                          </span>{' '}
-                          offers <span className="italic">{offer.title}</span>
-                        </div>
+                        {offer.type === 'ask' && (
+                          <div className="text-body mb-2">
+                            <span className="font-normal">
+                              {trade.proposer?.firstName} {trade.proposer?.lastName}
+                            </span>{' '}
+                            offers <span className="italic">{offer.title}</span>
+                          </div>
+                        )}
                         <div className="text-body">
                           <span className="font-normal">
                             {trade.proposer?.firstName} {trade.proposer?.lastName}

@@ -7,6 +7,7 @@ import ProfileEditor from "@/components/ProfileEditor"
 import ProfileHeader from "@/components/ProfileHeader"
 import { PrismaClient } from "@prisma/client"
 import { Star, Check } from "lucide-react"
+import { transformUserWithOffers } from "@/lib/prisma-transforms"
 
 const prisma = new PrismaClient()
 
@@ -22,7 +23,9 @@ async function getUserWithOffers(userId: string) {
       }
     }
   })
-  return user
+  
+  // Transform Decimal fields to prevent serialization errors
+  return transformUserWithOffers(user)
 }
 
 export default async function ProfilePage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
@@ -53,7 +56,12 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
     <AuthLayout>
       <main className="p-6 max-w-md mx-auto">
         {/* Profile Header Component */}
-        <ProfileHeader user={user} isOwnProfile={isOwnProfile} />
+        <ProfileHeader user={{
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName || undefined,
+          avatarUrl: user.avatarUrl
+        }} isOwnProfile={isOwnProfile} />
 
         {/* Email Section - Only show for own profile */}
         {isOwnProfile && (

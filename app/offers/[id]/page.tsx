@@ -156,12 +156,20 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
           {/* Title */}
           <h1 className="text-header font-normal mb-6">{offer.item?.name || offer.title}</h1>
 
-          {/* Offer Details Box */}
-          <div className="border border-black rounded-sm p-4 mb-6">
-            <div className="text-body mb-3">
-              <span className="font-normal">{displayName}</span> {isOwner ? 'are' : 'is'} offering a{' '}
-              <span className="italic">{offer.item?.name || offer.title}</span>
-            </div>
+          {/* Offer Details Box with Profile Thumbnail */}
+          <div className="flex items-start gap-3 mb-6">
+            {offer.traveler && (
+              <ProfileThumbnail 
+                user={offer.traveler}
+                size="sm"
+                clickable={!isOwner}
+              />
+            )}
+            <div className="flex-1 border border-black rounded-sm p-4">
+              <div className="text-body mb-3">
+                <span className="font-normal">{displayName}</span> {isOwner ? 'are' : 'is'} offering a{' '}
+                <span className="italic">{offer.item?.name || offer.title}</span>
+              </div>
             
             {offer.lookingFor && offer.lookingFor.length > 0 && (
               <div className="text-body mb-4">
@@ -218,10 +226,11 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
               </div>
             )}
 
-            <div className="flex justify-end">
-              <div className="flex items-center text-gray text-xs">
-                <MapPin size={12} className="mr-1" />
-                {offer.locationName || "Location"} · {distance}
+              <div className="flex justify-end">
+                <div className="flex items-center text-gray text-xs">
+                  <MapPin size={12} className="mr-1" />
+                  {offer.locationName || "Location"} · {distance}
+                </div>
               </div>
             </div>
           </div>
@@ -232,39 +241,34 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
             
             <div className="space-y-3">
               {offer.proposedTrades?.map((trade: any) => (
-                <div key={trade.id} className="border border-black rounded-sm p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start">
-                      <ProfileThumbnail 
-                        user={trade.proposer}
-                        size="sm"
-                        className="mr-3"
-                      />
-                      <div className="flex-1">
-                        <div className="text-body">
-                          <span className="font-normal">
-                            {trade.proposer?.firstName} {trade.proposer?.lastName}
-                          </span>{' '}
-                          offered <span className="italic">{trade.offeredItem?.name}</span>
-                        </div>
-                      </div>
+                <div key={trade.id} className="flex items-start gap-3">
+                  <ProfileThumbnail 
+                    user={trade.proposer}
+                    size="sm"
+                  />
+                  <div className="flex-1 border border-black rounded-sm p-4">
+                    <div className="text-body">
+                      <span className="font-normal">
+                        {trade.proposer?.firstName} {trade.proposer?.lastName}
+                      </span>{' '}
+                      offered <span className="italic">{trade.offeredItem?.name}</span>
                     </div>
-                  </div>
-                  <div className="flex justify-between items-end mt-3">
-                    {isOwner && (
-                      <button
-                        onClick={() => {
-                          // Just navigate to the conversation - no need for initial message
-                          router.push(`/messages/${offer.id}/${trade.id}?from=home`)
-                        }}
-                        className="bg-tan text-black border border-black px-3 py-1 rounded-sm text-sm hover:bg-black hover:text-tan transition-colors"
-                      >
-                        message
-                      </button>
-                    )}
-                    <div className={`text-xs text-gray flex items-center ${!isOwner ? 'ml-auto' : ''}`}>
-                      <MapPin size={10} className="mr-1" />
-                      {offer.locationName || "Unknown"} · {distance}
+                    <div className="flex justify-between items-end mt-3">
+                      {isOwner && (
+                        <button
+                          onClick={() => {
+                            // Just navigate to the conversation - no need for initial message
+                            router.push(`/messages/${offer.id}/${trade.id}?from=home`)
+                          }}
+                          className="bg-tan text-black border border-black px-3 py-1 rounded-sm text-sm hover:bg-black hover:text-tan transition-colors"
+                        >
+                          message
+                        </button>
+                      )}
+                      <div className={`text-xs text-gray flex items-center ${!isOwner ? 'ml-auto' : ''}`}>
+                        <MapPin size={10} className="mr-1" />
+                        {offer.locationName || "Unknown"} · {distance}
+                      </div>
                     </div>
                   </div>
                 </div>

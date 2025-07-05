@@ -436,30 +436,37 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
             <h2 className="text-body font-normal mb-4">Proposed trades</h2>
             
             <div className="space-y-3">
-              {offer.proposedTrades?.map((trade: any) => (
-                <div key={trade.id} className="flex items-start gap-3">
-                  <ProfileThumbnail 
-                    user={trade.proposer}
-                    size="sm"
-                  />
-                  <div className="flex-1 border border-black rounded-sm p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-1">
-                        {offer.type === 'ask' && (
-                          <div className="text-body mb-2">
+              {offer.proposedTrades?.map((trade: any) => {
+                const isAccepted = trade.status === 'accepted'
+                return (
+                  <div key={trade.id} className="flex items-start gap-3">
+                    <ProfileThumbnail 
+                      user={trade.proposer}
+                      size="sm"
+                    />
+                    <div className={`flex-1 border border-black rounded-sm p-4 ${isAccepted ? 'bg-black text-tan' : ''}`}>
+                      <div className="flex items-start gap-3">
+                        <div className="flex-1">
+                          {isAccepted && (
+                            <div className="mb-2">
+                              <span className="font-bold">Accepted</span>
+                            </div>
+                          )}
+                          {offer.type === 'ask' && (
+                            <div className={`text-body mb-2 ${isAccepted ? 'text-tan' : ''}`}>
+                              <span className="font-normal">
+                                {trade.proposer?.firstName} {trade.proposer?.lastName}
+                              </span>{' '}
+                              offers <span className="italic">{offer.title}</span>
+                            </div>
+                          )}
+                          <div className={`text-body ${isAccepted ? 'text-tan' : ''}`}>
                             <span className="font-normal">
                               {trade.proposer?.firstName} {trade.proposer?.lastName}
                             </span>{' '}
-                            offers <span className="italic">{offer.title}</span>
+                            {offer.type === 'ask' ? 'requests' : 'offered'} <span className="italic">{trade.offeredItem?.name}</span>
                           </div>
-                        )}
-                        <div className="text-body">
-                          <span className="font-normal">
-                            {trade.proposer?.firstName} {trade.proposer?.lastName}
-                          </span>{' '}
-                          {offer.type === 'ask' ? 'requests' : 'offered'} <span className="italic">{trade.offeredItem?.name}</span>
                         </div>
-                      </div>
                       {/* Show item image for asks */}
                       {offer.type === 'ask' && trade.offeredItem?.imageUrl && (
                         <a 
@@ -476,27 +483,28 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                         </a>
                       )}
                     </div>
-                    <div className="flex justify-between items-end mt-3">
-                      {isOwner && (
-                        <button
-                          onClick={() => {
-                            // Just navigate to the conversation - no need for initial message
-                            router.push(`/messages/${offer.id}/${trade.id}?from=home`)
-                          }}
-                          className="bg-tan text-black border border-black px-3 py-1 rounded-sm text-sm hover:bg-black hover:text-tan transition-colors"
-                        >
-                          message
-                        </button>
-                      )}
-                      <div className={`text-xs text-gray flex items-center ${!isOwner ? 'ml-auto' : ''}`}>
-                        <MapPin size={10} className="mr-1" />
-                        {offer.displayLocation || offer.locationName || "Unknown"}
-                        {offer.distance !== undefined && ` · ${offer.distance}km`}
+                        <div className="flex justify-between items-end mt-3">
+                          {isOwner && (
+                            <button
+                              onClick={() => {
+                                // Just navigate to the conversation - no need for initial message
+                                router.push(`/messages/${offer.id}/${trade.id}?from=home`)
+                              }}
+                              className={`${isAccepted ? 'bg-black text-tan border-tan hover:bg-tan hover:text-black' : 'bg-tan text-black border-black hover:bg-black hover:text-tan'} border px-3 py-1 rounded-sm text-sm transition-colors`}
+                            >
+                              message
+                            </button>
+                          )}
+                          <div className={`text-xs ${isAccepted ? 'text-tan' : 'text-gray'} flex items-center ${!isOwner ? 'ml-auto' : ''}`}>
+                            <MapPin size={10} className="mr-1" />
+                            {offer.displayLocation || offer.locationName || "Unknown"}
+                            {offer.distance !== undefined && ` · ${offer.distance}km`}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              ))}
+                  )
+                })}
 
               {(!offer.proposedTrades || offer.proposedTrades.length === 0) && (
                 <p className="text-body text-gray">No proposed trades yet</p>

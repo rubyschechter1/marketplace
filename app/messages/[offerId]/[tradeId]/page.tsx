@@ -22,6 +22,7 @@ interface Message {
 
 interface TradeData {
   id: string
+  status?: string
   proposer: {
     id: string
     firstName: string
@@ -66,6 +67,7 @@ export default function MessagePage({
   const [newMessage, setNewMessage] = useState("")
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [accepting, setAccepting] = useState(false)
 
   useEffect(() => {
     params.then(p => {
@@ -147,6 +149,47 @@ export default function MessagePage({
     }
   }
 
+  const handleAcceptTrade = async () => {
+    if (!tradeData) return
+
+    const isAccepted = tradeData.status === 'accepted'
+    const newStatus = isAccepted ? 'pending' : 'accepted'
+    const confirmMessage = isAccepted 
+      ? 'Are you sure you want to unaccept this trade?' 
+      : 'Are you sure you want to accept this trade?'
+
+    if (!confirm(confirmMessage)) return
+
+    setAccepting(true)
+    try {
+      const response = await fetch(`/api/proposed-trades/${tradeId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      })
+
+      if (response.ok) {
+        const updatedTrade = await response.json()
+        setTradeData({ ...tradeData, status: updatedTrade.status })
+        
+        // Refresh messages to show the system message
+        const messagesResponse = await fetch(`/api/messages/offers/${offerId}`)
+        if (messagesResponse.ok) {
+          const data = await messagesResponse.json()
+          setMessages(data.messages || [])
+        }
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to update trade')
+      }
+    } catch (error) {
+      console.error('Error updating trade:', error)
+      alert('Failed to update trade')
+    } finally {
+      setAccepting(false)
+    }
+  }
+
   if (loading || !tradeData) {
     return (
       <AuthLayout>
@@ -219,8 +262,12 @@ export default function MessagePage({
           {/* Accept trade button (only for offer owner and if offer not deleted) */}
           {session?.user?.id === tradeData.offer.traveler.id && tradeData.offer.status !== 'deleted' && (
             <div className="mb-4">
-              <button className="w-full bg-tan text-black border border-black p-3 rounded-sm hover:bg-black hover:text-tan transition-colors">
-                accept trade
+              <button 
+                onClick={handleAcceptTrade}
+                disabled={accepting}
+                className="w-full bg-tan text-black border border-black p-3 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {accepting ? 'Updating...' : tradeData.status === 'accepted' ? 'unaccept trade' : 'accept trade'}
               </button>
             </div>
           )}
@@ -228,6 +275,23 @@ export default function MessagePage({
           {/* Other messages */}
           {messages.map((message) => {
             const isOwnMessage = message.senderId === session?.user?.id
+            const isSystemMessage = !message.senderId
+            
+            // System messages
+            if (isSystemMessage) {
+              return (
+                <div key={message.id} className="mb-4">
+                  <div className="bg-gray/10 rounded-sm p-3">
+                    <p className="text-center text-gray text-sm">{message.content}</p>
+                  </div>
+                  <p className="text-center text-xs text-gray mt-1">
+                    {new Date(message.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              )
+            }
+            
+            // Regular messages
             return (
               <div key={message.id} className="flex items-start mb-4">
                 <ProfileThumbnail 

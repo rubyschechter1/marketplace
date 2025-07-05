@@ -34,7 +34,6 @@ export async function GET(
           }
         },
         proposedTrades: {
-          where: { status: 'pending' },
           include: {
             proposer: {
               select: {

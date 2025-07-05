@@ -25,7 +25,11 @@ export async function GET(
       offerId,
       OR: [
         { senderId: session.user.id },
-        { recipientId: session.user.id }
+        { recipientId: session.user.id },
+        { AND: [
+          { senderId: null },
+          { recipientId: null }
+        ]}
       ]
     }
     

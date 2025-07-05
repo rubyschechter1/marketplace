@@ -25,6 +25,14 @@ export async function GET(req: Request) {
       },
       include: {
         item: true,
+        traveler: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true
+          }
+        },
         _count: {
           select: { 
             messages: true,

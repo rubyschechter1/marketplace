@@ -25,6 +25,23 @@ async function getUserOffers() {
   return data.offers || []
 }
 
+async function getCurrentUser(userId: string) {
+  const cookieStore = await cookies()
+  const response = await fetch(`${process.env.NEXTAUTH_URL}/api/users/me`, {
+    headers: {
+      cookie: cookieStore.toString(),
+    },
+    cache: 'no-store'
+  })
+  
+  if (!response.ok) {
+    return null
+  }
+  
+  const data = await response.json()
+  return data.user
+}
+
 export default async function Home({ searchParams }: { searchParams: Promise<{ welcome?: string }> }) {
   const session = await getServerSession(authOptions)
   const params = await searchParams
@@ -45,8 +62,18 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
     )
   }
 
-  // Get user's offers via API
-  const userOffers = await getUserOffers()
+  // Get user's offers and current user data via API
+  const [userOffers, currentUser] = await Promise.all([
+    getUserOffers(),
+    getCurrentUser(session.user.id)
+  ])
+
+  const userData = currentUser || {
+    id: session.user.id,
+    firstName: session.user.name?.split(' ')[0] || 'User',
+    lastName: session.user.name?.split(' ')[1] || '',
+    avatarUrl: null
+  }
 
   return (
     <AuthLayout>
@@ -54,11 +81,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
         {/* Location header */}
         <div className="flex items-center gap-3 mb-8">
           <ProfileThumbnail 
-            user={{
-              id: session.user.id,
-              firstName: session.user.name?.split(' ')[0] || 'User',
-              lastName: session.user.name?.split(' ')[1] || '',
-            }}
+            user={userData}
             size="sm"
           />
           <p className="text-body">You are currently in Bali, Indonesia</p>
@@ -94,14 +117,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
               userOffers.map((offer: any) => (
                 <OfferCard 
                   key={offer.id}
-                  offer={{
-                    ...offer,
-                    traveler: {
-                      id: session.user.id,
-                      firstName: session.user.name?.split(' ')[0] || 'User',
-                      lastName: session.user.name?.split(' ')[1] || '',
-                    }
-                  }}
+                  offer={offer}
                   currentUserId={session.user.id}
                 />
               ))

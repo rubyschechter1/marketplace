@@ -22,6 +22,9 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
   const [userProposedItem, setUserProposedItem] = useState<string | null>(null)
   const [isOtherSelected, setIsOtherSelected] = useState(false)
   const [customItemText, setCustomItemText] = useState("")
+  const [itemPhotoUrl, setItemPhotoUrl] = useState<string>("")
+  const [itemPhotoPreview, setItemPhotoPreview] = useState<string>("")
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
 
   useEffect(() => {
     params.then(p => setOfferId(p.id))
@@ -72,6 +75,49 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
     fetchOffer()
   }, [offerId, status, router, session?.user?.id, location.latitude, location.longitude])
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Photo must be less than 5MB")
+      return
+    }
+
+    // Show preview immediately
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setItemPhotoPreview(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+
+    // Upload to server
+    try {
+      setIsUploadingPhoto(true)
+      const formData = new FormData()
+      formData.append("file", file)
+      
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error("Upload failed")
+      }
+
+      const { url } = await response.json()
+      setItemPhotoUrl(url)
+    } catch (error) {
+      alert("Failed to upload photo")
+      console.error("Upload error:", error)
+      setItemPhotoPreview("")
+    } finally {
+      setIsUploadingPhoto(false)
+    }
+  }
+
   const handleSubmitOffer = async () => {
     const itemName = isOtherSelected ? customItemText : selectedItem
     if (!itemName) return
@@ -84,7 +130,8 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: itemName,
-          description: ''
+          description: '',
+          imageUrl: itemPhotoUrl || null
         })
       })
       
@@ -114,6 +161,8 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
       setSelectedItem(null)
       setIsOtherSelected(false)
       setCustomItemText("")
+      setItemPhotoUrl("")
+      setItemPhotoPreview("")
       
       // Refresh offer data to show new proposed trade
       const response = await fetch(`/api/offers/${offerId}`)
@@ -264,7 +313,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                     {isOtherSelected ? (
                       <>
                         <div className="text-body mb-3">
-                          What are you offering?
+                          {offer.type === 'ask' ? 'What do you request?' : 'What are you offering?'}
                         </div>
                         <input
                           type="text"
@@ -277,9 +326,56 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                       </>
                     ) : (
                       <div className="text-body mb-3">
-                        You are offering <span className="italic">{selectedItem}</span>
+                        {offer.type === 'ask' 
+                          ? <>You are requesting <span className="italic">{selectedItem}</span></>
+                          : <>You are offering <span className="italic">{selectedItem}</span></>
+                        }
                       </div>
                     )}
+                    
+                    {/* Photo upload for asks */}
+                    {offer.type === 'ask' && (
+                      <div className="mb-3">
+                        <div className="text-body mb-2">
+                          You have <span className="italic">{offer.title}</span>
+                        </div>
+                        <input
+                          type="file"
+                          id="ask-photo-upload"
+                          accept="image/*"
+                          onChange={handlePhotoUpload}
+                          className="hidden"
+                          disabled={isUploadingPhoto}
+                        />
+                        {itemPhotoPreview ? (
+                          <div className="relative inline-block">
+                            <img
+                              src={itemPhotoPreview}
+                              alt="Item preview"
+                              className="w-24 h-24 object-cover border border-black rounded-sm"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setItemPhotoUrl("")
+                                setItemPhotoPreview("")
+                              }}
+                              className="absolute -top-2 -right-2 bg-white border border-black rounded-full w-6 h-6 flex items-center justify-center hover:bg-tan"
+                            >
+                              <span className="text-sm leading-none">×</span>
+                            </button>
+                          </div>
+                        ) : (
+                          <label
+                            htmlFor="ask-photo-upload"
+                            className="inline-flex items-center px-3 py-2 bg-tan text-black border border-black rounded-sm hover:bg-black hover:text-tan transition-colors cursor-pointer text-sm"
+                          >
+                            {isUploadingPhoto ? "Uploading..." : "Add photo"}
+                          </label>
+                        )}
+                      </div>
+                    )}
+                    
                     <button
                       onClick={handleSubmitOffer}
                       disabled={isSubmitting || (isOtherSelected && !customItemText.trim())}
@@ -315,11 +411,36 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                     size="sm"
                   />
                   <div className="flex-1 border border-black rounded-sm p-4">
-                    <div className="text-body">
-                      <span className="font-normal">
-                        {trade.proposer?.firstName} {trade.proposer?.lastName}
-                      </span>{' '}
-                      offered <span className="italic">{trade.offeredItem?.name}</span>
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1">
+                        <div className="text-body mb-2">
+                          <span className="font-normal">
+                            {trade.proposer?.firstName} {trade.proposer?.lastName}
+                          </span>{' '}
+                          offers <span className="italic">{offer.title}</span>
+                        </div>
+                        <div className="text-body">
+                          <span className="font-normal">
+                            {trade.proposer?.firstName} {trade.proposer?.lastName}
+                          </span>{' '}
+                          {offer.type === 'ask' ? 'requests' : 'offered'} <span className="italic">{trade.offeredItem?.name}</span>
+                        </div>
+                      </div>
+                      {/* Show item image for asks */}
+                      {offer.type === 'ask' && trade.offeredItem?.imageUrl && (
+                        <a 
+                          href={trade.offeredItem.imageUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block"
+                        >
+                          <img 
+                            src={trade.offeredItem.imageUrl}
+                            alt={trade.offeredItem.name}
+                            className="w-16 h-16 object-cover rounded-md border border-black hover:opacity-80 transition-opacity cursor-pointer"
+                          />
+                        </a>
+                      )}
                     </div>
                     <div className="flex justify-between items-end mt-3">
                       {isOwner && (

@@ -6,7 +6,8 @@
     "build": "node --version && npm --version && prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "backfill-locations": "tsx scripts/backfill-locations.ts"
   },
   "repository": {
     "type": "git",
@@ -39,7 +40,9 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
+    "dotenv": "^17.0.1",
     "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.20.3"
   }
 }

@@ -26,7 +26,16 @@ interface Conversation {
   offer: {
     id: string
     title: string
+    type?: string
     item?: {
+      name: string
+      imageUrl?: string | null
+    }
+  }
+  proposedTrade?: {
+    id: string
+    offeredItem?: {
+      id: string
       name: string
       imageUrl?: string | null
     }
@@ -107,10 +116,11 @@ export default function MessagesPage() {
                   onClick={() => handleConversationClick(message)}
                   className="flex items-center gap-3"
                 >
-                  {message.offer?.item?.imageUrl ? (
+                  {/* Show offer item image for regular offers, or proposed item image for asks */}
+                  {(message.offer?.item?.imageUrl || message.proposedTrade?.offeredItem?.imageUrl) ? (
                     <img
-                      src={message.offer.item.imageUrl}
-                      alt={message.offer.item.name}
+                      src={message.offer?.item?.imageUrl || message.proposedTrade?.offeredItem?.imageUrl}
+                      alt={message.offer?.item?.name || message.proposedTrade?.offeredItem?.name || 'Item'}
                       className="w-16 h-16 object-cover rounded-md flex-shrink-0"
                     />
                   ) : (

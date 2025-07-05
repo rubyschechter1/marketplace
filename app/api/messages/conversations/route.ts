@@ -30,6 +30,7 @@ export async function GET(req: Request) {
         rm.offer_id as "offerId",
         rm.sender_id as "senderId",
         rm.recipient_id as "recipientId",
+        rm.proposed_trade_id as "proposedTradeId",
         rm.content,
         rm.is_read as "isRead",
         rm.created_at as "createdAt"
@@ -67,6 +68,11 @@ export async function GET(req: Request) {
         offer: {
           include: {
             item: true
+          }
+        },
+        proposedTrade: {
+          include: {
+            offeredItem: true
           }
         }
       }

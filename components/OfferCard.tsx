@@ -1,5 +1,6 @@
 import Link from "next/link"
 import ProfileThumbnail from "./ProfileThumbnail"
+import { MapPin } from "lucide-react"
 
 interface OfferCardProps {
   offer: {
@@ -19,6 +20,8 @@ interface OfferCardProps {
       messages: number
       proposedTrades: number
     }
+    displayLocation?: string | null
+    distance?: number
   }
   currentUserId: string
 }
@@ -66,16 +69,29 @@ export default function OfferCard({ offer, currentUserId }: OfferCardProps) {
             </div>
           )}
 
-          {/* Bottom actions */}
-          {hasActivity && isOwnOffer && (
-            <div className="text-sm">
-              {offer._count?.proposedTrades ? (
-                <span className="text-black">{offer._count.proposedTrades} trade{offer._count.proposedTrades !== 1 ? 's' : ''} proposed</span>
-              ) : offer._count?.messages ? (
-                <span className="text-black">{offer._count.messages} message{offer._count.messages !== 1 ? 's' : ''}</span>
-              ) : null}
-            </div>
-          )}
+          {/* Bottom section with activity and location */}
+          <div className="flex justify-between items-end">
+            {hasActivity && isOwnOffer && (
+              <div className="text-sm">
+                {offer._count?.proposedTrades ? (
+                  <span className="text-black">{offer._count.proposedTrades} trade{offer._count.proposedTrades !== 1 ? 's' : ''} proposed</span>
+                ) : offer._count?.messages ? (
+                  <span className="text-black">{offer._count.messages} message{offer._count.messages !== 1 ? 's' : ''}</span>
+                ) : null}
+              </div>
+            )}
+            
+            {/* Location display */}
+            {offer.displayLocation && (
+              <div className="text-xs text-gray flex items-center ml-auto">
+                <MapPin size={12} className="mr-1" />
+                <span>
+                  {offer.displayLocation}
+                  {offer.distance !== undefined && ` (${offer.distance}km)`}
+                </span>
+              </div>
+            )}
+          </div>
           </div>
 
           {/* Item image */}

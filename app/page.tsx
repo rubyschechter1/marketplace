@@ -4,6 +4,7 @@ import AuthForms from "@/components/AuthForms"
 import ProfileThumbnail from "@/components/ProfileThumbnail"
 import OfferCard from "@/components/OfferCard"
 import AuthLayout from "@/components/AuthLayout"
+import LocationHeader from "@/components/LocationHeader"
 import Link from "next/link"
 import { MapPin } from "lucide-react"
 import { cookies, headers } from "next/headers"
@@ -79,13 +80,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
     <AuthLayout>
       <main className="p-6 max-w-md mx-auto">
         {/* Location header */}
-        <div className="flex items-center gap-3 mb-8">
-          <ProfileThumbnail 
-            user={userData}
-            size="sm"
-          />
-          <p className="text-body">You are currently in Bali, Indonesia</p>
-        </div>
+        <LocationHeader user={userData} />
         
         {/* Action buttons */}
         <div className="space-y-4 mb-8">

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { PrismaClient } from "@prisma/client"
+import { transformOffers } from "@/lib/prisma-transforms"
 
 const prisma = new PrismaClient()
 
@@ -47,12 +48,8 @@ export async function GET(req: Request) {
       take: limit
     })
 
-    // Transform to match expected format
-    const transformedOffers = offers.map((offer: any) => ({
-      ...offer,
-      latitude: offer.latitude?.toNumber(),
-      longitude: offer.longitude?.toNumber(),
-    }))
+    // Transform to match expected format (includes lat/long since these are user's own offers)
+    const transformedOffers = transformOffers(offers)
 
     return NextResponse.json({ offers: transformedOffers })
   } catch (error) {

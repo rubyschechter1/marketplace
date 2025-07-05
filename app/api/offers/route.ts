@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { PrismaClient } from "@prisma/client"
+import { geocodeCoordinates } from "@/lib/location-utils"
+import { transformOffersWithLocation } from "@/lib/prisma-transforms"
 
 const prisma = new PrismaClient()
 const SEARCH_RADIUS_KM = 10
@@ -71,7 +73,15 @@ export async function GET(req: Request) {
       take: limit
     })
 
-    return NextResponse.json({ offers })
+    // Transform offers with location privacy and distance calculation
+    const transformedOffers = transformOffersWithLocation(
+      offers,
+      lat !== 0 ? lat : undefined,
+      lng !== 0 ? lng : undefined,
+      session.user.id
+    )
+
+    return NextResponse.json({ offers: transformedOffers })
   } catch (error) {
     console.error("Error fetching offers:", error)
     return NextResponse.json(
@@ -113,6 +123,9 @@ export async function POST(req: Request) {
       )
     }
 
+    // Geocode the coordinates to get city and country
+    const geocodeResult = await geocodeCoordinates(latitude, longitude)
+
     const offer = await prisma.offers.create({
       data: {
         traveler: {
@@ -126,7 +139,10 @@ export async function POST(req: Request) {
         lookingFor: lookingFor || [],
         latitude,
         longitude,
-        locationName
+        locationName,
+        city: geocodeResult.city,
+        country: geocodeResult.country,
+        displayLocation: geocodeResult.displayLocation
       },
       include: {
         item: true,

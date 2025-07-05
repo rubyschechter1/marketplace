@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "./providers/SessionProvider";
+import { LocationProvider } from "@/contexts/LocationContext";
 
 const instrumentSerif = Instrument_Serif({ 
   weight: '400',
@@ -23,7 +24,11 @@ export default function RootLayout({
     <html lang="en" className={instrumentSerif.variable}>
       <body className={`${instrumentSerif.className} min-h-screen bg-tan`}>
         <div className="min-h-screen max-w-md mx-auto bg-tan">
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <LocationProvider>
+              {children}
+            </LocationProvider>
+          </AuthProvider>
         </div>
       </body>
     </html>

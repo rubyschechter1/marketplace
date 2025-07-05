@@ -53,6 +53,9 @@ model offers {
   latitude         Decimal           @db.Decimal(10, 8)
   longitude        Decimal           @db.Decimal(11, 8)
   locationName     String?           @map("location_name") @db.VarChar(200)
+  city             String?           @db.VarChar(100)
+  country          String?           @db.VarChar(100)
+  displayLocation  String?           @map("display_location") @db.VarChar(200)
   createdAt        DateTime?         @default(now()) @map("created_at") @db.Timestamptz(6)
   expiresAt        DateTime?         @map("expires_at") @db.Timestamptz(6)
   messages         messages[]
@@ -77,6 +80,10 @@ model travelers {
   password                                  String?           @db.VarChar(255)
   firstName                                 String            @map("first_name") @db.VarChar(50)
   lastName                                  String            @map("last_name") @db.VarChar(50)
+  lastLatitude                              Decimal?          @map("last_latitude") @db.Decimal(10, 8)
+  lastLongitude                             Decimal?          @map("last_longitude") @db.Decimal(11, 8)
+  lastCity                                  String?           @map("last_city") @db.VarChar(100)
+  lastCountry                               String?           @map("last_country") @db.VarChar(100)
   items                                     items[]
   messagesReceived                          messages[]        @relation("messages_recipient_idTotravelers")
   messagesSent                              messages[]        @relation("messages_sender_idTotravelers")

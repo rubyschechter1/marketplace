@@ -48,3 +48,61 @@ export function transformUserWithOffers(user: any) {
     offers: user.offers ? transformOffers(user.offers) : []
   }
 }
+
+/**
+ * Transform offer with location privacy
+ * Removes exact coordinates and adds distance if user location provided
+ */
+export function transformOfferWithLocation(
+  offer: any, 
+  userLat?: number, 
+  userLng?: number,
+  isOwnOffer: boolean = false
+): any {
+  if (!offer) return offer
+  
+  // First transform Decimal fields
+  const transformed = transformOffer(offer)
+  
+  // Calculate distance if user location is provided
+  if (userLat !== undefined && userLng !== undefined && 
+      transformed.latitude && transformed.longitude) {
+    // Import at runtime to avoid circular dependency
+    const { calculateDistance } = require('./location-utils')
+    transformed.distance = calculateDistance(
+      userLat, 
+      userLng, 
+      transformed.latitude, 
+      transformed.longitude
+    )
+  }
+  
+  // Remove exact coordinates unless it's user's own offer
+  if (!isOwnOffer) {
+    delete transformed.latitude
+    delete transformed.longitude
+  }
+  
+  return transformed
+}
+
+/**
+ * Transform array of offers with location privacy
+ */
+export function transformOffersWithLocation(
+  offers: any[], 
+  userLat?: number, 
+  userLng?: number,
+  userId?: string
+): any[] {
+  if (!offers) return []
+  
+  return offers.map(offer => 
+    transformOfferWithLocation(
+      offer, 
+      userLat, 
+      userLng, 
+      offer.travelerId === userId
+    )
+  )
+}

@@ -7,6 +7,7 @@ import AuthLayout from "@/components/AuthLayout"
 import { Search as SearchIcon, MapPin } from "lucide-react"
 import Link from "next/link"
 import OfferCard from "@/components/OfferCard"
+import { useLocation } from "@/contexts/LocationContext"
 
 interface Offer {
   id: string
@@ -26,6 +27,7 @@ interface Offer {
 export default function SearchPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { location } = useLocation()
   const [offers, setOffers] = useState<Offer[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
@@ -40,10 +42,19 @@ export default function SearchPage() {
     fetchOffers()
   }, [status, router])
 
+  // Re-fetch offers when location changes
+  useEffect(() => {
+    if (!location.loading && location.latitude && location.longitude) {
+      fetchOffers()
+    }
+  }, [location.latitude, location.longitude])
+
   const fetchOffers = async () => {
     try {
-      // Pass 0,0 for lat/lng to get all offers (will remove distance filtering)
-      const response = await fetch('/api/offers?lat=0&lng=0&status=active')
+      // Use user's location if available, otherwise pass 0,0
+      const lat = location.latitude || 0
+      const lng = location.longitude || 0
+      const response = await fetch(`/api/offers?lat=${lat}&lng=${lng}&status=active`)
       if (response.ok) {
         const data = await response.json()
         console.log('Fetched offers:', data)
@@ -68,7 +79,13 @@ export default function SearchPage() {
   return (
     <AuthLayout>
       <main className="p-6 max-w-md mx-auto">
-        <h1 className="text-header font-normal mb-6">Search</h1>
+        <h1 className="text-header font-normal mb-2">Search</h1>
+        
+        {/* Location display */}
+        <p className="text-sm text-gray mb-6">
+          <MapPin size={14} className="inline mr-1" />
+          {location.loading ? "Getting location..." : location.displayLocation}
+        </p>
         
         {/* Search Input */}
         <div className="relative mb-8">

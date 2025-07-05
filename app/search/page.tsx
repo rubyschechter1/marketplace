@@ -4,16 +4,19 @@ import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import AuthLayout from "@/components/AuthLayout"
-import { Search as SearchIcon, MapPin } from "lucide-react"
+import { Search as SearchIcon } from "lucide-react"
 import Link from "next/link"
 import OfferCard from "@/components/OfferCard"
+import LocationHeader from "@/components/LocationHeader"
 import { useLocation } from "@/contexts/LocationContext"
 
 interface Offer {
   id: string
+  type?: string
   title: string
+  askDescription?: string
   locationName: string
-  item: {
+  item?: {
     name: string
     imageUrl?: string
   }
@@ -21,7 +24,15 @@ interface Offer {
     id: string
     firstName: string
     lastName: string
+    avatarUrl?: string | null
   }
+  lookingFor?: string[]
+  _count?: {
+    messages: number
+    proposedTrades: number
+  }
+  displayLocation?: string | null
+  distance?: number
 }
 
 export default function SearchPage() {
@@ -31,6 +42,8 @@ export default function SearchPage() {
   const [offers, setOffers] = useState<Offer[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
+  const [filterType, setFilterType] = useState<"offer" | "ask">("offer")
+  const [currentUser, setCurrentUser] = useState<any>(null)
 
   useEffect(() => {
     if (status === "loading") return
@@ -40,21 +53,34 @@ export default function SearchPage() {
     }
 
     fetchOffers()
+    fetchCurrentUser()
   }, [status, router])
 
-  // Re-fetch offers when location changes
+  // Re-fetch offers when location or filter type changes
   useEffect(() => {
     if (!location.loading && location.latitude && location.longitude) {
       fetchOffers()
     }
-  }, [location.latitude, location.longitude])
+  }, [location.latitude, location.longitude, filterType])
+
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await fetch('/api/users/me')
+      if (response.ok) {
+        const data = await response.json()
+        setCurrentUser(data.user)
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error)
+    }
+  }
 
   const fetchOffers = async () => {
     try {
       // Use user's location if available, otherwise pass 0,0
       const lat = location.latitude || 0
       const lng = location.longitude || 0
-      const response = await fetch(`/api/offers?lat=${lat}&lng=${lng}&status=active`)
+      const response = await fetch(`/api/offers?lat=${lat}&lng=${lng}&status=active&type=${filterType}`)
       if (response.ok) {
         const data = await response.json()
         console.log('Fetched offers:', data)
@@ -70,22 +96,28 @@ export default function SearchPage() {
   }
 
   const filteredOffers = offers.filter(offer => {
-    if (!offer.item) return false // Skip offers without items
-    return searchTerm === "" || 
-      offer.item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      offer.title.toLowerCase().includes(searchTerm.toLowerCase())
+    if (searchTerm === "") return true
+    
+    const searchLower = searchTerm.toLowerCase()
+    
+    // For asks, search in title and askDescription
+    if (offer.type === 'ask') {
+      return offer.title.toLowerCase().includes(searchLower) ||
+        (offer.askDescription && offer.askDescription.toLowerCase().includes(searchLower))
+    }
+    
+    // For regular offers, search in item name and title
+    return (offer.item?.name.toLowerCase().includes(searchLower) || false) ||
+      offer.title.toLowerCase().includes(searchLower)
   })
 
   return (
     <AuthLayout>
       <main className="p-6 max-w-md mx-auto">
-        <h1 className="text-header font-normal mb-2">Search</h1>
-        
-        {/* Location display */}
-        <p className="text-sm text-gray mb-6">
-          <MapPin size={14} className="inline mr-1" />
-          {location.loading ? "Getting location..." : location.displayLocation}
-        </p>
+        {/* Location header with profile picture */}
+        {currentUser && (
+          <LocationHeader user={currentUser} />
+        )}
         
         {/* Search Input */}
         <div className="relative mb-8">
@@ -99,21 +131,28 @@ export default function SearchPage() {
           />
         </div>
 
-        {/* Filter Options */}
+        {/* Offers/Asks Toggle */}
         <div className="mb-8">
-          <p className="text-body text-gray mb-3">Filters</p>
-          <div className="flex gap-2 flex-wrap">
-            <button className="px-4 py-2 bg-tan text-black border border-black rounded-sm text-body hover:bg-black hover:text-tan transition-colors">
-              All Items
+          <div className="inline-flex border border-black rounded-sm overflow-hidden">
+            <button 
+              onClick={() => setFilterType("offer")}
+              className={`px-6 py-2 text-body transition-colors ${
+                filterType === "offer" 
+                  ? "bg-black text-tan" 
+                  : "bg-tan text-black hover:bg-gray-100"
+              }`}
+            >
+              Offers
             </button>
-            <button className="px-4 py-2 bg-tan border border-thin rounded-sm text-body text-gray hover:bg-black hover:text-tan hover:border-black transition-colors">
-              Camping
-            </button>
-            <button className="px-4 py-2 bg-tan border border-thin rounded-sm text-body text-gray hover:bg-black hover:text-tan hover:border-black transition-colors">
-              Travel
-            </button>
-            <button className="px-4 py-2 bg-tan border border-thin rounded-sm text-body text-gray hover:bg-black hover:text-tan hover:border-black transition-colors">
-              Electronics
+            <button 
+              onClick={() => setFilterType("ask")}
+              className={`px-6 py-2 text-body transition-colors ${
+                filterType === "ask" 
+                  ? "bg-black text-tan" 
+                  : "bg-tan text-black hover:bg-gray-100"
+              }`}
+            >
+              Asks
             </button>
           </div>
         </div>
@@ -121,10 +160,12 @@ export default function SearchPage() {
         {/* Search Results */}
         <div className="space-y-4">
           {loading ? (
-            <p className="text-body text-gray text-center py-12">Loading offers...</p>
+            <p className="text-body text-gray text-center py-12">Loading {filterType}s...</p>
           ) : filteredOffers.length === 0 ? (
             <p className="text-body text-gray text-center py-12">
-              {searchTerm ? "No items match your search" : "No active offers available"}
+              {searchTerm 
+                ? `No ${filterType}s match your search` 
+                : `No active ${filterType}s available`}
             </p>
           ) : (
             filteredOffers.map((offer) => (

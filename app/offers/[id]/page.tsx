@@ -130,9 +130,6 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
 
   const isOwner = session?.user?.id === offer.traveler?.id
   const displayName = isOwner ? "You" : `${offer.traveler?.firstName} ${offer.traveler?.lastName}`
-  
-  // Mock location data for now
-  const distance = "3km"
 
   return (
     <AuthLayout>
@@ -291,7 +288,8 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
               <div className="flex justify-end">
                 <div className="flex items-center text-gray text-xs">
                   <MapPin size={12} className="mr-1" />
-                  {offer.locationName || "Location"} · {distance}
+                  {offer.displayLocation || offer.locationName || "Location"}
+                  {offer.distance !== undefined && ` · ${offer.distance}km`}
                 </div>
               </div>
             </div>
@@ -329,7 +327,8 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                       )}
                       <div className={`text-xs text-gray flex items-center ${!isOwner ? 'ml-auto' : ''}`}>
                         <MapPin size={10} className="mr-1" />
-                        {offer.locationName || "Unknown"} · {distance}
+                        {offer.displayLocation || offer.locationName || "Unknown"}
+                        {offer.distance !== undefined && ` · ${offer.distance}km`}
                       </div>
                     </div>
                   </div>

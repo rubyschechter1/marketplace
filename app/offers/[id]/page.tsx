@@ -159,7 +159,14 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
         {/* Content */}
         <div className="p-6">
           {/* Title */}
-          <h1 className="text-header font-normal mb-6">{offer.title}</h1>
+          <h1 className="text-header font-normal mb-3">{offer.title}</h1>
+          
+          {/* Description - moved outside the box */}
+          {offer.description && (
+            <div className="text-body mb-6">
+              {offer.description}
+            </div>
+          )}
 
           {/* Offer Details Box with Profile Thumbnail */}
           <div className="flex items-start gap-3 mb-6">
@@ -280,11 +287,6 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
               </div>
             )}
             
-            {offer.description && (
-              <div className="text-body mb-4">
-                {offer.description}
-              </div>
-            )}
 
               <div className="flex justify-end">
                 <div className="flex items-center text-gray text-xs">

@@ -1,4 +1,7 @@
+"use client"
+
 import BottomNav from "./BottomNav"
+import LocationGuard from "./LocationGuard"
 
 interface AuthLayoutProps {
   children: React.ReactNode
@@ -10,9 +13,11 @@ export default function AuthLayout({
   variant = "default" 
 }: AuthLayoutProps) {
   return (
-    <div className={`min-h-screen ${variant === "default" ? "pb-16" : ""}`}>
-      {children}
-      <BottomNav />
-    </div>
+    <LocationGuard>
+      <div className={`min-h-screen ${variant === "default" ? "pb-16" : ""}`}>
+        {children}
+        <BottomNav />
+      </div>
+    </LocationGuard>
   )
 }

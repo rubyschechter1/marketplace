@@ -2,6 +2,8 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
 
+type PermissionState = 'prompt' | 'granted' | 'denied' | 'unknown'
+
 interface LocationData {
   latitude: number | null
   longitude: number | null
@@ -10,11 +12,13 @@ interface LocationData {
   displayLocation: string
   loading: boolean
   error: string | null
+  permissionState: PermissionState
 }
 
 interface LocationContextType {
   location: LocationData
   refreshLocation: () => Promise<void>
+  requestPermission: () => Promise<void>
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(undefined)
@@ -26,8 +30,9 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     city: null,
     country: null,
     displayLocation: "Unknown Location",
-    loading: true,
-    error: null
+    loading: false,
+    error: null,
+    permissionState: 'unknown'
   })
 
   const geocodeCoordinates = async (lat: number, lng: number) => {
@@ -85,10 +90,27 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const refreshLocation = async () => {
+  const checkPermissionState = async (): Promise<PermissionState> => {
+    if (!navigator.permissions || !navigator.permissions.query) {
+      return 'unknown'
+    }
+    
+    try {
+      const result = await navigator.permissions.query({ name: 'geolocation' })
+      return result.state as PermissionState
+    } catch {
+      return 'unknown'
+    }
+  }
+
+  const refreshLocation = async (isUserInitiated = false) => {
     setLocation(prev => ({ ...prev, loading: true, error: null }))
 
     try {
+      // Check permission state first
+      const permissionState = await checkPermissionState()
+      setLocation(prev => ({ ...prev, permissionState }))
+
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, {
           timeout: 10000,
@@ -106,26 +128,53 @@ export function LocationProvider({ children }: { children: ReactNode }) {
         country: geocoded.country,
         displayLocation: geocoded.displayLocation,
         loading: false,
-        error: null
+        error: null,
+        permissionState: 'granted'
       })
 
       // Update user's last known location
       // This could be done via an API call to update the user's profile
     } catch (error: any) {
+      let errorMessage = "Failed to get location"
+      
+      // Provide more specific error messages
+      if (error.code === 1) {
+        errorMessage = "Location permission denied"
+      } else if (error.code === 2) {
+        errorMessage = "Location unavailable"
+      } else if (error.code === 3) {
+        errorMessage = "Location request timeout"
+      }
+      
+      const permissionState = await checkPermissionState()
+      
       setLocation(prev => ({
         ...prev,
         loading: false,
-        error: error.message || "Failed to get location"
+        error: errorMessage,
+        permissionState
       }))
     }
   }
 
+  const requestPermission = async () => {
+    await refreshLocation(true)
+  }
+
   useEffect(() => {
-    refreshLocation()
+    // Check permission state on mount but don't request location
+    checkPermissionState().then(state => {
+      setLocation(prev => ({ ...prev, permissionState: state }))
+      
+      // Only auto-request if already granted
+      if (state === 'granted') {
+        refreshLocation()
+      }
+    })
   }, [])
 
   return (
-    <LocationContext.Provider value={{ location, refreshLocation }}>
+    <LocationContext.Provider value={{ location, refreshLocation, requestPermission }}>
       {children}
     </LocationContext.Provider>
   )

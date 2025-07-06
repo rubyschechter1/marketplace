@@ -217,6 +217,9 @@ export default function MessagePage({
                 router.push('/messages')
               } else if (fromPage === 'search') {
                 router.push('/search')
+              } else if (fromPage.startsWith('offer-')) {
+                const returnOfferId = fromPage.replace('offer-', '')
+                router.push(`/offers/${returnOfferId}`)
               } else {
                 router.push('/')
               }

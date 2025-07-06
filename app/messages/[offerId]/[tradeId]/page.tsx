@@ -99,8 +99,8 @@ export default function MessagePage({
         const trade = await tradeResponse.json()
         setTradeData(trade)
 
-        // Fetch messages for this offer
-        const messagesResponse = await fetch(`/api/messages/offers/${offerId}`)
+        // Fetch messages for this specific trade
+        const messagesResponse = await fetch(`/api/messages/${offerId}/${tradeId}`)
         if (messagesResponse.ok) {
           const data = await messagesResponse.json()
           setMessages(data.messages || [])
@@ -173,7 +173,7 @@ export default function MessagePage({
         setTradeData({ ...tradeData, status: updatedTrade.status })
         
         // Refresh messages to show the system message
-        const messagesResponse = await fetch(`/api/messages/offers/${offerId}`)
+        const messagesResponse = await fetch(`/api/messages/${offerId}/${tradeId}`)
         if (messagesResponse.ok) {
           const data = await messagesResponse.json()
           setMessages(data.messages || [])

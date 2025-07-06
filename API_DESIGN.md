@@ -17,9 +17,9 @@
 
 ### Messages
 - `GET /api/messages/conversations` - List all conversations
-- `GET /api/messages/offers/[offerId]` - Get messages for specific offer
+- `GET /api/messages/[offerId]/[proposedTradeId]` - Get messages for specific trade
 - `POST /api/messages` - Send a message
-- `PUT /api/messages/[id]/read` - Mark message as read
+- `PUT /api/messages/read/[id]` - Mark message as read
 
 ### User Profile
 - `GET /api/users/[id]` - Get public user profile

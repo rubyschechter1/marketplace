@@ -7,22 +7,19 @@ const prisma = new PrismaClient()
 
 export async function GET(
   req: Request,
-  { params }: { params: Promise<{ offerId: string }> }
+  { params }: { params: Promise<{ offerId: string; proposedTradeId: string }> }
 ) {
-  const { offerId } = await params;
+  const { offerId, proposedTradeId } = await params;
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Get optional proposedTradeId from query params
-    const url = new URL(req.url)
-    const proposedTradeId = url.searchParams.get('proposedTradeId')
-
-    // Build where clause
-    const whereClause: any = {
+    // Build where clause - now proposedTradeId is mandatory
+    const whereClause = {
       offerId,
+      proposedTradeId,
       OR: [
         { senderId: session.user.id },
         { recipientId: session.user.id },
@@ -31,10 +28,6 @@ export async function GET(
           { recipientId: null }
         ]}
       ]
-    }
-    
-    if (proposedTradeId) {
-      whereClause.proposedTradeId = proposedTradeId
     }
 
     // Verify user has access to these messages
@@ -63,10 +56,11 @@ export async function GET(
       }
     })
 
-    // Mark messages as read if user is recipient
+    // Mark messages as read if user is recipient - now includes proposedTradeId
     await prisma.messages.updateMany({
       where: {
         offerId,
+        proposedTradeId,
         recipientId: session.user.id,
         isRead: false
       },

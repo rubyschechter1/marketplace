@@ -103,8 +103,8 @@ A barter marketplace for travelers with:
 ### Messages
 - `POST /api/messages` - Send a message
 - `GET /api/messages/conversations` - List all conversations
-- `GET /api/messages/offers/[offerId]` - Get messages for offer
-- `PUT /api/messages/[id]/read` - Mark message as read
+- `GET /api/messages/[offerId]/[proposedTradeId]` - Get messages for specific trade
+- `PUT /api/messages/read/[id]` - Mark message as read
 
 ### Users
 - `GET /api/users/[id]` - Get public user profile

@@ -155,7 +155,7 @@ export default function MessagePage({
     const isAccepted = tradeData.status === 'accepted'
     const newStatus = isAccepted ? 'pending' : 'accepted'
     const confirmMessage = isAccepted 
-      ? 'Are you sure you want to unaccept this trade?' 
+      ? 'Are you sure you want to cancel this trade?' 
       : 'Are you sure you want to accept this trade?'
 
     if (!confirm(confirmMessage)) return
@@ -270,7 +270,7 @@ export default function MessagePage({
                 disabled={accepting}
                 className="w-full bg-tan text-black border border-black p-3 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {accepting ? 'Updating...' : tradeData.status === 'accepted' ? 'unaccept trade' : 'accept trade'}
+                {accepting ? 'Updating...' : tradeData.status === 'accepted' ? 'cancel trade' : 'accept trade'}
               </button>
             </div>
           )}

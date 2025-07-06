@@ -143,3 +143,22 @@ The `AuthLayout` component wraps authenticated pages and supports two variants:
 ### Important: 
 - If using `fullHeight` variant, remember to add `pb-16` where needed to prevent content hiding
 - The conversation view uses a flex layout with its own `pb-16` to handle the special message input area
+
+## GitHub Issue Management
+
+### Priority Labels
+Issues are organized using priority labels to help identify what to work on:
+
+- **priority: high** (Red #FF0000) - Critical features that block core functionality
+- **priority: medium** (Orange #FFA500) - Important enhancements that improve the product
+- **priority: low** (Light Green #90EE90) - Nice to have features
+
+### Other Key Labels
+- **bug** - Something isn't working
+- **enhancement** - New feature or request
+- **technical debt** - Code quality and infrastructure improvements
+- **UX** - User experience improvements
+- **safety** - Content moderation and safety features
+- **notifications** - Email, push, or in-app notifications
+- **documentation** - Improvements or additions to documentation
+- **good first issue** - Good for newcomers

@@ -1,24 +1,5 @@
 # Marketplace TODO List
 
-## ✅ Completed Features
-
-### UI/UX
-- [x] When hovering, or filling out, always have the tan color as the background, not white (commit: 0403bd7)
-- [x] When making a new account should say "Welcome!" Not "welcome back" (commit: 56cc248)
-- [x] Accept trade button (commit: 78c6ffa)
-- [x] Add description on offer component & offer view page (multiple commits)
-- [x] Add other button to offer option in product page (commit: a1fdf77)
-- [x] Search components should look like homepage (spacing, sizing) (commit: f07b231)
-- [x] Asks (home page, search, everywhere) (commits: 0ad9ce4, 9013003, etc.)
-- [x] Add "Ruby S. Is offering" - standardize offer component (ProfileThumbnail component created)
-
-### Messaging
-- [x] Read/unread status for messages (visual indicators implemented, mark-as-read API exists)
-- [x] Notification on homepage for when someone makes an offer to your items (proposed trades shown)
-
-### Location
-- [x] Location permissions stuff (commit: 003670d - comprehensive location functionality)
-
 ## 🔴 High Priority (Core Features)
 
 ### Notifications System

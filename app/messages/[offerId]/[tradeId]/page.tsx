@@ -1,12 +1,13 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import AuthLayout from "@/components/AuthLayout"
 import ProfileThumbnail from "@/components/ProfileThumbnail"
 import { ChevronLeft, Send } from "lucide-react"
 import Link from "next/link"
+import { useUser } from "@/contexts/UserContext"
 
 interface Message {
   id: string
@@ -59,6 +60,7 @@ export default function MessagePage({
 }) {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { refreshUser } = useUser()
   const [offerId, setOfferId] = useState<string>("")
   const [tradeId, setTradeId] = useState<string>("")
   const [fromPage, setFromPage] = useState<string>("")
@@ -68,11 +70,14 @@ export default function MessagePage({
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [accepting, setAccepting] = useState(false)
+  const hasRefreshedUser = useRef(false)
 
   useEffect(() => {
     params.then(p => {
       setOfferId(p.offerId)
       setTradeId(p.tradeId)
+      // Reset the ref when conversation changes
+      hasRefreshedUser.current = false
     })
     searchParams.then(sp => {
       setFromPage(sp.from || 'home')
@@ -104,6 +109,12 @@ export default function MessagePage({
         if (messagesResponse.ok) {
           const data = await messagesResponse.json()
           setMessages(data.messages || [])
+          
+          // Refresh user context only once per conversation load
+          if (!hasRefreshedUser.current) {
+            hasRefreshedUser.current = true
+            refreshUser()
+          }
         }
       } catch (error) {
         console.error('Error fetching data:', error)

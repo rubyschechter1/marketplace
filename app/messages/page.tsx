@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import AuthLayout from "@/components/AuthLayout"
+import { useUser } from "@/contexts/UserContext"
 
 interface Conversation {
   id: string
@@ -13,6 +14,8 @@ interface Conversation {
   proposedTradeId: string | null
   content: string
   createdAt: string
+  isRead: boolean
+  unreadCount?: number
   sender: {
     id: string
     firstName: string
@@ -45,6 +48,7 @@ interface Conversation {
 export default function MessagesPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { refreshUser } = useUser()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -55,21 +59,32 @@ export default function MessagesPage() {
       return
     }
 
+    const abortController = new AbortController()
+
     async function fetchConversations() {
       try {
-        const response = await fetch('/api/messages/conversations')
+        const response = await fetch('/api/messages/conversations', {
+          signal: abortController.signal
+        })
         if (response.ok) {
           const data = await response.json()
           setConversations(data.conversations || [])
         }
-      } catch (error) {
-        console.error('Error fetching conversations:', error)
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          console.error('Error fetching conversations:', error)
+        }
       } finally {
         setLoading(false)
       }
     }
 
     fetchConversations()
+    refreshUser() // Update unread count when viewing messages
+
+    return () => {
+      abortController.abort()
+    }
   }, [status, router])
 
   const handleConversationClick = (message: Conversation) => {
@@ -126,10 +141,17 @@ export default function MessagesPage() {
                   ) : (
                     <div className="w-16 h-16 bg-gray/20 rounded-md flex-shrink-0" />
                   )}
-                  <div className="flex-1 bg-tan border border-black rounded-sm p-4 hover:bg-tan/80 transition-colors cursor-pointer">
-                    <h3 className="text-body font-normal mb-1">
-                      {message.offer?.item?.name || message.offer?.title}
-                    </h3>
+                  <div className="flex-1 bg-tan border border-black rounded-sm p-4 hover:bg-tan/80 transition-colors cursor-pointer relative">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="text-body font-normal mb-1">
+                        {message.offer?.item?.name || message.offer?.title}
+                      </h3>
+                      {message.unreadCount && message.unreadCount > 0 && (
+                        <div className="bg-red-500 text-white text-xs rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center font-medium flex-shrink-0">
+                          {message.unreadCount}
+                        </div>
+                      )}
+                    </div>
                     <p className="text-sm italic text-gray">
                       {message.senderId === session?.user?.id ? 'You' : (otherUser?.firstName || 'Unknown')}: {message.content}
                     </p>

@@ -3,9 +3,11 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Search, Home, MessageCircle } from "lucide-react"
+import { useUser } from "@/contexts/UserContext"
 
 export default function BottomNav() {
   const pathname = usePathname()
+  const { user } = useUser()
 
   const navItems = [
     {
@@ -43,7 +45,14 @@ export default function BottomNav() {
                     : "text-gray hover:text-black"
                 }`}
               >
-                <Icon size={24} strokeWidth={1.5} />
+                <div className="relative">
+                  <Icon size={24} strokeWidth={1.5} />
+                  {item.href === "/messages" && user && user.unreadConversations > 0 && (
+                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                      {user.unreadConversations > 99 ? "99+" : user.unreadConversations}
+                    </div>
+                  )}
+                </div>
               </Link>
             )
           })}

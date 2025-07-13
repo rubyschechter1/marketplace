@@ -83,25 +83,36 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
         ) : (
           <>
             {/* Read-only About Section for other users */}
-            {user.bio && (
-              <div className="mb-6">
-                <h2 className="text-lg mb-3">About</h2>
-                <div className="border border-black rounded-sm p-4">
-                  <p className="text-sm whitespace-pre-line">
-                    {user.bio}
-                  </p>
-                </div>
-              </div>
-            )}
+            <div className="mb-6">
+              <h2 className="text-lg mb-3">About</h2>
+              {user.bio ? (
+                <p className="text-sm whitespace-pre-line">{user.bio}</p>
+              ) : (
+                <p className="text-sm text-gray italic">No bio yet.</p>
+              )}
+            </div>
 
             {/* Read-only Languages Section for other users */}
-            {user.languages && user.languages.length > 0 && (
-              <div className="mb-6">
-                <h2 className="text-lg mb-3">
-                  Speaks {user.languages.join(', ')}
-                </h2>
-              </div>
-            )}
+            <div className="mb-6">
+              <h2 className="text-lg mb-2">Speaks</h2>
+              <p className="text-sm text-gray italic">
+                {user.languages && user.languages.length > 0 
+                  ? user.languages.join(', ')
+                  : "No languages added yet"
+                }
+              </p>
+            </div>
+
+            {/* Read-only Countries Visited Section for other users */}
+            <div className="mb-6">
+              <h2 className="text-lg mb-2">Countries visited</h2>
+              <p className="text-sm text-gray italic">
+                {user.countriesVisited && user.countriesVisited.length > 0 
+                  ? user.countriesVisited.join(', ')
+                  : "No countries added yet"
+                }
+              </p>
+            </div>
           </>
         )}
 

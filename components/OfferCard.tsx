@@ -103,7 +103,7 @@ export default function OfferCard({ offer, currentUserId }: OfferCardProps) {
             <img 
               src={offer.item.imageUrl}
               alt={offer.item.name}
-              className="w-16 h-16 object-cover rounded-xl border border-black"
+              className="w-16 h-16 object-cover rounded-xl"
             />
           )}
         </div>

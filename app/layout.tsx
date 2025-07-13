@@ -15,6 +15,16 @@ const instrumentSerif = Instrument_Serif({
 export const metadata: Metadata = {
   title: "Brown Straw Hat - Barter for Travelers",
   description: "Trade items with fellow travelers - no money needed",
+  icons: {
+    icon: [
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.ico", sizes: "32x32", type: "image/x-icon" },
+    ],
+    apple: "/apple-touch-icon.png",
+    shortcut: "/favicon.ico",
+  },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({

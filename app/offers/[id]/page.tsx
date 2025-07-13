@@ -384,7 +384,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                             <img
                               src={itemPhotoPreview}
                               alt="Item preview"
-                              className="w-24 h-24 object-cover border border-black rounded-sm"
+                              className="w-24 h-24 object-cover rounded-sm"
                             />
                             <button
                               type="button"
@@ -478,7 +478,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                           <img 
                             src={trade.offeredItem.imageUrl}
                             alt={trade.offeredItem.name}
-                            className="w-16 h-16 object-cover rounded-md border border-black hover:opacity-80 transition-opacity cursor-pointer"
+                            className="w-16 h-16 object-cover rounded-md hover:opacity-80 transition-opacity cursor-pointer"
                           />
                         </a>
                       )}

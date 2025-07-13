@@ -169,7 +169,7 @@ export default function NewOfferPage() {
                 <img
                   src={formData.photoPreview}
                   alt="Item preview"
-                  className="w-full h-48 object-cover border border-black rounded-sm"
+                  className="w-full h-48 object-cover rounded-sm"
                 />
                 <button
                   type="button"

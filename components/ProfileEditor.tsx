@@ -86,6 +86,8 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
   const [showCountryDropdown, setShowCountryDropdown] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [sessionLanguages, setSessionLanguages] = useState<string[]>([])
+  const [sessionCountries, setSessionCountries] = useState<string[]>([])
   
   const bioHasChanged = bio !== originalBio
 
@@ -144,10 +146,16 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
     }
   }
 
-  const handleLanguageSelect = (language: string) => {
-    setNewLanguage(language)
-    setShowDropdown(false)
-    setFilteredLanguages([])
+  const handleLanguageSelect = async (language: string) => {
+    const updatedLanguages = [...user.languages, language]
+    const success = await updateProfile({ languages: updatedLanguages })
+    if (success) {
+      setSessionLanguages(prev => [...prev, language])
+      setNewLanguage("")
+      setShowDropdown(false)
+      setFilteredLanguages([])
+      // Stay in edit mode - don't set setIsAddingLanguage(false)
+    }
   }
 
   const handleAddLanguage = async () => {
@@ -189,10 +197,17 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
     }
   }
 
-  const handleCountrySelect = (country: string) => {
-    setNewCountry(country)
-    setShowCountryDropdown(false)
-    setFilteredCountries([])
+  const handleCountrySelect = async (country: string) => {
+    const currentCountries = user.countriesVisited || []
+    const updatedCountries = [...currentCountries, country]
+    const success = await updateProfile({ countriesVisited: updatedCountries })
+    if (success) {
+      setSessionCountries(prev => [...prev, country])
+      setNewCountry("")
+      setShowCountryDropdown(false)
+      setFilteredCountries([])
+      // Stay in edit mode - don't set setIsAddingCountry(false)
+    }
   }
 
   const handleAddCountry = async () => {
@@ -271,61 +286,104 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
       {/* Languages Section */}
       <div className="mb-6">
         <h2 className="text-lg mb-2">Speaks</h2>
-        <p className="text-sm text-gray italic mb-3">
-          {user.languages.length > 0 
-            ? user.languages.join(', ')
-            : "No languages added yet"
-          }
-        </p>
+        {isAddingLanguage ? (
+          <div className="mb-3">
+            {user.languages.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {user.languages.map((language, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center gap-1 text-sm font-bold text-gray bg-tan px-2 py-1 rounded border border-gray/20"
+                  >
+                    {language}
+                    <button
+                      onClick={async () => {
+                        const updatedLanguages = user.languages.filter((_, i) => i !== index)
+                        await updateProfile({ languages: updatedLanguages })
+                      }}
+                      className="text-black hover:text-gray text-xs font-bold ml-1"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray italic font-bold">No languages added yet</p>
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-gray italic mb-3">
+            {user.languages.length > 0 
+              ? user.languages.join(', ')
+              : "No languages added yet"
+            }
+          </p>
+        )}
         {isAddingLanguage ? (
           <div className="relative">
-            <div className="flex gap-2">
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  value={newLanguage}
-                  onChange={(e) => handleLanguageInputChange(e.target.value)}
-                  placeholder="Start typing a language..."
-                  className="w-full px-3 py-2 border border-black rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black bg-tan placeholder-gray"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      handleAddLanguage()
-                    }
-                  }}
-                  autoComplete="off"
-                />
-                {showDropdown && filteredLanguages.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 bg-tan border border-black rounded-lg mt-1 max-h-40 overflow-y-auto z-10">
-                    {filteredLanguages.map((language, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleLanguageSelect(language)}
-                        className="w-full text-left px-3 py-2 text-sm hover:bg-black hover:text-tan transition-colors border-b border-gray/20 last:border-b-0"
-                      >
-                        {language}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <button
-                onClick={handleAddLanguage}
-                disabled={loading || !newLanguage.trim()}
-                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
-              >
-                {loading ? "Adding..." : "Add"}
-              </button>
+            <div className="relative">
+              <input
+                type="text"
+                value={newLanguage}
+                onChange={(e) => handleLanguageInputChange(e.target.value)}
+                placeholder="Start typing a language..."
+                className="w-full px-3 py-2 border border-black rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black bg-tan placeholder-gray"
+                onKeyPress={(e) => {
+                  if (e.key === 'Escape') {
+                    setNewLanguage("")
+                    setIsAddingLanguage(false)
+                    setShowDropdown(false)
+                    setFilteredLanguages([])
+                    setError("")
+                  }
+                }}
+                autoComplete="off"
+                autoFocus
+              />
+              {showDropdown && filteredLanguages.length > 0 && (
+                <div className="absolute top-full left-0 right-0 bg-tan border border-black rounded-lg mt-1 max-h-40 overflow-y-auto z-10">
+                  {filteredLanguages.map((language, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleLanguageSelect(language)}
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-black hover:text-tan transition-colors border-b border-gray/20 last:border-b-0"
+                    >
+                      {language}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="flex gap-2 mt-2">
               <button
                 onClick={() => {
                   setNewLanguage("")
                   setIsAddingLanguage(false)
                   setShowDropdown(false)
                   setFilteredLanguages([])
+                  setSessionLanguages([])
                   setError("")
                 }}
-                disabled={loading}
-                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
+                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors"
+              >
+                Save
+              </button>
+              <button
+                onClick={async () => {
+                  // Remove all languages added in this session
+                  if (sessionLanguages.length > 0) {
+                    const originalLanguages = user.languages.filter(lang => !sessionLanguages.includes(lang))
+                    await updateProfile({ languages: originalLanguages })
+                  }
+                  setNewLanguage("")
+                  setIsAddingLanguage(false)
+                  setShowDropdown(false)
+                  setFilteredLanguages([])
+                  setSessionLanguages([])
+                  setError("")
+                }}
+                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors"
               >
                 Cancel
               </button>
@@ -336,7 +394,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
             onClick={() => setIsAddingLanguage(true)}
             className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors"
           >
-            Add language
+            {user.languages.length > 0 ? "Edit languages" : "Add language"}
           </button>
         )}
       </div>
@@ -344,61 +402,104 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
       {/* Countries Visited Section */}
       <div className="mb-6">
         <h2 className="text-lg mb-2">Countries visited</h2>
-        <p className="text-sm text-gray italic mb-3">
-          {user.countriesVisited && user.countriesVisited.length > 0 
-            ? user.countriesVisited.join(', ')
-            : "No countries added yet"
-          }
-        </p>
+        {isAddingCountry ? (
+          <div className="mb-3">
+            {user.countriesVisited && user.countriesVisited.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {user.countriesVisited.map((country, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center gap-1 text-sm font-bold text-gray bg-tan px-2 py-1 rounded border border-gray/20"
+                  >
+                    {country}
+                    <button
+                      onClick={async () => {
+                        const updatedCountries = (user.countriesVisited || []).filter((_, i) => i !== index)
+                        await updateProfile({ countriesVisited: updatedCountries })
+                      }}
+                      className="text-black hover:text-gray text-xs font-bold ml-1"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray italic font-bold">No countries added yet</p>
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-gray italic mb-3">
+            {user.countriesVisited && user.countriesVisited.length > 0 
+              ? user.countriesVisited.join(', ')
+              : "No countries added yet"
+            }
+          </p>
+        )}
         {isAddingCountry ? (
           <div className="relative">
-            <div className="flex gap-2">
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  value={newCountry}
-                  onChange={(e) => handleCountryInputChange(e.target.value)}
-                  placeholder="Start typing a country..."
-                  className="w-full px-3 py-2 border border-black rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black bg-tan placeholder-gray"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      handleAddCountry()
-                    }
-                  }}
-                  autoComplete="off"
-                />
-                {showCountryDropdown && filteredCountries.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 bg-tan border border-black rounded-lg mt-1 max-h-40 overflow-y-auto z-10">
-                    {filteredCountries.map((country, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleCountrySelect(country)}
-                        className="w-full text-left px-3 py-2 text-sm hover:bg-black hover:text-tan transition-colors border-b border-gray/20 last:border-b-0"
-                      >
-                        {country}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <button
-                onClick={handleAddCountry}
-                disabled={loading || !newCountry.trim()}
-                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
-              >
-                {loading ? "Adding..." : "Add"}
-              </button>
+            <div className="relative">
+              <input
+                type="text"
+                value={newCountry}
+                onChange={(e) => handleCountryInputChange(e.target.value)}
+                placeholder="Start typing a country..."
+                className="w-full px-3 py-2 border border-black rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black bg-tan placeholder-gray"
+                onKeyPress={(e) => {
+                  if (e.key === 'Escape') {
+                    setNewCountry("")
+                    setIsAddingCountry(false)
+                    setShowCountryDropdown(false)
+                    setFilteredCountries([])
+                    setError("")
+                  }
+                }}
+                autoComplete="off"
+                autoFocus
+              />
+              {showCountryDropdown && filteredCountries.length > 0 && (
+                <div className="absolute top-full left-0 right-0 bg-tan border border-black rounded-lg mt-1 max-h-40 overflow-y-auto z-10">
+                  {filteredCountries.map((country, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleCountrySelect(country)}
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-black hover:text-tan transition-colors border-b border-gray/20 last:border-b-0"
+                    >
+                      {country}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="flex gap-2 mt-2">
               <button
                 onClick={() => {
                   setNewCountry("")
                   setIsAddingCountry(false)
                   setShowCountryDropdown(false)
                   setFilteredCountries([])
+                  setSessionCountries([])
                   setError("")
                 }}
-                disabled={loading}
-                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
+                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors"
+              >
+                Save
+              </button>
+              <button
+                onClick={async () => {
+                  // Remove all countries added in this session
+                  if (sessionCountries.length > 0) {
+                    const originalCountries = (user.countriesVisited || []).filter(country => !sessionCountries.includes(country))
+                    await updateProfile({ countriesVisited: originalCountries })
+                  }
+                  setNewCountry("")
+                  setIsAddingCountry(false)
+                  setShowCountryDropdown(false)
+                  setFilteredCountries([])
+                  setSessionCountries([])
+                  setError("")
+                }}
+                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors"
               >
                 Cancel
               </button>
@@ -409,7 +510,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
             onClick={() => setIsAddingCountry(true)}
             className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors"
           >
-            Add country
+            {user.countriesVisited && user.countriesVisited.length > 0 ? "Edit countries" : "Add country"}
           </button>
         )}
       </div>

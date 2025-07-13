@@ -14,10 +14,14 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
+        console.log("🔑 NextAuth authorize called for email:", credentials?.email)
+        
         if (!credentials?.email || !credentials?.password) {
+          console.log("❌ Missing credentials")
           return null
         }
 
+        console.log("🔍 Looking up user in database...")
         const user = await prisma.travelers.findUnique({
           where: {
             email: credentials.email
@@ -25,15 +29,19 @@ export const authOptions: NextAuthOptions = {
         })
 
         if (!user || !user.password) {
+          console.log("❌ User not found or no password set")
           return null
         }
 
+        console.log("✅ User found, checking password...")
         const isPasswordValid = await compare(credentials.password, user.password)
 
         if (!isPasswordValid) {
+          console.log("❌ Invalid password")
           return null
         }
 
+        console.log("✅ Password valid, returning user object")
         return {
           id: user.id,
           email: user.email,
@@ -44,15 +52,19 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     session: ({ session, token }) => {
+      console.log("📋 Session callback - token.sub:", token.sub, "session.user:", session?.user?.email)
       if (session?.user && token.sub) {
         session.user.id = token.sub
       }
+      console.log("📋 Session callback result:", session)
       return session
     },
     jwt: ({ user, token }) => {
+      console.log("🎫 JWT callback - user:", user?.id, "token.uid:", token.uid)
       if (user) {
         token.uid = user.id
       }
+      console.log("🎫 JWT callback result:", token)
       return token
     }
   },

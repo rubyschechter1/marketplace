@@ -47,6 +47,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
   const session = await getServerSession(authOptions)
   const params = await searchParams
 
+  console.log("🏠 Home page - session:", session ? "EXISTS" : "NULL")
+
   if (!session) {
     return (
       <main className="min-h-screen p-4 max-w-md mx-auto flex flex-col justify-center">

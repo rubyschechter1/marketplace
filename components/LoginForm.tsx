@@ -17,6 +17,8 @@ export default function LoginForm({ onSwitch }: { onSwitch: () => void }) {
     setIsLoading(true)
     setError("")
 
+    console.log("🔐 Login attempt starting for:", email)
+
     try {
       const result = await signIn("credentials", {
         email,
@@ -24,13 +26,23 @@ export default function LoginForm({ onSwitch }: { onSwitch: () => void }) {
         redirect: false,
       })
 
+      console.log("🔐 SignIn result:", result)
+
       if (result?.error) {
+        console.log("❌ Login error:", result.error)
         setError("Invalid email or password")
+      } else if (result?.ok) {
+        console.log("✅ Login successful, refreshing page...")
+        // Small delay to ensure session is set, then reload
+        setTimeout(() => {
+          window.location.reload()
+        }, 100)
       } else {
-        router.push("/")
-        router.refresh()
+        console.log("⚠️ Unexpected login result:", result)
+        setError("Login failed - please try again")
       }
     } catch (error) {
+      console.error("❌ Login exception:", error)
       setError("Something went wrong")
     } finally {
       setIsLoading(false)

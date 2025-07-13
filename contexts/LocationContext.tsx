@@ -104,11 +104,13 @@ export function LocationProvider({ children }: { children: ReactNode }) {
   }
 
   const refreshLocation = async (isUserInitiated = false) => {
+    console.log("🗺️ Requesting location, user initiated:", isUserInitiated)
     setLocation(prev => ({ ...prev, loading: true, error: null }))
 
     try {
       // Check permission state first
       const permissionState = await checkPermissionState()
+      console.log("🗺️ Current permission state:", permissionState)
       setLocation(prev => ({ ...prev, permissionState }))
 
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
@@ -119,7 +121,9 @@ export function LocationProvider({ children }: { children: ReactNode }) {
       })
 
       const { latitude, longitude } = position.coords
+      console.log("🗺️ Got coordinates:", latitude, longitude)
       const geocoded = await geocodeCoordinates(latitude, longitude)
+      console.log("🗺️ Geocoded location:", geocoded)
 
       setLocation({
         latitude,
@@ -135,6 +139,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
       // Update user's last known location
       // This could be done via an API call to update the user's profile
     } catch (error: any) {
+      console.error("🗺️ Location error:", error)
       let errorMessage = "Failed to get location"
       
       // Provide more specific error messages
@@ -147,6 +152,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
       }
       
       const permissionState = await checkPermissionState()
+      console.log("🗺️ Error, final permission state:", permissionState)
       
       setLocation(prev => ({
         ...prev,
@@ -164,11 +170,15 @@ export function LocationProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Check permission state on mount but don't request location
     checkPermissionState().then(state => {
+      console.log("🗺️ Location permission state:", state)
       setLocation(prev => ({ ...prev, permissionState: state }))
       
       // Only auto-request if already granted
       if (state === 'granted') {
+        console.log("🗺️ Permission already granted, auto-requesting location...")
         refreshLocation()
+      } else {
+        console.log("🗺️ Permission not granted, waiting for user action")
       }
     })
   }, [])

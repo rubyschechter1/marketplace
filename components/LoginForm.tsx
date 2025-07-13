@@ -5,7 +5,7 @@ import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Button from "./ui/Button"
 
-export default function LoginForm({ onSwitch }: { onSwitch: () => void }) {
+export default function LoginForm({ onSwitch, onBack }: { onSwitch: () => void; onBack: () => void }) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -51,6 +51,12 @@ export default function LoginForm({ onSwitch }: { onSwitch: () => void }) {
 
   return (
     <div className="w-full max-w-sm mx-auto">
+      <button
+        onClick={onBack}
+        className="mb-4 text-gray hover:text-black transition-colors text-body"
+      >
+        ← Back
+      </button>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="email" className="block text-body text-gray mb-2">
@@ -61,7 +67,7 @@ export default function LoginForm({ onSwitch }: { onSwitch: () => void }) {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border border-black rounded-sm text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan"
+            className="w-full px-3 py-2 border border-black rounded-sm text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan [&:-webkit-autofill]:!bg-tan [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#ffebb5]"
             placeholder="Enter your email"
             required
           />
@@ -76,7 +82,7 @@ export default function LoginForm({ onSwitch }: { onSwitch: () => void }) {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 border border-black rounded-sm text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan"
+            className="w-full px-3 py-2 border border-black rounded-sm text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan [&:-webkit-autofill]:!bg-tan [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#ffebb5]"
             placeholder="Enter your password"
             required
           />

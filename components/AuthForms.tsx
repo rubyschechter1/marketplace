@@ -29,9 +29,9 @@ export default function AuthForms() {
   return (
     <div>
       {mode === 'login' ? (
-        <LoginForm onSwitch={() => setMode('signup')} />
+        <LoginForm onSwitch={() => setMode('signup')} onBack={() => setMode('buttons')} />
       ) : (
-        <SignupForm onSwitch={() => setMode('login')} />
+        <SignupForm onSwitch={() => setMode('login')} onBack={() => setMode('buttons')} />
       )}
     </div>
   )

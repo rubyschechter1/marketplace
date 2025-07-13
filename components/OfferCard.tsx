@@ -45,7 +45,7 @@ export default function OfferCard({ offer, currentUserId }: OfferCardProps) {
       {/* Card content */}
       <Link 
         href={`/offers/${offer.id}`}
-        className="flex-1 bg-tan border border-black rounded-md p-4 pb-8 block relative"
+        className="flex-1 bg-tan border border-black rounded-xl p-4 pb-8 block relative"
       >
         <div className="flex items-start gap-3">
           {/* Content */}
@@ -77,7 +77,7 @@ export default function OfferCard({ offer, currentUserId }: OfferCardProps) {
                   {offer.lookingFor.map((item, index) => (
                     <span 
                       key={index}
-                      className="bg-tan border border-black rounded-md px-3 py-1 text-sm"
+                      className="bg-tan border border-black rounded-xl px-3 py-1 text-sm"
                     >
                       {item}
                     </span>
@@ -103,7 +103,7 @@ export default function OfferCard({ offer, currentUserId }: OfferCardProps) {
             <img 
               src={offer.item.imageUrl}
               alt={offer.item.name}
-              className="w-16 h-16 object-cover rounded-md border border-black"
+              className="w-16 h-16 object-cover rounded-xl border border-black"
             />
           )}
         </div>

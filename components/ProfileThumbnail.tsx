@@ -24,7 +24,7 @@ export default function ProfileThumbnail({
     lg: 'w-24 h-24 text-3xl'
   }
 
-  const baseClasses = `${sizeClasses[size]} bg-gray/20 rounded-md flex items-center justify-center flex-shrink-0 ${className}`
+  const baseClasses = `${sizeClasses[size]} bg-gray/20 rounded-xl flex items-center justify-center flex-shrink-0 ${className}`
   const hoverClasses = clickable ? 'hover:bg-gray/30 transition-colors' : ''
   const combinedClasses = `${baseClasses} ${hoverClasses}`.trim()
 
@@ -32,7 +32,7 @@ export default function ProfileThumbnail({
     <img 
       src={user.avatarUrl} 
       alt={`${user.firstName}'s avatar`}
-      className={`${sizeClasses[size]} rounded-md object-cover`}
+      className={`${sizeClasses[size]} rounded-xl object-cover`}
     />
   ) : (
     <span>{user.firstName[0].toUpperCase()}</span>

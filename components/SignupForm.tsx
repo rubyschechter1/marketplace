@@ -68,12 +68,6 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
 
   return (
     <div className="w-full max-w-sm mx-auto">
-      <button
-        onClick={onBack}
-        className="mb-4 text-gray hover:text-black transition-colors text-body"
-      >
-        ← Back
-      </button>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="email" className="block text-body text-gray mb-2">
@@ -84,7 +78,7 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
             type="email"
             value={formData.email}
             onChange={(e) => setFormData({...formData, email: e.target.value})}
-            className="w-full px-3 py-2 border border-black rounded-sm text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan [&:-webkit-autofill]:!bg-tan [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#ffebb5]"
+            className="w-full px-3 py-2 border border-black rounded-lg text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan [&:-webkit-autofill]:!bg-tan [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#ffebb5]"
             placeholder="Enter your email"
             required
           />
@@ -100,7 +94,7 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
               type="text"
               value={formData.firstName}
               onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-              className="w-full px-3 py-2 border border-black rounded-sm text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan [&:-webkit-autofill]:!bg-tan [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#ffebb5]"
+              className="w-full px-3 py-2 border border-black rounded-lg text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan [&:-webkit-autofill]:!bg-tan [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#ffebb5]"
               required
             />
           </div>
@@ -119,7 +113,7 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
                   setFormData({...formData, lastInitial: value})
                 }
               }}
-              className="w-full px-3 py-2 border border-black rounded-sm text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan [&:-webkit-autofill]:!bg-tan [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#ffebb5]"
+              className="w-full px-3 py-2 border border-black rounded-lg text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan [&:-webkit-autofill]:!bg-tan [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#ffebb5]"
               required
               maxLength={1}
             />
@@ -135,7 +129,7 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
             type="password"
             value={formData.password}
             onChange={(e) => setFormData({...formData, password: e.target.value})}
-            className="w-full px-3 py-2 border border-black rounded-sm text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan [&:-webkit-autofill]:!bg-tan [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#ffebb5]"
+            className="w-full px-3 py-2 border border-black rounded-lg text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan [&:-webkit-autofill]:!bg-tan [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#ffebb5]"
             placeholder="Create a password"
             required
             minLength={6}
@@ -151,7 +145,7 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
             type="password"
             value={formData.confirmPassword}
             onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
-            className="w-full px-3 py-2 border border-black rounded-sm text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan [&:-webkit-autofill]:!bg-tan [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#ffebb5]"
+            className="w-full px-3 py-2 border border-black rounded-lg text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan [&:-webkit-autofill]:!bg-tan [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#ffebb5]"
             placeholder="Confirm your password"
             required
             minLength={6}
@@ -172,6 +166,13 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
         </Button>
 
       </form>
+      
+      <button
+        onClick={onBack}
+        className="mt-4 text-black hover:text-gray transition-colors text-body text-left"
+      >
+        Back
+      </button>
     </div>
   )
 }

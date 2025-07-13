@@ -88,13 +88,13 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
         <div className="space-y-4 mb-8">
           <Link
             href="/offers/new"
-            className="block w-full bg-tan text-black border border-black p-4 rounded-md hover:bg-black hover:text-tan transition-colors text-center text-button"
+            className="block w-full bg-tan text-black border border-black p-4 rounded-xl hover:bg-black hover:text-tan transition-colors text-center text-button"
           >
             Offer an item
           </Link>
           <Link
             href="/asks/new"
-            className="block w-full bg-tan text-black border border-black p-4 rounded-md hover:bg-black hover:text-tan transition-colors text-center text-button"
+            className="block w-full bg-tan text-black border border-black p-4 rounded-xl hover:bg-black hover:text-tan transition-colors text-center text-button"
           >
             Post an ask
           </Link>
@@ -112,7 +112,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
                 <h2 className="text-lg font-normal mb-4">Your offered items</h2>
                 <div className="space-y-4">
                   {offers.length === 0 ? (
-                    <div className="border border-thin rounded-md p-6">
+                    <div className="border border-thin rounded-xl p-6">
                       <p className="text-body text-gray text-center">
                         You haven't created any offers yet
                       </p>
@@ -134,7 +134,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
                 <h2 className="text-lg font-normal mb-4">Your asks</h2>
                 <div className="space-y-4">
                   {asks.length === 0 ? (
-                    <div className="border border-thin rounded-md p-6">
+                    <div className="border border-thin rounded-xl p-6">
                       <p className="text-body text-gray text-center">
                         You haven't created any asks yet
                       </p>

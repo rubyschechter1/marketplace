@@ -33,23 +33,57 @@ const LANGUAGES = [
   "Gorontalo", "Mongondow", "Sangir", "Talaud", "Bantik", "Ratahan", "Tondano", "Tombulu", "Tousem"
 ].sort()
 
+// List of all countries
+const COUNTRIES = [
+  "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", 
+  "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", 
+  "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", 
+  "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada", 
+  "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Costa Rica", 
+  "Croatia", "Cuba", "Cyprus", "Czech Republic", "Democratic Republic of the Congo", "Denmark", "Djibouti", 
+  "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", 
+  "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", 
+  "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", 
+  "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", 
+  "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan", 
+  "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", 
+  "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", 
+  "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", 
+  "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", 
+  "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway", "Oman", "Pakistan", "Palau", 
+  "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", 
+  "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", 
+  "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", 
+  "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", 
+  "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", 
+  "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", 
+  "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", 
+  "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu", 
+  "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
+].sort()
+
 interface ProfileEditorProps {
   user: {
     id: string
     bio: string | null
     languages: string[]
+    countriesVisited?: string[]
   }
 }
 
 export default function ProfileEditor({ user }: ProfileEditorProps) {
   const router = useRouter()
   const [isAddingLanguage, setIsAddingLanguage] = useState(false)
+  const [isAddingCountry, setIsAddingCountry] = useState(false)
   const [isEditingBio, setIsEditingBio] = useState(false)
   const [bio, setBio] = useState(user.bio || "")
   const [originalBio, setOriginalBio] = useState(user.bio || "")
   const [newLanguage, setNewLanguage] = useState("")
+  const [newCountry, setNewCountry] = useState("")
   const [filteredLanguages, setFilteredLanguages] = useState<string[]>([])
+  const [filteredCountries, setFilteredCountries] = useState<string[]>([])
   const [showDropdown, setShowDropdown] = useState(false)
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   
@@ -139,6 +173,52 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
     }
   }
 
+  const handleCountryInputChange = (value: string) => {
+    setNewCountry(value)
+    if (value.trim()) {
+      const countriesVisited = user.countriesVisited || []
+      const filtered = COUNTRIES.filter(country => 
+        country.toLowerCase().includes(value.toLowerCase()) &&
+        !countriesVisited.includes(country)
+      ).slice(0, 10) // Show max 10 suggestions
+      setFilteredCountries(filtered)
+      setShowCountryDropdown(true)
+    } else {
+      setFilteredCountries([])
+      setShowCountryDropdown(false)
+    }
+  }
+
+  const handleCountrySelect = (country: string) => {
+    setNewCountry(country)
+    setShowCountryDropdown(false)
+    setFilteredCountries([])
+  }
+
+  const handleAddCountry = async () => {
+    if (!newCountry.trim()) return
+    
+    // Check if the country is in our predefined list
+    const selectedCountry = COUNTRIES.find(country => 
+      country.toLowerCase() === newCountry.toLowerCase()
+    )
+    
+    if (!selectedCountry) {
+      setError("Please select a country from the dropdown list")
+      return
+    }
+    
+    const currentCountries = user.countriesVisited || []
+    const updatedCountries = [...currentCountries, selectedCountry]
+    const success = await updateProfile({ countriesVisited: updatedCountries })
+    if (success) {
+      setNewCountry("")
+      setIsAddingCountry(false)
+      setShowCountryDropdown(false)
+      setFilteredCountries([])
+    }
+  }
+
   return (
     <>
       {/* About Section */}
@@ -190,12 +270,13 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
 
       {/* Languages Section */}
       <div className="mb-6">
-        <h2 className="text-lg mb-3">
-          {user.languages && user.languages.length > 0 
-            ? `Speaks ${user.languages.join(', ')}`
-            : 'Languages'
+        <h2 className="text-lg mb-2">Speaks</h2>
+        <p className="text-sm text-gray italic mb-3">
+          {user.languages.length > 0 
+            ? user.languages.join(', ')
+            : "No languages added yet"
           }
-        </h2>
+        </p>
         {isAddingLanguage ? (
           <div className="relative">
             <div className="flex gap-2">
@@ -256,6 +337,79 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
             className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors"
           >
             Add language
+          </button>
+        )}
+      </div>
+
+      {/* Countries Visited Section */}
+      <div className="mb-6">
+        <h2 className="text-lg mb-2">Countries visited</h2>
+        <p className="text-sm text-gray italic mb-3">
+          {user.countriesVisited && user.countriesVisited.length > 0 
+            ? user.countriesVisited.join(', ')
+            : "No countries added yet"
+          }
+        </p>
+        {isAddingCountry ? (
+          <div className="relative">
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  value={newCountry}
+                  onChange={(e) => handleCountryInputChange(e.target.value)}
+                  placeholder="Start typing a country..."
+                  className="w-full px-3 py-2 border border-black rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black bg-tan placeholder-gray"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      handleAddCountry()
+                    }
+                  }}
+                  autoComplete="off"
+                />
+                {showCountryDropdown && filteredCountries.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 bg-tan border border-black rounded-lg mt-1 max-h-40 overflow-y-auto z-10">
+                    {filteredCountries.map((country, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleCountrySelect(country)}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-black hover:text-tan transition-colors border-b border-gray/20 last:border-b-0"
+                      >
+                        {country}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={handleAddCountry}
+                disabled={loading || !newCountry.trim()}
+                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
+              >
+                {loading ? "Adding..." : "Add"}
+              </button>
+              <button
+                onClick={() => {
+                  setNewCountry("")
+                  setIsAddingCountry(false)
+                  setShowCountryDropdown(false)
+                  setFilteredCountries([])
+                  setError("")
+                }}
+                disabled={loading}
+                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setIsAddingCountry(true)}
+            className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors"
+          >
+            Add country
           </button>
         )}
       </div>

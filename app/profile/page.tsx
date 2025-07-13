@@ -77,7 +77,8 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
           <ProfileEditor user={{
             id: user.id,
             bio: user.bio,
-            languages: user.languages
+            languages: user.languages,
+            countriesVisited: user.countriesVisited || []
           }} />
         ) : (
           <>

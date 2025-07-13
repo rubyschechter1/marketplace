@@ -13,7 +13,7 @@ export async function PUT(req: Request) {
     }
 
     const data = await req.json()
-    const { firstName, lastName, bio, avatarUrl, languages } = data
+    const { firstName, lastName, bio, avatarUrl, languages, countriesVisited } = data
 
     // Validate input
     if (firstName && firstName.length > 50) {
@@ -44,6 +44,13 @@ export async function PUT(req: Request) {
       )
     }
 
+    if (countriesVisited && !Array.isArray(countriesVisited)) {
+      return NextResponse.json(
+        { error: "Countries visited must be an array" },
+        { status: 400 }
+      )
+    }
+
     const updatedUser = await prisma.travelers.update({
       where: { id: session.user.id },
       data: {
@@ -51,7 +58,8 @@ export async function PUT(req: Request) {
         ...(lastName !== undefined && { lastName }),
         ...(bio !== undefined && { bio }),
         ...(avatarUrl !== undefined && { avatarUrl }),
-        ...(languages !== undefined && { languages })
+        ...(languages !== undefined && { languages }),
+        ...(countriesVisited !== undefined && { countriesVisited })
       },
       select: {
         id: true,
@@ -61,6 +69,7 @@ export async function PUT(req: Request) {
         bio: true,
         avatarUrl: true,
         languages: true,
+        countriesVisited: true,
         createdAt: true,
         updatedAt: true
       }

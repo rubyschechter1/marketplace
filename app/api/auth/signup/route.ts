@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server"
 import { hash } from "bcryptjs"
 import { PrismaClient } from "@prisma/client"
+import { resend, FROM_EMAIL } from "@/lib/email/resend"
+import { WelcomeEmail } from "@/emails/welcome"
+import { render } from '@react-email/render'
+import * as React from 'react'
 
 const prisma = new PrismaClient()
 
@@ -41,6 +45,26 @@ export async function POST(req: Request) {
         password: hashedPassword
       }
     })
+
+    // Send welcome email
+    if (process.env.RESEND_API_KEY) {
+      try {
+        await resend.emails.send({
+          from: FROM_EMAIL,
+          to: email,
+          subject: 'Welcome to Marketplace!',
+          html: await render(
+            React.createElement(WelcomeEmail, {
+              firstName,
+              email,
+            })
+          ),
+        });
+      } catch (emailError) {
+        console.error('Failed to send welcome email:', emailError);
+        // Don't fail the signup if email fails
+      }
+    }
 
     return NextResponse.json({
       user: {

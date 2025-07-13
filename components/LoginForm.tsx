@@ -95,6 +95,15 @@ export default function LoginForm({ onSwitch, onBack }: { onSwitch: () => void; 
           {isLoading ? "Logging in..." : "Log In"}
         </Button>
 
+        <div className="text-center mt-4">
+          <a
+            href="/auth/forgot-password"
+            className="text-body text-gray hover:underline"
+          >
+            Forgot your password?
+          </a>
+        </div>
+
       </form>
       
       <button

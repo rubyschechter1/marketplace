@@ -2,6 +2,10 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { PrismaClient } from "@prisma/client"
+import { resend, FROM_EMAIL } from "@/lib/email/resend"
+import { NewMessageEmail } from "@/emails/new-message"
+import { render } from '@react-email/render'
+import * as React from 'react'
 
 const prisma = new PrismaClient()
 
@@ -64,9 +68,52 @@ export async function POST(req: Request) {
             lastName: true,
             avatarUrl: true
           }
+        },
+        recipient: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true
+          }
+        },
+        offer: {
+          select: {
+            id: true,
+            title: true
+          }
         }
       }
     })
+
+    // Send email notification to recipient
+    if (process.env.RESEND_API_KEY && message.recipient?.email) {
+      try {
+        // Truncate message for preview (max 150 chars)
+        const messagePreview = content.length > 150 
+          ? content.substring(0, 147) + '...' 
+          : content;
+        
+        const conversationLink = `${process.env.NEXTAUTH_URL}/messages/${offerId}/${proposedTradeId || 'direct'}`;
+        
+        await resend.emails.send({
+          from: FROM_EMAIL,
+          to: message.recipient.email,
+          subject: `New message from ${message.sender?.firstName || 'User'}`,
+          html: await render(
+            React.createElement(NewMessageEmail, {
+              recipientName: message.recipient.firstName,
+              senderName: message.sender?.firstName || 'User',
+              messagePreview,
+              offerTitle: message.offer?.title || 'Offer',
+              conversationLink,
+            })
+          ),
+        });
+      } catch (emailError) {
+        console.error('Failed to send message notification email:', emailError);
+        // Don't fail the request if email fails
+      }
+    }
 
     return NextResponse.json({ message })
   } catch (error) {

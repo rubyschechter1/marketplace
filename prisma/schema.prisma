@@ -91,6 +91,7 @@ model travelers {
   messagesSent                              messages[]        @relation("messages_sender_idTotravelers")
   offers                                    offers[]
   proposedTrades                            proposedTrades[]
+  passwordResetTokens                       passwordResetTokens[]
 }
 
 model proposedTrades {
@@ -111,4 +112,18 @@ model proposedTrades {
   @@index([offerId], map: "idx_proposed_trades_offer")
   @@index([proposerId], map: "idx_proposed_trades_proposer")
   @@index([status], map: "idx_proposed_trades_status")
+}
+
+model passwordResetTokens {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  token      String    @unique @db.VarChar(255)
+  userId     String    @map("user_id") @db.Uuid
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz(6)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  
+  user       travelers @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("password_reset_tokens")
+  @@index([token])
+  @@index([userId])
 }

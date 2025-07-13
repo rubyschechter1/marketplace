@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { PrismaClient } from "@prisma/client"
+import { resend, FROM_EMAIL } from "@/lib/email/resend"
+import { TradeStatusEmail } from "@/emails/trade-status"
+import { render } from '@react-email/render'
+import * as React from 'react'
 
 const prisma = new PrismaClient()
 
@@ -215,6 +219,35 @@ export async function PUT(
         }
       }
     })
+
+    // Send email notification for accepted/rejected trades
+    if (process.env.RESEND_API_KEY && 
+        (status === 'accepted' || status === 'rejected') && 
+        updatedProposedTrade?.proposer?.email) {
+      try {
+        const conversationLink = status === 'accepted' 
+          ? `${process.env.NEXTAUTH_URL}/messages/${proposedTrade.offerId}/${proposedTrade.id}`
+          : undefined;
+        
+        await resend.emails.send({
+          from: FROM_EMAIL,
+          to: updatedProposedTrade.proposer.email,
+          subject: `Your trade proposal was ${status}`,
+          html: await render(
+            React.createElement(TradeStatusEmail, {
+              recipientName: updatedProposedTrade.proposer.firstName,
+              offerOwnerName: updatedProposedTrade.offer.traveler?.firstName || 'User',
+              offerTitle: updatedProposedTrade.offer.title,
+              status: status === 'rejected' ? 'declined' : 'accepted',
+              conversationLink,
+            })
+          ),
+        });
+      } catch (emailError) {
+        console.error('Failed to send trade status email:', emailError);
+        // Don't fail the request if email fails
+      }
+    }
 
     return NextResponse.json(updatedProposedTrade)
   } catch (error) {

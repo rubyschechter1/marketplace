@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { PrismaClient } from "@prisma/client"
+import { resend, FROM_EMAIL } from "@/lib/email/resend"
+import { TradeProposalEmail } from "@/emails/trade-proposal"
+import { render } from '@react-email/render'
+import * as React from 'react'
 
 const prisma = new PrismaClient()
 
@@ -131,9 +135,40 @@ export async function POST(request: NextRequest) {
       },
       include: {
         proposer: true,
-        offeredItem: true
+        offeredItem: true,
+        offer: {
+          include: {
+            traveler: true,
+            item: true
+          }
+        }
       }
     })
+
+    // Send email notification to offer owner
+    if (process.env.RESEND_API_KEY && proposedTrade.offer.traveler?.email) {
+      try {
+        const proposalLink = `${process.env.NEXTAUTH_URL}/offers/${offerId}`;
+        
+        await resend.emails.send({
+          from: FROM_EMAIL,
+          to: proposedTrade.offer.traveler.email,
+          subject: `${proposedTrade.proposer.firstName} wants to trade with you!`,
+          html: await render(
+            React.createElement(TradeProposalEmail, {
+              recipientName: proposedTrade.offer.traveler.firstName,
+              proposerName: proposedTrade.proposer.firstName,
+              offerTitle: proposedTrade.offer.title,
+              offeredItemName: proposedTrade.offeredItem.name,
+              proposalLink,
+            })
+          ),
+        });
+      } catch (emailError) {
+        console.error('Failed to send trade proposal email:', emailError);
+        // Don't fail the request if email fails
+      }
+    }
 
     return NextResponse.json({ proposedTrade })
   } catch (error) {

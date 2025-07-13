@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Button from '@/components/ui/Button';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -37,43 +38,43 @@ export default function ForgotPasswordPage() {
     }
   };
 
+  const handleBack = () => {
+    router.push('/');
+  };
+
   if (submitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div className="text-center">
-            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-              Check your email
-            </h2>
-            <p className="mt-2 text-sm text-gray-600">
-              If an account exists with {email}, you will receive a password reset link.
-            </p>
-            <Link
-              href="/auth/signin"
-              className="mt-4 inline-block text-sm text-blue-600 hover:text-blue-500"
-            >
-              Back to sign in
-            </Link>
-          </div>
+      <div className="min-h-screen flex items-center justify-center bg-tan px-4">
+        <div className="w-full max-w-sm mx-auto text-center">
+          <h2 className="text-heading-2 mb-4">Check your email</h2>
+          <p className="text-body text-gray mb-6">
+            If an account exists with {email}, you will receive a password reset link.
+          </p>
+          <Button
+            onClick={handleBack}
+            variant="secondary"
+            fullWidth
+          >
+            Back to Home
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Forgot your password?
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+    <div className="min-h-screen flex items-center justify-center bg-tan px-4">
+      <div className="w-full max-w-sm mx-auto">
+        <div className="text-center mb-8">
+          <h2 className="text-heading-2 mb-2">Forgot your password?</h2>
+          <p className="text-body text-gray">
             Enter your email and we'll send you a reset link
           </p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="email" className="block text-body text-gray mb-2">
               Email address
             </label>
             <input
@@ -84,34 +85,32 @@ export default function ForgotPasswordPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+              className="w-full px-3 py-2 border border-black rounded-lg text-body placeholder-gray focus:outline-none focus:ring-1 focus:ring-black bg-tan [&:-webkit-autofill]:!bg-tan [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#ffebb5]"
               placeholder="Enter your email"
             />
           </div>
 
           {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
+            <div className="text-red-600 text-body">{error}</div>
           )}
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Sending...' : 'Send reset link'}
-            </button>
-          </div>
+          <Button
+            type="submit"
+            disabled={loading}
+            fullWidth
+            variant="secondary"
+          >
+            {loading ? 'Sending...' : 'Send reset link'}
+          </Button>
 
-          <div className="text-center">
-            <Link
-              href="/auth/signin"
-              className="text-sm text-blue-600 hover:text-blue-500"
+          <div className="text-center mt-4">
+            <button
+              type="button"
+              onClick={handleBack}
+              className="text-body text-gray hover:underline"
             >
-              Back to sign in
-            </Link>
+              Back to Home
+            </button>
           </div>
         </form>
       </div>

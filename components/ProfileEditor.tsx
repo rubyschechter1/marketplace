@@ -14,6 +14,7 @@ interface ProfileEditorProps {
 export default function ProfileEditor({ user }: ProfileEditorProps) {
   const router = useRouter()
   const [isAddingLanguage, setIsAddingLanguage] = useState(false)
+  const [isEditingBio, setIsEditingBio] = useState(false)
   const [bio, setBio] = useState(user.bio || "")
   const [originalBio, setOriginalBio] = useState(user.bio || "")
   const [newLanguage, setNewLanguage] = useState("")
@@ -52,11 +53,13 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
     const success = await updateProfile({ bio })
     if (success) {
       setOriginalBio(bio)
+      setIsEditingBio(false)
     }
   }
   
   const handleCancelBio = () => {
     setBio(originalBio)
+    setIsEditingBio(false)
     setError("")
   }
 
@@ -76,32 +79,47 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
       {/* About Section */}
       <div className="mb-6">
         <h2 className="text-lg mb-3">About</h2>
-        <textarea
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-          className={`w-full border border-black rounded-sm p-4 mb-3 text-sm min-h-[100px] focus:outline-none focus:ring-1 focus:ring-black resize-none bg-tan placeholder-gray ${
-            !bio ? 'text-gray' : 'text-black'
-          }`}
-          placeholder="No bio yet. Tell other travelers about yourself!"
-          maxLength={500}
-        />
-        {bioHasChanged && (
-          <div className="flex gap-2">
+        {isEditingBio ? (
+          <>
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              className="w-full border border-black rounded-lg p-4 mb-3 text-sm min-h-[100px] focus:outline-none focus:ring-1 focus:ring-black resize-none bg-tan placeholder-gray"
+              placeholder="Tell other travelers about yourself!"
+              maxLength={500}
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={handleSaveBio}
+                disabled={loading}
+                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
+              >
+                {loading ? "Saving..." : "Save"}
+              </button>
+              <button
+                onClick={handleCancelBio}
+                disabled={loading}
+                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            {bio ? (
+              <p className="text-sm whitespace-pre-line mb-3">{bio}</p>
+            ) : (
+              <p className="text-sm text-gray mb-3">No bio yet.</p>
+            )}
             <button
-              onClick={handleSaveBio}
-              disabled={loading}
-              className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
+              onClick={() => setIsEditingBio(true)}
+              className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors"
             >
-              {loading ? "Saving..." : "Save"}
+              Edit
             </button>
-            <button
-              onClick={handleCancelBio}
-              disabled={loading}
-              className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
-            >
-              Cancel
-            </button>
-          </div>
+          </>
         )}
       </div>
 
@@ -120,7 +138,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
               value={newLanguage}
               onChange={(e) => setNewLanguage(e.target.value)}
               placeholder="Enter language (e.g., English)"
-              className="flex-1 px-3 py-2 border border-black rounded-sm text-sm focus:outline-none focus:ring-1 focus:ring-black bg-tan placeholder-gray"
+              className="flex-1 px-3 py-2 border border-black rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black bg-tan placeholder-gray"
               onKeyPress={(e) => {
                 if (e.key === 'Enter') {
                   handleAddLanguage()
@@ -130,7 +148,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
             <button
               onClick={handleAddLanguage}
               disabled={loading || !newLanguage.trim()}
-              className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
+              className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
             >
               {loading ? "Adding..." : "Add"}
             </button>
@@ -141,7 +159,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
                 setError("")
               }}
               disabled={loading}
-              className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
+              className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
@@ -149,7 +167,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
         ) : (
           <button
             onClick={() => setIsAddingLanguage(true)}
-            className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors"
+            className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors"
           >
             Add language
           </button>
@@ -157,7 +175,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-sm text-sm text-red-600">
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
           {error}
         </div>
       )}

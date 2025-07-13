@@ -125,7 +125,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
         {/* Sign Out Button - Only for own profile */}
         {isOwnProfile && (
           <div className="w-full">
-            <SignOutButton className="w-full bg-tan text-black border border-black rounded-sm py-3 text-sm hover:bg-black hover:text-tan transition-colors" />
+            <SignOutButton className="w-full bg-tan text-black border border-black rounded-lg py-3 text-sm hover:bg-black hover:text-tan transition-colors" />
           </div>
         )}
       </main>

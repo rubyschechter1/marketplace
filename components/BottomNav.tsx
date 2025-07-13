@@ -11,9 +11,9 @@ export default function BottomNav() {
 
   const navItems = [
     {
-      href: "/messages",
-      icon: MessageCircle,
-      label: "Messages"
+      href: "/search",
+      icon: Search,
+      label: "Search"
     },
     {
       href: "/",
@@ -21,9 +21,9 @@ export default function BottomNav() {
       label: "Home"
     },
     {
-      href: "/search",
-      icon: Search,
-      label: "Search"
+      href: "/messages",
+      icon: MessageCircle,
+      label: "Messages"
     }
   ]
 

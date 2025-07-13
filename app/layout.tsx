@@ -4,6 +4,7 @@ import "./globals.css";
 import AuthProvider from "./providers/SessionProvider";
 import { LocationProvider } from "@/contexts/LocationContext";
 import { UserProvider } from "@/contexts/UserContext";
+import { Analytics } from "@vercel/analytics/next";
 
 const instrumentSerif = Instrument_Serif({ 
   weight: '400',
@@ -12,7 +13,7 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "Marketplace - Barter for Travelers",
+  title: "Brown Straw Hat - Barter for Travelers",
   description: "Trade items with fellow travelers - no money needed",
 };
 
@@ -33,6 +34,7 @@ export default function RootLayout({
             </UserProvider>
           </AuthProvider>
         </div>
+        <Analytics />
       </body>
     </html>
   );

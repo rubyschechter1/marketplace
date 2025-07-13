@@ -1,8 +1,10 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Star } from "lucide-react"
+import ReactCrop, { Crop, PixelCrop } from "react-image-crop"
+import "react-image-crop/dist/ReactCrop.css"
 
 interface ProfileHeaderProps {
   user: {
@@ -19,8 +21,15 @@ export default function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState("")
+  
+  // Image cropping states
+  const [isEditingAvatar, setIsEditingAvatar] = useState(false)
+  const [imageSrc, setImageSrc] = useState<string>("")
+  const [crop, setCrop] = useState<Crop>()
+  const [completedCrop, setCompletedCrop] = useState<PixelCrop>()
+  const imgRef = useRef<HTMLImageElement>(null)
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -30,26 +39,104 @@ export default function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps
       return
     }
 
-    setUploading(true)
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      setError("Only image files are allowed")
+      return
+    }
+
     setError("")
+    setCrop(undefined) // Makes crop preview update between images
+    const reader = new FileReader()
+    reader.addEventListener("load", () =>
+      setImageSrc(reader.result?.toString() || "")
+    )
+    reader.readAsDataURL(file)
+    setIsEditingAvatar(true)
+  }
 
-    try {
-      // Upload to blob storage
-      const formData = new FormData()
-      formData.append("file", file)
+  const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    const { width, height } = e.currentTarget
+    // Calculate the size to make a square crop centered in the image
+    const size = Math.min(width, height)
+    const x = (width - size) / 2
+    const y = (height - size) / 2
+    
+    setCrop({
+      unit: "px",
+      width: size * 0.8, // 80% of the smaller dimension
+      height: size * 0.8,
+      x: x + (size * 0.1), // Center with 10% margin
+      y: y + (size * 0.1),
+    })
+  }, [])
 
-      const uploadRes = await fetch("/api/upload", {
-        method: "POST",
-        body: formData
-      })
+  const getCroppedImg = useCallback(
+    (image: HTMLImageElement, crop: PixelCrop): Promise<Blob> => {
+      const canvas = document.createElement("canvas")
+      const ctx = canvas.getContext("2d")
 
-      if (!uploadRes.ok) {
-        throw new Error("Failed to upload photo")
+      if (!ctx) {
+        throw new Error("No 2d context")
       }
 
-      const { url } = await uploadRes.json()
+      const scaleX = image.naturalWidth / image.width
+      const scaleY = image.naturalHeight / image.height
+      
+      // Set canvas size to the crop dimensions
+      canvas.width = crop.width
+      canvas.height = crop.height
 
-      // Update user profile with new avatar URL
+      // Draw the cropped portion of the image to fill the entire canvas
+      ctx.drawImage(
+        image,
+        crop.x * scaleX,
+        crop.y * scaleY,
+        crop.width * scaleX,
+        crop.height * scaleY,
+        0,
+        0,
+        crop.width,
+        crop.height
+      )
+
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            throw new Error("Canvas is empty")
+          }
+          resolve(blob)
+        }, "image/jpeg", 0.9)
+      })
+    },
+    []
+  )
+
+  const uploadCroppedImage = async () => {
+    if (!imgRef.current || !completedCrop) return
+
+    try {
+      setUploading(true)
+      setError("")
+      const croppedBlob = await getCroppedImg(imgRef.current, completedCrop)
+      
+      // Create FormData for upload
+      const formData = new FormData()
+      formData.append("file", croppedBlob, "avatar.jpg")
+      
+      // Upload to avatar endpoint
+      const uploadResponse = await fetch("/api/upload/avatar", {
+        method: "POST",
+        body: formData,
+      })
+      
+      if (!uploadResponse.ok) {
+        throw new Error("Failed to upload image")
+      }
+      
+      const { url } = await uploadResponse.json()
+      
+      // Update profile with new avatar URL
       const profileRes = await fetch("/api/users/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -60,10 +147,15 @@ export default function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps
         throw new Error("Failed to update profile")
       }
 
-      // Refresh the page to show new avatar
+      // Close modal and refresh
+      setIsEditingAvatar(false)
+      setImageSrc("")
+      setCrop(undefined)
+      setCompletedCrop(undefined)
       router.refresh()
-    } catch (err: any) {
-      setError(err.message || "Failed to upload photo")
+    } catch (error) {
+      console.error("Error uploading avatar:", error)
+      setError("Failed to upload avatar")
     } finally {
       setUploading(false)
     }
@@ -86,6 +178,55 @@ export default function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps
           onChange={handlePhotoUpload}
           className="hidden"
         />
+      )}
+
+      {/* Image Cropping Modal */}
+      {isEditingAvatar && imageSrc && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-tan p-6 rounded-lg max-w-md w-full mx-4">
+            <h3 className="text-lg mb-4 text-center">Crop your photo</h3>
+            <div className="mb-4">
+              <ReactCrop
+                crop={crop}
+                onChange={(_, percentCrop) => setCrop(percentCrop)}
+                onComplete={(c) => setCompletedCrop(c)}
+                aspect={1}
+                className="[&_.ReactCrop__crop-selection]:rounded-md"
+              >
+                <img
+                  ref={imgRef}
+                  alt="Crop me"
+                  src={imageSrc}
+                  style={{ transform: `scale(1) rotate(0deg)` }}
+                  onLoad={onImageLoad}
+                  className="max-w-full h-auto"
+                />
+              </ReactCrop>
+            </div>
+            <div className="flex gap-2 justify-center">
+              <button
+                onClick={uploadCroppedImage}
+                disabled={uploading || !completedCrop}
+                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
+              >
+                {uploading ? "Saving..." : "Save Photo"}
+              </button>
+              <button
+                onClick={() => {
+                  setIsEditingAvatar(false)
+                  setImageSrc("")
+                  setCrop(undefined)
+                  setCompletedCrop(undefined)
+                  setError("")
+                }}
+                disabled={uploading}
+                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Profile Header */}

@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
       await resend.emails.send({
         from: FROM_EMAIL,
         to: email,
-        subject: 'Reset your Marketplace password',
+        subject: 'BSH: Reset your password',
         html: await render(
           React.createElement(PasswordResetEmail, {
             firstName: user.firstName,

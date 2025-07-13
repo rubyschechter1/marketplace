@@ -232,7 +232,7 @@ export async function PUT(
         await resend.emails.send({
           from: FROM_EMAIL,
           to: updatedProposedTrade.proposer.email,
-          subject: `Your trade proposal was ${status}`,
+          subject: `BSH: Your trade proposal was ${status}`,
           html: await render(
             React.createElement(TradeStatusEmail, {
               recipientName: updatedProposedTrade.proposer.firstName,

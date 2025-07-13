@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
         await resend.emails.send({
           from: FROM_EMAIL,
           to: proposedTrade.offer.traveler.email,
-          subject: `${proposedTrade.proposer.firstName} wants to trade with you!`,
+          subject: `BSH: ${proposedTrade.proposer.firstName} wants to trade with you!`,
           html: await render(
             React.createElement(TradeProposalEmail, {
               recipientName: proposedTrade.offer.traveler.firstName,

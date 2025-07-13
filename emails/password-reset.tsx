@@ -48,8 +48,8 @@ export const PasswordResetEmail: React.FC<PasswordResetEmailProps> = ({
 };
 
 const text = {
-  color: '#333',
-  fontSize: '14px',
+  color: '#000000', // black
+  fontSize: '15px', // body size
   lineHeight: '24px',
   margin: '0 0 16px',
 };
@@ -59,21 +59,23 @@ const buttonContainer = {
 };
 
 const button = {
-  backgroundColor: '#5469d4',
-  borderRadius: '4px',
-  color: '#fff',
-  fontSize: '16px',
+  backgroundColor: '#000000', // black
+  borderRadius: '6px', // md
+  color: '#ffebb5', // tan
+  fontSize: '15px', // button size
   textDecoration: 'none',
   textAlign: 'center' as const,
   display: 'block',
   padding: '12px 20px',
   fontWeight: '600',
+  border: '1px solid #000000',
 };
 
 const link = {
-  color: '#2754C5',
+  color: '#000000', // black
   fontSize: '12px',
   wordBreak: 'break-all' as const,
+  textDecoration: 'underline',
 };
 
 export default PasswordResetEmail;

@@ -15,19 +15,19 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
   firstName,
   email,
 }) => {
-  const preview = 'Welcome to Marketplace!';
+  const preview = 'Welcome to Brown Straw Hat!';
   
   return (
-    <EmailLayout preview={preview} heading="Welcome to Marketplace!">
+    <EmailLayout preview={preview} heading="Welcome to Brown Straw Hat!">
       <Text style={text}>Hi {firstName},</Text>
       
       <Text style={text}>
-        Welcome to Marketplace! We're excited to have you join our community of travelers 
+        Welcome to Brown Straw Hat! We're excited to have you join our community of travelers 
         sharing and trading items around the world.
       </Text>
       
       <Text style={text}>
-        Here's what you can do on Marketplace:
+        Here's what you can do on Brown Straw Hat:
       </Text>
       
       <ul style={list}>
@@ -50,15 +50,15 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
       <Text style={text}>
         Happy trading!
         <br />
-        The Marketplace Team
+        The Brown Straw Hat Team
       </Text>
     </EmailLayout>
   );
 };
 
 const text = {
-  color: '#333',
-  fontSize: '14px',
+  color: '#000000', // black
+  fontSize: '15px', // body size
   lineHeight: '24px',
   margin: '0 0 16px',
 };
@@ -70,9 +70,9 @@ const list = {
 
 const listItem = {
   margin: '8px 0',
-  fontSize: '14px',
+  fontSize: '15px', // body size
   lineHeight: '20px',
-  color: '#333',
+  color: '#000000', // black
 };
 
 const buttonContainer = {
@@ -80,15 +80,16 @@ const buttonContainer = {
 };
 
 const button = {
-  backgroundColor: '#5469d4',
-  borderRadius: '4px',
-  color: '#fff',
-  fontSize: '16px',
+  backgroundColor: '#000000', // black
+  borderRadius: '6px', // md
+  color: '#ffebb5', // tan
+  fontSize: '15px', // button size
   textDecoration: 'none',
   textAlign: 'center' as const,
   display: 'block',
   padding: '12px 20px',
   fontWeight: '600',
+  border: '1px solid #000000',
 };
 
 export default WelcomeEmail;

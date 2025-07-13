@@ -29,7 +29,7 @@ export const EmailLayout: React.FC<EmailLayoutProps> = ({
       <Body style={main}>
         <Container style={container}>
           <Section style={header}>
-            <Text style={logo}>Marketplace</Text>
+            <Text style={logo}>Brown Straw Hat</Text>
           </Section>
           
           <Section style={content}>
@@ -39,14 +39,14 @@ export const EmailLayout: React.FC<EmailLayoutProps> = ({
           
           <Section style={footer}>
             <Text style={footerText}>
-              This email was sent by Marketplace. If you have any questions,{' '}
-              <Link href="mailto:support@yourmarketplace.com" style={link}>
+              This email was sent by Brown Straw Hat. If you have any questions,{' '}
+              <Link href="mailto:support@brownstrawhat.com" style={link}>
                 contact support
               </Link>
               .
             </Text>
             <Text style={footerText}>
-              © {new Date().getFullYear()} Marketplace. All rights reserved.
+              © {new Date().getFullYear()} Brown Straw Hat. All rights reserved.
             </Text>
           </Section>
         </Container>
@@ -56,9 +56,9 @@ export const EmailLayout: React.FC<EmailLayoutProps> = ({
 };
 
 const main = {
-  backgroundColor: '#f6f9fc',
+  backgroundColor: '#ffebb5', // tan
   fontFamily:
-    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
+    'Instrument Serif, Georgia, serif',
 };
 
 const container = {
@@ -66,18 +66,21 @@ const container = {
   margin: '0 auto',
   padding: '20px 0 48px',
   marginBottom: '64px',
+  border: '1px solid #000000',
 };
 
 const header = {
   padding: '32px 32px 24px',
-  borderBottom: '1px solid #e6e6e6',
+  borderBottom: '1px solid #000000',
+  backgroundColor: '#ffebb5', // tan
 };
 
 const logo = {
-  fontSize: '24px',
+  fontSize: '25px', // header size
   fontWeight: '700',
-  color: '#1a1a1a',
+  color: '#000000', // black
   margin: '0',
+  fontFamily: 'Instrument Serif, Georgia, serif',
 };
 
 const content = {
@@ -85,28 +88,29 @@ const content = {
 };
 
 const headingStyle = {
-  fontSize: '24px',
-  letterSpacing: '-0.5px',
+  fontSize: '25px', // header size
   lineHeight: '1.3',
-  fontWeight: '400',
-  color: '#484848',
+  fontWeight: '600',
+  color: '#000000', // black
   margin: '0 0 24px',
+  fontFamily: 'Instrument Serif, Georgia, serif',
 };
 
 const footer = {
   padding: '32px',
-  borderTop: '1px solid #e6e6e6',
+  borderTop: '1px solid #000000',
+  backgroundColor: '#ffebb5', // tan
 };
 
 const footerText = {
-  color: '#666666',
+  color: '#5e5e5e', // gray
   fontSize: '12px',
   lineHeight: '20px',
   margin: '0 0 8px',
 };
 
 const link = {
-  color: '#2754C5',
+  color: '#000000', // black
   textDecoration: 'underline',
 };
 

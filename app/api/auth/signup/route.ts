@@ -52,7 +52,7 @@ export async function POST(req: Request) {
         await resend.emails.send({
           from: FROM_EMAIL,
           to: email,
-          subject: 'Welcome to Marketplace!',
+          subject: 'BSH: Welcome to Brown Straw Hat!',
           html: await render(
             React.createElement(WelcomeEmail, {
               firstName,

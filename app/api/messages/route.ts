@@ -98,7 +98,7 @@ export async function POST(req: Request) {
         await resend.emails.send({
           from: FROM_EMAIL,
           to: message.recipient.email,
-          subject: `New message from ${message.sender?.firstName || 'User'}`,
+          subject: `BSH: New message from ${message.sender?.firstName || 'User'}`,
           html: await render(
             React.createElement(NewMessageEmail, {
               recipientName: message.recipient.firstName,

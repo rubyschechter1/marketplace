@@ -64,29 +64,30 @@ export const TradeProposalEmail: React.FC<TradeProposalEmailProps> = ({
 };
 
 const text = {
-  color: '#333',
-  fontSize: '14px',
+  color: '#000000', // black
+  fontSize: '15px', // body size
   lineHeight: '24px',
   margin: '0 0 16px',
 };
 
 const smallText = {
-  color: '#666',
+  color: '#5e5e5e', // gray
   fontSize: '12px',
   lineHeight: '20px',
   margin: '0 0 16px',
 };
 
 const offerBox = {
-  backgroundColor: '#f6f9fc',
-  borderRadius: '4px',
+  backgroundColor: '#ffebb5', // tan
+  borderRadius: '6px', // md
   padding: '16px',
   margin: '16px 0',
+  border: '1px solid #000000',
 };
 
 const offerTitleStyle = {
-  color: '#1a1a1a',
-  fontSize: '16px',
+  color: '#000000', // black
+  fontSize: '15px', // body size
   fontWeight: '600',
   margin: '0',
 };
@@ -96,15 +97,16 @@ const buttonContainer = {
 };
 
 const button = {
-  backgroundColor: '#5469d4',
-  borderRadius: '4px',
-  color: '#fff',
-  fontSize: '16px',
+  backgroundColor: '#000000', // black
+  borderRadius: '6px', // md
+  color: '#ffebb5', // tan
+  fontSize: '15px', // button size
   textDecoration: 'none',
   textAlign: 'center' as const,
   display: 'block',
   padding: '12px 20px',
   fontWeight: '600',
+  border: '1px solid #000000',
 };
 
 export default TradeProposalEmail;

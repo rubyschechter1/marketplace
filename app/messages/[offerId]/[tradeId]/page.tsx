@@ -263,9 +263,9 @@ export default function MessagePage({
 
   return (
     <AuthLayout variant="fullHeight">
-      <div className="max-w-md mx-auto flex flex-col min-h-screen pb-16">
-        {/* Header */}
-        <div className="p-4 border-b border-gray/20 flex items-center">
+      <div className="max-w-md mx-auto flex flex-col h-screen pb-16">
+        {/* Fixed Header */}
+        <div className="p-4 border-b border-gray/20 flex items-center bg-tan z-20 relative">
           <button 
             onClick={() => {
               if (fromPage === 'messages') {
@@ -296,10 +296,10 @@ export default function MessagePage({
           </Link>
         </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4">
+        {/* Fixed Trade Proposal Header */}
+        <div className="bg-tan border border-black rounded-sm mx-4 mt-4 shadow-lg z-10 relative">
           {/* Initial trade proposal message */}
-          <div className="flex items-start mb-4">
+          <div className="flex items-start p-4 pb-2">
             <ProfileThumbnail 
               user={tradeData.proposer} 
               size="sm" 
@@ -312,7 +312,7 @@ export default function MessagePage({
                   <span className="font-normal">{tradeData.proposer.firstName} {tradeData.proposer.lastName}</span> offers <span className="italic">{tradeData.offeredItem.name}</span>
                 </p>
               </div>
-              <p className="text-xs text-gray mt-1">
+              <p className="text-xs text-gray mt-1 text-right">
                 {new Date().toLocaleDateString()}
               </p>
             </div>
@@ -320,7 +320,7 @@ export default function MessagePage({
 
           {/* Accept trade button (only for offer owner and if offer not deleted) */}
           {session?.user?.id === tradeData.offer.traveler.id && tradeData.offer.status !== 'deleted' && (
-            <div className="mb-4">
+            <div className="p-4 pt-0">
               <button 
                 onClick={handleAcceptTrade}
                 disabled={accepting}
@@ -335,7 +335,11 @@ export default function MessagePage({
               </button>
             </div>
           )}
+        </div>
 
+        {/* Messages Container - Only This Scrolls */}
+        <div className="flex-1 overflow-hidden">
+          <div className="h-full overflow-y-auto p-4">
           {/* Other messages */}
           {messages.map((message) => {
             const isOwnMessage = message.senderId === session?.user?.id
@@ -351,7 +355,7 @@ export default function MessagePage({
                   <div className="bg-gray/10 rounded-sm p-3">
                     <p className="text-center text-gray text-sm">{message.content}</p>
                   </div>
-                  <p className="text-center text-xs text-gray mt-1">
+                  <p className="text-right text-xs text-gray mt-1">
                     {new Date(message.createdAt).toLocaleDateString()}
                   </p>
                   
@@ -395,17 +399,18 @@ export default function MessagePage({
                   <div className="bg-tan border border-black rounded-sm p-3">
                     <p className="text-body">{message.content}</p>
                   </div>
-                  <p className="text-xs text-gray mt-1">
+                  <p className="text-xs text-gray mt-1 text-right">
                     {new Date(message.createdAt).toLocaleDateString()}
                   </p>
                 </div>
               </div>
             )
           })}
+          </div>
         </div>
 
-        {/* Bottom section - either deleted message or input */}
-        <div className="border-t border-gray/20">
+        {/* Fixed Bottom Section - either deleted message or input */}
+        <div className="border-t border-gray/20 bg-tan relative z-10">
           {tradeData.offer.status === 'deleted' ? (
             <div className="bg-gray/10 p-4">
               <p className="text-center text-gray text-sm">
@@ -430,7 +435,7 @@ export default function MessagePage({
               <button
                 onClick={handleSendMessage}
                 disabled={!newMessage.trim() || sending}
-                className="bg-tan text-black border border-black px-4 py-2 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm"
+                className="bg-tan text-black border-2 border-black px-4 py-2 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm font-medium"
               >
                 {sending ? (
                   <>

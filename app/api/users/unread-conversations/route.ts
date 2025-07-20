@@ -12,20 +12,13 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Get unique conversations with unread messages
-    const unreadConversations = await prisma.messages.findMany({
+    // Count total unread messages (not just conversations)
+    const unreadCount = await prisma.messages.count({
       where: {
         recipientId: session.user.id,
         isRead: false
-      },
-      select: {
-        proposedTradeId: true,
-        offerId: true
-      },
-      distinct: ['proposedTradeId', 'offerId']
+      }
     })
-
-    const unreadCount = unreadConversations.length
 
     return NextResponse.json({ unreadCount })
   } catch (error) {

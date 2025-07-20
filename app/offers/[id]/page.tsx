@@ -348,7 +348,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                     {isOtherSelected ? (
                       <>
                         <div className="text-body mb-3">
-                          {offer.type === 'ask' ? 'What do you request?' : 'What are you offering?'}
+                          {offer.type === 'ask' ? 'What are you offering?' : 'What are you offering?'}
                         </div>
                         <input
                           type="text"
@@ -361,10 +361,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                       </>
                     ) : (
                       <div className="text-body mb-3">
-                        {offer.type === 'ask' 
-                          ? <>You are requesting <span className="italic">{selectedItem}</span></>
-                          : <>You are offering <span className="italic">{selectedItem}</span></>
-                        }
+                        You are offering <span className="italic">{selectedItem}</span>
                       </div>
                     )}
                     
@@ -460,19 +457,11 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                               <span className="font-bold">Accepted</span>
                             </div>
                           )}
-                          {offer.type === 'ask' && (
-                            <div className={`text-body mb-2 ${isAccepted ? 'text-tan' : ''}`}>
-                              <span className="font-normal">
-                                {trade.proposer?.firstName} {trade.proposer?.lastName}
-                              </span>{' '}
-                              offers <span className="italic">{offer.title}</span>
-                            </div>
-                          )}
                           <div className={`text-body ${isAccepted ? 'text-tan' : ''}`}>
                             <span className="font-normal">
                               {trade.proposer?.firstName} {trade.proposer?.lastName}
                             </span>{' '}
-                            {offer.type === 'ask' ? 'requests' : 'offered'} <span className="italic">{trade.offeredItem?.name}</span>
+                            offers <span className="italic">{trade.offeredItem?.name}</span>
                           </div>
                         </div>
                       {/* Show item image for asks */}

@@ -268,7 +268,7 @@ export default function MessagePage({
             <div className="flex-1">
               <div className="bg-tan border border-black rounded-sm p-3">
                 <p className="text-body">
-                  <span className="font-normal">{tradeData.proposer.firstName} {tradeData.proposer.lastName}</span> is willing to trade <span className="italic">{tradeData.offeredItem.name}</span>
+                  <span className="font-normal">{tradeData.proposer.firstName} {tradeData.proposer.lastName}</span> offers <span className="italic">{tradeData.offeredItem.name}</span>
                 </p>
               </div>
               <p className="text-xs text-gray mt-1">

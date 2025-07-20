@@ -173,6 +173,7 @@ export default function SearchPage() {
                 key={offer.id} 
                 offer={offer} 
                 currentUserId={session?.user?.id || ''} 
+                fromPage="/search"
               />
             ))
           )}

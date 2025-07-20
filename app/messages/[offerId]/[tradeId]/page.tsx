@@ -259,7 +259,8 @@ export default function MessagePage({
             <ProfileThumbnail 
               user={tradeData.proposer} 
               size="sm" 
-              className="mr-3" 
+              className="mr-3"
+              fromPage={`/messages/${offerId}/${tradeId}`}
             />
             <div className="flex-1">
               <div className="bg-tan border border-black rounded-sm p-3">
@@ -311,7 +312,8 @@ export default function MessagePage({
                 <ProfileThumbnail 
                   user={message.sender} 
                   size="sm" 
-                  className="mr-3" 
+                  className="mr-3"
+                  fromPage={`/messages/${offerId}/${tradeId}`}
                 />
                 <div className="flex-1">
                   <div className="bg-tan border border-black rounded-sm p-3">

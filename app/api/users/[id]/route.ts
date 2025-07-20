@@ -16,6 +16,8 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    const isOwnProfile = session.user.id === id
+
     const user = await prisma.travelers.findUnique({
       where: { id },
       select: {
@@ -25,10 +27,19 @@ export async function GET(
         bio: true,
         avatarUrl: true,
         createdAt: true,
-        _count: {
+        email: isOwnProfile,
+        languages: true,
+        countriesVisited: true,
+        offers: {
+          where: { status: 'active' },
           select: {
-            offers: {
-              where: { status: 'active' }
+            id: true,
+            title: true,
+            status: true,
+            item: {
+              select: {
+                name: true
+              }
             }
           }
         }
@@ -39,7 +50,7 @@ export async function GET(
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    return NextResponse.json({ user })
+    return NextResponse.json(user)
   } catch (error) {
     console.error("Error fetching user:", error)
     return NextResponse.json(

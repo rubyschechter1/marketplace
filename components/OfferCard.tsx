@@ -27,9 +27,10 @@ interface OfferCardProps {
     distance?: number
   }
   currentUserId: string
+  fromPage?: string
 }
 
-export default function OfferCard({ offer, currentUserId }: OfferCardProps) {
+export default function OfferCard({ offer, currentUserId, fromPage }: OfferCardProps) {
   const isOwnOffer = offer.traveler.id === currentUserId
   const hasActivity = (offer._count?.messages || 0) > 0 || (offer._count?.proposedTrades || 0) > 0
 
@@ -40,6 +41,7 @@ export default function OfferCard({ offer, currentUserId }: OfferCardProps) {
         user={offer.traveler}
         size="sm"
         clickable={true}
+        fromPage={fromPage}
       />
 
       {/* Card content */}

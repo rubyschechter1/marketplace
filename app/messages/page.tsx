@@ -153,7 +153,7 @@ export default function MessagesPage() {
                       )}
                     </div>
                     <p className="text-sm italic text-gray">
-                      {message.senderId === session?.user?.id ? 'You' : (otherUser?.firstName || 'Unknown')}: {message.content}
+                      {message.senderId === session?.user?.id ? 'You' : (message.sender?.firstName || 'Unknown')}: {message.content}
                     </p>
                   </div>
                 </div>

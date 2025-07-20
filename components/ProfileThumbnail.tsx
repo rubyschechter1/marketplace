@@ -10,13 +10,15 @@ interface ProfileThumbnailProps {
   size?: 'sm' | 'md' | 'lg'
   clickable?: boolean
   className?: string
+  fromPage?: string
 }
 
 export default function ProfileThumbnail({ 
   user, 
   size = 'sm', 
   clickable = true,
-  className = ""
+  className = "",
+  fromPage
 }: ProfileThumbnailProps) {
   const sizeClasses = {
     sm: 'w-10 h-10 text-sm',
@@ -39,8 +41,12 @@ export default function ProfileThumbnail({
   )
 
   if (clickable) {
+    const profileUrl = fromPage 
+      ? `/profile?id=${user.id}&from=${encodeURIComponent(fromPage)}`
+      : `/profile?id=${user.id}`
+    
     return (
-      <Link href={`/profile?id=${user.id}`} className={combinedClasses}>
+      <Link href={profileUrl} className={combinedClasses}>
         {content}
       </Link>
     )

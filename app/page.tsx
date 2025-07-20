@@ -123,6 +123,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
                         key={offer.id}
                         offer={offer}
                         currentUserId={session.user.id}
+                        fromPage="/"
                       />
                     ))
                   )}
@@ -145,6 +146,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
                         key={ask.id}
                         offer={ask}
                         currentUserId={session.user.id}
+                        fromPage="/"
                       />
                     ))
                   )}

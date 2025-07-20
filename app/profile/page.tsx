@@ -1,56 +1,106 @@
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
-import { redirect } from "next/navigation"
+"use client"
+
+import { useEffect, useState } from "react"
+import { useSession } from "next-auth/react"
+import { useRouter, useSearchParams } from "next/navigation"
 import AuthLayout from "@/components/AuthLayout"
 import SignOutButton from "@/components/SignOutButton"
 import ProfileEditor from "@/components/ProfileEditor"
 import ProfileHeader from "@/components/ProfileHeader"
-import { PrismaClient } from "@prisma/client"
-import { Star, Check } from "lucide-react"
-import { transformUserWithOffers } from "@/lib/prisma-transforms"
+import { ChevronLeft } from "lucide-react"
 
-const prisma = new PrismaClient()
-
-async function getUserWithOffers(userId: string) {
-  const user = await prisma.travelers.findUnique({
-    where: { id: userId },
-    include: {
-      offers: {
-        where: { status: 'active' },
-        include: {
-          item: true
-        }
-      }
-    }
-  })
-  
-  // Transform Decimal fields to prevent serialization errors
-  return transformUserWithOffers(user)
+interface UserWithOffers {
+  id: string
+  email: string
+  firstName: string
+  lastName: string | null
+  bio: string | null
+  avatarUrl: string | null
+  languages: string[]
+  countriesVisited: string[]
+  createdAt: string
+  offers: Array<{
+    id: string
+    title: string
+    status: string
+    item: {
+      name: string
+    } | null
+  }>
 }
 
-export default async function ProfilePage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
-  const session = await getServerSession(authOptions)
-  const params = await searchParams
+export default function ProfilePage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [user, setUser] = useState<UserWithOffers | null>(null)
+  const [loading, setLoading] = useState(true)
   
-  // Determine which user to display
-  const userId = params.id || session?.user?.id
-  
-  // If no userId available (not logged in and no id param), redirect to home
-  if (!userId) {
-    redirect("/")
+  const userId = searchParams.get('id') || session?.user?.id
+  const fromPage = searchParams.get('from')
+  const isOwnProfile = session?.user?.id === userId
+
+  useEffect(() => {
+    if (status === "loading") return
+    
+    if (!userId) {
+      router.push("/")
+      return
+    }
+
+    async function fetchUser() {
+      try {
+        const response = await fetch(`/api/users/${userId}`)
+        if (response.ok) {
+          const userData = await response.json()
+          setUser(userData)
+        } else {
+          router.push("/")
+        }
+      } catch (error) {
+        console.error('Error fetching user:', error)
+        router.push("/")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUser()
+  }, [userId, status, router])
+
+  const handleBackClick = () => {
+    if (fromPage) {
+      // Decode the fromPage parameter and navigate back
+      const decodedFromPage = decodeURIComponent(fromPage)
+      router.push(decodedFromPage)
+    } else {
+      // Default back behavior
+      router.back()
+    }
   }
 
-  const user = await getUserWithOffers(userId)
+  if (loading) {
+    return (
+      <AuthLayout>
+        <main className="p-6 max-w-md mx-auto">
+          <p>Loading...</p>
+        </main>
+      </AuthLayout>
+    )
+  }
 
   if (!user) {
-    redirect("/")
+    return (
+      <AuthLayout>
+        <main className="p-6 max-w-md mx-auto">
+          <p>User not found</p>
+        </main>
+      </AuthLayout>
+    )
   }
-  
-  // Check if viewing own profile
-  const isOwnProfile = session?.user?.id === user.id
 
   // Get list of offered items
-  const offeredItems = user.offers.map((offer: any) => offer.item?.name).filter(Boolean)
+  const offeredItems = (user.offers || []).map((offer: any) => offer.item?.name).filter(Boolean)
 
   return (
     <AuthLayout>
@@ -118,7 +168,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
 
         {/* Offered Items Section */}
         <div className="mb-6">
-          <h2 className="text-lg mb-2">Has offered {user.offers.length} items</h2>
+          <h2 className="text-lg mb-2">Has offered {(user.offers || []).length} items</h2>
           <p className="text-sm text-gray italic">
             {offeredItems.length > 0 
               ? offeredItems.join(', ')
@@ -136,8 +186,21 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
 
         {/* Sign Out Button - Only for own profile */}
         {isOwnProfile && (
-          <div className="w-full">
+          <div className="w-full mb-6">
             <SignOutButton className="w-full bg-tan text-black border border-black rounded-lg py-3 text-sm hover:bg-black hover:text-tan transition-colors" />
+          </div>
+        )}
+
+        {/* Back Button - Only show if viewing someone else's profile */}
+        {!isOwnProfile && (
+          <div className="w-full">
+            <button 
+              onClick={handleBackClick}
+              className="w-full bg-tan text-black border border-black rounded-lg py-3 text-sm hover:bg-black hover:text-tan transition-colors flex items-center justify-center"
+            >
+              <ChevronLeft size={20} className="mr-1" />
+              Back
+            </button>
           </div>
         )}
       </main>

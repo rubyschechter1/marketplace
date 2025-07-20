@@ -93,6 +93,9 @@ model travelers {
   offers                                    offers[]
   proposedTrades                            proposedTrades[]
   passwordResetTokens                       passwordResetTokens[]
+  reviewsGiven                              reviews[]         @relation("reviews_reviewer")
+  reviewsReceived                           reviews[]         @relation("reviews_reviewee")
+  reputationScore                           userReputationScores?
 }
 
 model proposedTrades {
@@ -108,6 +111,8 @@ model proposedTrades {
   proposer         travelers  @relation(fields: [proposerId], references: [id], onDelete: Cascade)
   offeredItem      items      @relation(fields: [offeredItemId], references: [id])
   messages         messages[]
+  reviews          reviews[]
+  exchangeDate     tradeExchangeDates?
   
   @@map("proposed_trades")
   @@index([offerId], map: "idx_proposed_trades_offer")
@@ -127,4 +132,53 @@ model passwordResetTokens {
   @@map("password_reset_tokens")
   @@index([token])
   @@index([userId])
+}
+
+model reviews {
+  id               String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  proposedTradeId  String     @map("proposed_trade_id") @db.Uuid
+  reviewerId       String     @map("reviewer_id") @db.Uuid
+  revieweeId       String     @map("reviewee_id") @db.Uuid
+  rating           Int        @db.SmallInt
+  content          String?
+  isEdited         Boolean    @default(false) @map("is_edited")
+  createdAt        DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  
+  proposedTrade    proposedTrades @relation(fields: [proposedTradeId], references: [id], onDelete: Cascade)
+  reviewer         travelers      @relation("reviews_reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+  reviewee         travelers      @relation("reviews_reviewee", fields: [revieweeId], references: [id], onDelete: Cascade)
+  
+  @@unique([proposedTradeId, reviewerId])
+  @@index([revieweeId])
+  @@index([proposedTradeId])
+}
+
+model tradeExchangeDates {
+  id                   String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  proposedTradeId      String     @map("proposed_trade_id") @db.Uuid
+  extractedDate        DateTime   @map("extracted_date") @db.Timestamptz(6)
+  extractionMethod     String     @map("extraction_method") @db.VarChar(20)
+  isReviewRequestSent  Boolean    @default(false) @map("is_review_request_sent")
+  reviewRequestSentAt  DateTime?  @map("review_request_sent_at") @db.Timestamptz(6)
+  createdAt            DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  
+  proposedTrade        proposedTrades @relation(fields: [proposedTradeId], references: [id], onDelete: Cascade)
+  
+  @@map("trade_exchange_dates")
+  @@unique([proposedTradeId])
+  @@index([extractedDate, isReviewRequestSent])
+}
+
+model userReputationScores {
+  userId           String    @id @map("user_id") @db.Uuid
+  totalReviews     Int       @default(0) @map("total_reviews")
+  averageRating    Decimal   @default(0) @map("average_rating") @db.Decimal(3, 2)
+  credibilityScore Decimal   @default(1) @map("credibility_score") @db.Decimal(3, 2)
+  lastCalculated   DateTime  @default(now()) @map("last_calculated") @db.Timestamptz(6)
+  
+  user             travelers @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_reputation_scores")
 }

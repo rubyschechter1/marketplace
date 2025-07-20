@@ -9,6 +9,7 @@ import { ChevronLeft, Send } from "lucide-react"
 import Link from "next/link"
 import { useUser } from "@/contexts/UserContext"
 import BrownHatLoader from "@/components/BrownHatLoader"
+import ReviewForm from "@/components/ReviewForm"
 
 interface Message {
   id: string
@@ -71,6 +72,8 @@ export default function MessagePage({
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [accepting, setAccepting] = useState(false)
+  const [showReviewForm, setShowReviewForm] = useState(false)
+  const [existingReview, setExistingReview] = useState<{ rating: number; content: string | null } | null>(null)
   const hasRefreshedUser = useRef(false)
 
   useEffect(() => {
@@ -85,17 +88,10 @@ export default function MessagePage({
     })
   }, [params, searchParams])
 
-  useEffect(() => {
-    if (status === "loading") return
-    if (status === "unauthenticated") {
-      router.push('/')
-      return
-    }
+  const fetchData = async () => {
+    if (!offerId || !tradeId) return
 
-    async function fetchData() {
-      if (!offerId || !tradeId) return
-
-      try {
+    try {
         // Fetch trade details
         const tradeResponse = await fetch(`/api/proposed-trades/${tradeId}`)
         if (!tradeResponse.ok) {
@@ -111,10 +107,48 @@ export default function MessagePage({
           const data = await messagesResponse.json()
           setMessages(data.messages || [])
           
+          // Check for review request messages
+          const hasReviewRequest = data.messages.some((msg: Message) => 
+            !msg.senderId && msg.content.includes('rate your experience')
+          )
+          if (hasReviewRequest && trade.status === 'accepted') {
+            setShowReviewForm(true)
+          }
+          
           // Refresh user context only once per conversation load
           if (!hasRefreshedUser.current) {
             hasRefreshedUser.current = true
             refreshUser()
+          }
+        }
+
+        // Check if user has already reviewed
+        if (trade.status === 'accepted' && session?.user?.id) {
+          try {
+            const reviewsResponse = await fetch('/api/reviews/pending')
+            if (reviewsResponse.ok) {
+              const { pendingReviews } = await reviewsResponse.json()
+              const hasPendingReview = pendingReviews.some(
+                (pr: any) => pr.proposedTradeId === tradeId
+              )
+              
+              // If no pending review, check if already reviewed
+              if (!hasPendingReview) {
+                const userReviewsResponse = await fetch(`/api/reviews/user/${session.user.id}`)
+                if (userReviewsResponse.ok) {
+                  const { reviews } = await userReviewsResponse.json()
+                  const userReview = reviews.find((r: any) => r.proposedTradeId === tradeId)
+                  if (userReview) {
+                    setExistingReview({
+                      rating: userReview.rating,
+                      content: userReview.content
+                    })
+                  }
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Error checking review status:', error)
           }
         }
       } catch (error) {
@@ -123,10 +157,17 @@ export default function MessagePage({
       } finally {
         setLoading(false)
       }
+  }
+
+  useEffect(() => {
+    if (status === "loading") return
+    if (status === "unauthenticated") {
+      router.push('/')
+      return
     }
 
     fetchData()
-  }, [offerId, tradeId, status, router])
+  }, [offerId, tradeId, status, router, session?.user?.id])
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !tradeData) return
@@ -302,6 +343,9 @@ export default function MessagePage({
             
             // System messages
             if (isSystemMessage) {
+              // Check if this is a review request message
+              const isReviewRequest = message.content.includes('rate your experience')
+              
               return (
                 <div key={message.id} className="mb-4">
                   <div className="bg-gray/10 rounded-sm p-3">
@@ -310,6 +354,30 @@ export default function MessagePage({
                   <p className="text-center text-xs text-gray mt-1">
                     {new Date(message.createdAt).toLocaleDateString()}
                   </p>
+                  
+                  {/* Show review form after review request message */}
+                  {isReviewRequest && showReviewForm && !existingReview && (
+                    <div className="mt-4">
+                      <ReviewForm
+                        proposedTradeId={tradeId}
+                        revieweeName={otherUser.firstName}
+                        onSubmit={() => {
+                          setShowReviewForm(false)
+                          // Refresh messages to show completion
+                          fetchData()
+                        }}
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Show existing review if already submitted */}
+                  {isReviewRequest && existingReview && (
+                    <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-center text-sm text-green-800">
+                        You already reviewed this trade
+                      </p>
+                    </div>
+                  )}
                 </div>
               )
             }

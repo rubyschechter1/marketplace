@@ -6,6 +6,7 @@ import { resend, FROM_EMAIL } from "@/lib/email/resend"
 import { TradeStatusEmail } from "@/emails/trade-status"
 import { render } from '@react-email/render'
 import * as React from 'react'
+import { analyzeConversationForExchangeDate, saveExchangeDate } from "@/lib/ai/date-extraction"
 
 const prisma = new PrismaClient()
 
@@ -204,6 +205,14 @@ export async function PUT(
 
       return updatedTrade
     })
+
+    // If trade was accepted, analyze conversation for exchange date
+    if (status === 'accepted') {
+      // Run this asynchronously to not block the response
+      analyzeConversationForExchangeDate(proposedTrade.id)
+        .then(result => saveExchangeDate(proposedTrade.id, result))
+        .catch(error => console.error('Error analyzing exchange date:', error))
+    }
 
     // Fetch the updated trade with all relations
     const updatedProposedTrade = await prisma.proposedTrades.findUnique({

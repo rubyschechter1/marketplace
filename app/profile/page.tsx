@@ -7,6 +7,7 @@ import AuthLayout from "@/components/AuthLayout"
 import SignOutButton from "@/components/SignOutButton"
 import ProfileEditor from "@/components/ProfileEditor"
 import ProfileHeader from "@/components/ProfileHeader"
+import UserReviews from "@/components/UserReviews"
 import { ChevronLeft } from "lucide-react"
 
 interface UserWithOffers {
@@ -178,10 +179,16 @@ export default function ProfilePage() {
         </div>
 
         {/* Member Since */}
-        <div className="mb-8">
+        <div className="mb-6">
           <p className="text-sm">
             Member since {user.createdAt ? new Date(user.createdAt).getFullYear() : "Unknown"}
           </p>
+        </div>
+
+        {/* Reviews Section */}
+        <div className="mb-8">
+          <h2 className="text-lg mb-4">Reviews</h2>
+          <UserReviews userId={user.id} />
         </div>
 
         {/* Sign Out Button - Only for own profile */}

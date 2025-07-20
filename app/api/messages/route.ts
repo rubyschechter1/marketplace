@@ -6,6 +6,7 @@ import { resend, FROM_EMAIL } from "@/lib/email/resend"
 import { NewMessageEmail } from "@/emails/new-message"
 import { render } from '@react-email/render'
 import * as React from 'react'
+import { analyzeConversationForExchangeDate, saveExchangeDate } from "@/lib/ai/date-extraction"
 
 const prisma = new PrismaClient()
 
@@ -112,6 +113,21 @@ export async function POST(req: Request) {
       } catch (emailError) {
         console.error('Failed to send message notification email:', emailError);
         // Don't fail the request if email fails
+      }
+    }
+
+    // If message is for an accepted trade, check if we should re-analyze for exchange date
+    if (proposedTradeId) {
+      const proposedTrade = await prisma.proposedTrades.findUnique({
+        where: { id: proposedTradeId },
+        include: { exchangeDate: true }
+      })
+
+      if (proposedTrade?.status === 'accepted' && !proposedTrade.exchangeDate) {
+        // Re-analyze conversation asynchronously
+        analyzeConversationForExchangeDate(proposedTradeId)
+          .then(result => saveExchangeDate(proposedTradeId, result))
+          .catch(error => console.error('Error re-analyzing exchange date:', error))
       }
     }
 

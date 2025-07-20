@@ -163,7 +163,7 @@ export default function MessagesPage() {
                       <h3 className="text-body font-normal mb-1">
                         {message.offer?.item?.name || message.offer?.title}
                       </h3>
-                      {message.unreadCount && message.unreadCount > 0 && (
+                      {message.unreadCount != null && message.unreadCount > 0 && (
                         <div className="bg-red-500 text-white text-xs rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center font-medium flex-shrink-0">
                           {message.unreadCount}
                         </div>

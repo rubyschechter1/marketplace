@@ -36,6 +36,7 @@ export default function ProfilePage() {
   const searchParams = useSearchParams()
   const [user, setUser] = useState<UserWithOffers | null>(null)
   const [loading, setLoading] = useState(true)
+  const [reputationScore, setReputationScore] = useState<{ totalReviews: number; averageRating: number } | null>(null)
   
   const userId = searchParams.get('id') || session?.user?.id
   const fromPage = searchParams.get('from')
@@ -51,12 +52,22 @@ export default function ProfilePage() {
 
     async function fetchUser() {
       try {
-        const response = await fetch(`/api/users/${userId}`)
-        if (response.ok) {
-          const userData = await response.json()
+        const [userResponse, reviewsResponse] = await Promise.all([
+          fetch(`/api/users/${userId}`),
+          fetch(`/api/reviews/user/${userId}`)
+        ])
+        
+        if (userResponse.ok) {
+          const userData = await userResponse.json()
           setUser(userData)
         } else {
           router.push("/")
+          return
+        }
+        
+        if (reviewsResponse.ok) {
+          const reviewData = await reviewsResponse.json()
+          setReputationScore(reviewData.reputationScore)
         }
       } catch (error) {
         console.error('Error fetching user:', error)
@@ -107,13 +118,17 @@ export default function ProfilePage() {
     <AuthLayout>
       <main className="p-6 max-w-md mx-auto">
         {/* Profile Header Component */}
-        <ProfileHeader user={{
-          id: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName || undefined,
-          avatarUrl: user.avatarUrl,
-          createdAt: user.createdAt
-        }} isOwnProfile={isOwnProfile} />
+        <ProfileHeader 
+          user={{
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName || undefined,
+            avatarUrl: user.avatarUrl,
+            createdAt: user.createdAt
+          }} 
+          isOwnProfile={isOwnProfile} 
+          reputationScore={reputationScore || undefined}
+        />
 
         {/* Email Section - Only show for own profile */}
         {isOwnProfile && (

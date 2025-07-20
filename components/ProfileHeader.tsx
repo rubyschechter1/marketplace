@@ -15,9 +15,13 @@ interface ProfileHeaderProps {
     createdAt?: string
   }
   isOwnProfile: boolean
+  reputationScore?: {
+    totalReviews: number
+    averageRating: number | string
+  }
 }
 
-export default function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
+export default function ProfileHeader({ user, isOwnProfile, reputationScore }: ProfileHeaderProps) {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
@@ -263,13 +267,24 @@ export default function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps
             <span className="text-sm text-gray italic">Verified</span>
           </div>
 
-          {/* Star Rating */}
-          <div className="flex items-center gap-1 mb-2">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <Star key={star} size={16} className="fill-black text-black" />
-            ))}
-            <span className="text-sm ml-1">5.0</span>
-          </div>
+          {/* Star Rating - Only show if there are reviews */}
+          {reputationScore && reputationScore.totalReviews > 0 && (
+            <div className="flex items-center gap-1 mb-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star 
+                  key={star} 
+                  size={16} 
+                  className={star <= Math.round(Number(reputationScore.averageRating)) 
+                    ? "fill-black text-black" 
+                    : "fill-none text-gray-300"
+                  } 
+                />
+              ))}
+              <span className="text-sm ml-1">
+                {Number(reputationScore.averageRating).toFixed(1)} ({reputationScore.totalReviews})
+              </span>
+            </div>
+          )}
 
           {/* Member Since */}
           <div className="mb-2">

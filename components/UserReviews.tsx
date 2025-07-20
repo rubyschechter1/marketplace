@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import StarRating from "./StarRating"
+import { Star } from "lucide-react"
 import ProfileThumbnail from "./ProfileThumbnail"
 
 interface Review {
@@ -80,58 +80,46 @@ export default function UserReviews({ userId }: UserReviewsProps) {
   }
 
   return (
-    <div>
-      {/* Overall Rating Summary */}
-      <div className="mb-6 p-4 bg-tan/20 border border-black rounded-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-2xl font-medium">
-                {Number(reputationScore.averageRating).toFixed(1)}
-              </span>
-              <StarRating rating={Math.round(Number(reputationScore.averageRating))} readonly size="medium" />
+    <div className="space-y-4">
+      {reviews.map((review) => (
+        <div key={review.id} className="border-b border-gray/20 pb-4">
+          <div className="flex items-start gap-3">
+            <ProfileThumbnail 
+              user={review.reviewer} 
+              size="sm"
+              fromPage={`/users/${userId}`}
+            />
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-1">
+                <p className="font-medium">
+                  {review.reviewer.firstName} {review.reviewer.lastName}
+                </p>
+                <div className="flex gap-0.5">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star 
+                      key={star}
+                      size={14}
+                      className={star <= review.rating ? 'fill-black text-black' : 'fill-none text-gray-300'}
+                    />
+                  ))}
+                </div>
+              </div>
+              
+              {review.content && (
+                <p className="text-body mb-2">{review.content}</p>
+              )}
+              
+              <p className="text-xs text-gray">
+                Traded: {review.proposedTrade.offer.type === 'ask' 
+                  ? review.proposedTrade.offeredItem.name 
+                  : review.proposedTrade.offer.title
+                } • {new Date(review.createdAt).toLocaleDateString()}
+                {review.isEdited && ' • Edited'}
+              </p>
             </div>
-            <p className="text-sm text-gray">
-              Based on {reputationScore.totalReviews} review{reputationScore.totalReviews !== 1 ? 's' : ''}
-            </p>
           </div>
         </div>
-      </div>
-
-      {/* Individual Reviews */}
-      <div className="space-y-4">
-        {reviews.map((review) => (
-          <div key={review.id} className="border-b border-gray/20 pb-4">
-            <div className="flex items-start gap-3">
-              <ProfileThumbnail 
-                user={review.reviewer} 
-                size="sm"
-                fromPage={`/users/${userId}`}
-              />
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="font-medium">
-                    {review.reviewer.firstName} {review.reviewer.lastName}
-                  </p>
-                  <StarRating rating={review.rating} readonly size="small" />
-                </div>
-                
-                {review.content && (
-                  <p className="text-body mb-2">{review.content}</p>
-                )}
-                
-                <p className="text-xs text-gray">
-                  Traded: {review.proposedTrade.offer.type === 'ask' 
-                    ? review.proposedTrade.offeredItem.name 
-                    : review.proposedTrade.offer.title
-                  } • {new Date(review.createdAt).toLocaleDateString()}
-                  {review.isEdited && ' • Edited'}
-                </p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      ))}
     </div>
   )
 }

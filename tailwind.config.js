@@ -31,10 +31,21 @@ module.exports = {
         tilt: {
           '0%, 100%': { transform: 'rotate(-15deg)' },
           '50%': { transform: 'rotate(15deg)' },
+        },
+        'slide-in-bottom': {
+          '0%': { 
+            opacity: '0',
+            transform: 'translateY(20px)'
+          },
+          '100%': {
+            opacity: '1',
+            transform: 'translateY(0)'
+          }
         }
       },
       animation: {
         tilt: 'tilt 1.5s ease-in-out infinite',
+        'slide-in-bottom': 'slide-in-bottom 0.3s ease-out',
       }
     },
   },

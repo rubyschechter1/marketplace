@@ -28,6 +28,23 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
+  const fetchUnreadCount = async () => {
+    if (!session?.user?.id) return
+
+    try {
+      const response = await fetch('/api/users/unread-conversations')
+      if (response.ok) {
+        const data = await response.json()
+        setUser(prev => prev ? {
+          ...prev,
+          unreadMessagesCount: data.unreadCount || 0
+        } : null)
+      }
+    } catch (error) {
+      console.error('Failed to fetch unread count:', error)
+    }
+  }
+
   const fetchUser = async () => {
     if (!session?.user?.id) {
       setUser(null)
@@ -68,6 +85,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
     
     fetchUser()
   }, [session?.user?.id, status])
+
+  // Poll for unread count updates every 10 seconds
+  useEffect(() => {
+    if (!session?.user?.id) return
+
+    const interval = setInterval(() => {
+      fetchUnreadCount()
+    }, 10000) // Poll every 10 seconds
+
+    return () => clearInterval(interval)
+  }, [session?.user?.id])
 
   const refreshUser = async () => {
     await fetchUser()

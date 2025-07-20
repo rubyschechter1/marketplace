@@ -15,7 +15,9 @@ interface Message {
   id: string
   content: string
   senderId: string
+  recipientId?: string
   createdAt: string
+  isRead?: boolean
   sender: {
     id: string
     firstName: string
@@ -75,7 +77,10 @@ export default function MessagePage({
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [existingReview, setExistingReview] = useState<{ rating: number; content: string | null } | null>(null)
   const [isItemAvailable, setIsItemAvailable] = useState(true)
+  const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set())
   const hasRefreshedUser = useRef(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     params.then(p => {
@@ -137,6 +142,11 @@ export default function MessagePage({
             hasRefreshedUser.current = true
             refreshUser()
           }
+
+          // Scroll to bottom on initial load
+          setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
+          }, 100)
         }
 
         // Check if user has already reviewed
@@ -186,6 +196,64 @@ export default function MessagePage({
     fetchData()
   }, [offerId, tradeId, status, router, session?.user?.id])
 
+  // Polling for new messages
+  useEffect(() => {
+    if (!offerId || !tradeId || !session?.user?.id) return
+
+    // Function to poll for new messages
+    const pollNewMessages = async () => {
+      try {
+        // Get the timestamp of the last message
+        const lastMessage = messages[messages.length - 1]
+        if (!lastMessage) return
+
+        const response = await fetch(
+          `/api/messages/${offerId}/${tradeId}?after=${lastMessage.createdAt}`
+        )
+        
+        if (response.ok) {
+          const data = await response.json()
+          if (data.messages && data.messages.length > 0) {
+            // Track new message IDs for animation
+            const newIds = new Set(data.messages.map((msg: Message) => msg.id))
+            setNewMessageIds(newIds)
+            
+            // Add new messages to the state
+            setMessages(prev => [...prev, ...data.messages])
+            
+            // Mark them as read if user is recipient
+            const unreadMessages = data.messages.filter(
+              (msg: Message) => msg.recipientId === session.user.id && !msg.isRead
+            )
+            
+            if (unreadMessages.length > 0) {
+              // Update unread count in user context
+              refreshUser()
+            }
+
+            // Scroll to bottom when new messages arrive
+            setTimeout(() => {
+              messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+            }, 100)
+
+            // Remove animation class after animation completes
+            setTimeout(() => {
+              setNewMessageIds(new Set())
+            }, 500)
+          }
+        }
+      } catch (error) {
+        console.error('Error polling for new messages:', error)
+      }
+    }
+
+    // Poll every 3 seconds
+    const interval = setInterval(pollNewMessages, 3000)
+
+    // Cleanup interval on unmount
+    return () => clearInterval(interval)
+  }, [offerId, tradeId, messages, session?.user?.id, refreshUser])
+
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !tradeData) return
 
@@ -211,6 +279,11 @@ export default function MessagePage({
         const { message } = await response.json()
         setMessages([...messages, message])
         setNewMessage("")
+        
+        // Scroll to bottom after sending
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+        }, 100)
       }
     } catch (error) {
       console.error('Error sending message:', error)
@@ -411,8 +484,14 @@ export default function MessagePage({
             }
             
             // Regular messages
+            const isNewMessage = newMessageIds.has(message.id)
             return (
-              <div key={message.id} className="flex items-start mb-4">
+              <div 
+                key={message.id} 
+                className={`flex items-start mb-4 ${
+                  isNewMessage ? 'animate-slide-in-bottom' : ''
+                }`}
+              >
                 <ProfileThumbnail 
                   user={message.sender} 
                   size="sm" 
@@ -430,6 +509,8 @@ export default function MessagePage({
               </div>
             )
           })}
+          {/* Scroll anchor */}
+          <div ref={messagesEndRef} />
           </div>
         </div>
 

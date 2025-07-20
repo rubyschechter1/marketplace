@@ -16,8 +16,12 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // Get query parameters
+    const { searchParams } = new URL(req.url)
+    const after = searchParams.get('after') // ISO timestamp to get messages after
+
     // Build where clause - now proposedTradeId is mandatory
-    const whereClause = {
+    const whereClause: any = {
       offerId,
       proposedTradeId,
       OR: [
@@ -28,6 +32,13 @@ export async function GET(
           { recipientId: null }
         ]}
       ]
+    }
+
+    // Add timestamp filter if provided
+    if (after) {
+      whereClause.createdAt = {
+        gt: new Date(after)
+      }
     }
 
     // Verify user has access to these messages

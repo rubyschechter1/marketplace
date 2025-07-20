@@ -23,7 +23,6 @@ export default function ReviewForm({
   const [content, setContent] = useState(existingReview?.content || "")
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
-  const [showConfirmation, setShowConfirmation] = useState(false)
 
   const handleSubmit = async () => {
     if (rating === 0) {
@@ -50,7 +49,6 @@ export default function ReviewForm({
         throw new Error(data.error || "Failed to submit review")
       }
 
-      setShowConfirmation(true)
       onSubmit()
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to submit review")
@@ -59,24 +57,6 @@ export default function ReviewForm({
     }
   }
 
-  if (showConfirmation) {
-    return (
-      <div className="mx-5 p-4 bg-tan border border-black rounded-lg">
-        <h3 className="font-medium mb-3 text-center">
-          Review Submitted Successfully!
-        </h3>
-        <p className="text-center text-sm mb-4">
-          Thank you for rating your exchange with {revieweeName}
-        </p>
-        <button
-          onClick={() => setShowConfirmation(false)}
-          className="w-full bg-tan text-black border border-black p-2 rounded-lg hover:bg-black hover:text-tan transition-colors"
-        >
-          Edit Review
-        </button>
-      </div>
-    )
-  }
 
   return (
     <div className="mx-5 p-4 bg-tan border border-black rounded-lg">

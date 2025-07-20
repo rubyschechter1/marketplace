@@ -121,6 +121,27 @@ export async function POST(request: NextRequest) {
     // Update user reputation score
     await updateUserReputationScore(revieweeId)
 
+    // Get reviewer's name for the system message
+    const reviewer = await prisma.travelers.findUnique({
+      where: { id: reviewerId },
+      select: { firstName: true }
+    })
+
+    // Create a system message to show the review was submitted
+    const reviewMessage = existingReview
+      ? `${reviewer?.firstName || 'User'} updated their review`
+      : `${reviewer?.firstName || 'User'} submitted a review`
+    
+    await prisma.messages.create({
+      data: {
+        content: reviewMessage,
+        offerId: proposedTrade.offerId,
+        proposedTradeId: proposedTradeId,
+        // No senderId for system messages
+        // No recipientId for system messages
+      }
+    })
+
     return NextResponse.json(review)
   } catch (error) {
     console.error("Error creating/updating review:", error)

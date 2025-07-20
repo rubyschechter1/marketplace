@@ -161,15 +161,23 @@ export default function MessagePage({
               
               // If no pending review, check if already reviewed
               if (!hasPendingReview) {
-                const userReviewsResponse = await fetch(`/api/reviews/user/${session.user.id}`)
-                if (userReviewsResponse.ok) {
-                  const { reviews } = await userReviewsResponse.json()
-                  const userReview = reviews.find((r: any) => r.proposedTradeId === tradeId)
+                // We need to check if THIS USER has reviewed THIS TRADE
+                // The /api/reviews/user endpoint returns reviews ABOUT that user, not BY that user
+                // So we need a different approach - check the trade's reviews
+                const tradeReviewsResponse = await fetch(`/api/proposed-trades/${tradeId}`)
+                if (tradeReviewsResponse.ok) {
+                  const tradeWithReviews = await tradeReviewsResponse.json()
+                  // Find if current user has already reviewed this trade
+                  const userReview = tradeWithReviews.reviews?.find(
+                    (r: any) => r.reviewerId === session.user.id
+                  )
                   if (userReview) {
                     setExistingReview({
                       rating: userReview.rating,
                       content: userReview.content
                     })
+                    // Show the review form to allow editing
+                    setShowReviewForm(true)
                   }
                 }
               }
@@ -457,26 +465,19 @@ export default function MessagePage({
                   </p>
                   
                   {/* Show review form after review request message */}
-                  {isReviewRequest && showReviewForm && !existingReview && (
+                  {isReviewRequest && (showReviewForm || existingReview) && (
                     <div className="mt-4">
                       <ReviewForm
                         proposedTradeId={tradeId}
                         revieweeName={otherUser.firstName}
+                        existingReview={existingReview || undefined}
                         onSubmit={() => {
+                          // Hide the review form after submission
                           setShowReviewForm(false)
-                          // Refresh messages to show completion
-                          fetchData()
+                          // Don't clear existingReview so user can still edit
+                          // The system message will show the review was submitted
                         }}
                       />
-                    </div>
-                  )}
-                  
-                  {/* Show existing review if already submitted */}
-                  {isReviewRequest && existingReview && (
-                    <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                      <p className="text-center text-sm text-green-800">
-                        You already reviewed this trade
-                      </p>
                     </div>
                   )}
                 </div>

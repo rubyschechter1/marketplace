@@ -36,6 +36,17 @@ export async function GET(
             traveler: true,
             item: true
           }
+        },
+        reviews: {
+          select: {
+            id: true,
+            reviewerId: true,
+            revieweeId: true,
+            rating: true,
+            content: true,
+            createdAt: true,
+            isEdited: true
+          }
         }
       }
     })

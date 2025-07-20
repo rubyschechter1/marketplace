@@ -12,13 +12,13 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Get the latest message from each conversation
+    // Get the latest message from each conversation (grouped by offer and proposed trade)
     const conversations = await prisma.$queryRaw`
       WITH ranked_messages AS (
         SELECT 
           m.*,
           ROW_NUMBER() OVER (
-            PARTITION BY m.offer_id 
+            PARTITION BY m.offer_id, COALESCE(m.proposed_trade_id::text, 'no_trade')
             ORDER BY m.created_at DESC
           ) as rn
         FROM messages m
@@ -92,10 +92,22 @@ export async function GET(req: Request) {
       unreadCounts.map((c: any) => [c.offerId, c._count])
     )
 
-    const conversationsWithUnread = enrichedConversations.map((conv: any) => ({
-      ...conv,
-      unreadCount: unreadMap.get(conv.offerId) || 0
-    }))
+    // Create a map to preserve the original chronological ordering
+    const conversationOrderMap = new Map(
+      (conversations as any[]).map((c, index) => [c.id, index])
+    )
+
+    const conversationsWithUnread = enrichedConversations
+      .map((conv: any) => ({
+        ...conv,
+        unreadCount: unreadMap.get(conv.offerId) || 0
+      }))
+      .sort((a, b) => {
+        // Sort by the original chronological order (most recent first)
+        const orderA = conversationOrderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER
+        const orderB = conversationOrderMap.get(b.id) ?? Number.MAX_SAFE_INTEGER
+        return orderA - orderB
+      })
 
     return NextResponse.json({ conversations: conversationsWithUnread })
   } catch (error) {

@@ -145,6 +145,22 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Create an initial message for this trade proposal
+    try {
+      await prisma.messages.create({
+        data: {
+          offerId: offerId,
+          senderId: session.user.id,
+          recipientId: proposedTrade.offer.traveler.id,
+          proposedTradeId: proposedTrade.id,
+          content: `Hi! I'd like to trade my ${proposedTrade.offeredItem.name} for your ${proposedTrade.offer.item?.name || proposedTrade.offer.title}.`
+        }
+      })
+    } catch (messageError) {
+      console.error('Failed to create initial message:', messageError);
+      // Don't fail the request if message creation fails
+    }
+
     // Send email notification to offer owner
     if (process.env.RESEND_API_KEY && proposedTrade.offer.traveler?.email) {
       try {

@@ -5,6 +5,7 @@
 ### Current Approach
 - Starting with Next.js for a mobile-first website
 - Prioritizing rapid development and validation over native app features
+- **Don't run "npm run dev". we will always have a dev server already running.**
 
 ### Future Migration Considerations
 To ease potential migration to React Native:

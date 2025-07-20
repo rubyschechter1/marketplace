@@ -74,6 +74,7 @@ export default function MessagePage({
   const [accepting, setAccepting] = useState(false)
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [existingReview, setExistingReview] = useState<{ rating: number; content: string | null } | null>(null)
+  const [isItemAvailable, setIsItemAvailable] = useState(true)
   const hasRefreshedUser = useRef(false)
 
   useEffect(() => {
@@ -100,6 +101,22 @@ export default function MessagePage({
         }
         const trade = await tradeResponse.json()
         setTradeData(trade)
+
+        // Check if the offered item is available (not accepted in another trade)
+        // Only check if current user is the offer owner and trade is not already accepted
+        if (session?.user?.id === trade.offer.traveler.id && trade.status !== 'accepted') {
+          try {
+            const availabilityResponse = await fetch(`/api/proposed-trades/${tradeId}/availability`)
+            if (availabilityResponse.ok) {
+              const { isAvailable } = await availabilityResponse.json()
+              setIsItemAvailable(isAvailable)
+            }
+          } catch (error) {
+            console.error('Error checking item availability:', error)
+            // Default to available if check fails
+            setIsItemAvailable(true)
+          }
+        }
 
         // Fetch messages for this specific trade
         const messagesResponse = await fetch(`/api/messages/${offerId}/${tradeId}`)
@@ -321,18 +338,25 @@ export default function MessagePage({
           {/* Accept trade button (only for offer owner and if offer not deleted) */}
           {session?.user?.id === tradeData.offer.traveler.id && tradeData.offer.status !== 'deleted' && (
             <div className="p-4 pt-0">
-              <button 
-                onClick={handleAcceptTrade}
-                disabled={accepting}
-                className="w-full bg-tan text-black border border-black p-3 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {accepting ? (
-                  <div className="flex items-center justify-center">
-                    <BrownHatLoader size="small" />
-                    <span className="ml-2">Updating...</span>
-                  </div>
-                ) : tradeData.status === 'accepted' ? 'cancel trade' : 'accept trade'}
-              </button>
+              {/* Show accept/cancel button only if item is available or trade is already accepted */}
+              {(isItemAvailable || tradeData.status === 'accepted') ? (
+                <button 
+                  onClick={handleAcceptTrade}
+                  disabled={accepting}
+                  className="w-full bg-tan text-black border border-black p-3 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {accepting ? (
+                    <div className="flex items-center justify-center">
+                      <BrownHatLoader size="small" />
+                      <span className="ml-2">Updating...</span>
+                    </div>
+                  ) : tradeData.status === 'accepted' ? 'cancel trade' : 'accept trade'}
+                </button>
+              ) : (
+                <div className="w-full bg-gray/10 text-gray border border-gray/20 p-3 rounded-sm text-center">
+                  This item is no longer available
+                </div>
+              )}
             </div>
           )}
         </div>

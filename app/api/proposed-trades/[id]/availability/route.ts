@@ -42,7 +42,7 @@ export async function GET(
     }
 
     // Only the offer owner should be able to check availability
-    if (currentTrade.offer.traveler.id !== session.user.id) {
+    if (!currentTrade.offer.traveler || currentTrade.offer.traveler.id !== session.user.id) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 403 }

@@ -70,11 +70,11 @@ export async function GET(request: NextRequest) {
       
       return {
         proposedTradeId: trade.id,
-        reviewee: {
+        reviewee: reviewee ? {
           id: reviewee.id,
           firstName: reviewee.firstName,
           lastName: reviewee.lastName
-        },
+        } : null,
         tradeDetails: {
           offerId: trade.offer.id,
           offerTitle: trade.offer.title,

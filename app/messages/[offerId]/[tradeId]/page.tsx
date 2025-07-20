@@ -215,7 +215,7 @@ export default function MessagePage({
           const data = await response.json()
           if (data.messages && data.messages.length > 0) {
             // Track new message IDs for animation
-            const newIds = new Set(data.messages.map((msg: Message) => msg.id))
+            const newIds = new Set<string>(data.messages.map((msg: Message) => msg.id))
             setNewMessageIds(newIds)
             
             // Add new messages to the state

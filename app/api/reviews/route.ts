@@ -75,6 +75,13 @@ export async function POST(request: NextRequest) {
 
     const reviewerId = session.user.id
     const revieweeId = isOfferOwner ? proposedTrade.proposerId : proposedTrade.offer.travelerId
+    
+    if (!revieweeId) {
+      return NextResponse.json(
+        { error: "Unable to determine reviewee" },
+        { status: 400 }
+      )
+    }
 
     // Check if review already exists
     const existingReview = await prisma.reviews.findUnique({

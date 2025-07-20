@@ -8,6 +8,7 @@ import Link from "next/link"
 import { MapPin, ChevronLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useLocation } from "@/contexts/LocationContext"
+import BrownHatLoader from "@/components/BrownHatLoader"
 
 export default function OfferPage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session, status } = useSession()
@@ -201,7 +202,9 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
     return (
       <AuthLayout>
         <div className="max-w-md mx-auto p-6">
-          <p>Loading...</p>
+          <div className="py-12">
+            <BrownHatLoader size="large" text="Loading offer..." />
+          </div>
         </div>
       </AuthLayout>
     )
@@ -413,7 +416,12 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                       disabled={isSubmitting || (isOtherSelected && !customItemText.trim())}
                       className="bg-tan text-black border border-black px-4 py-2 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                     >
-                      {isSubmitting ? "Submitting..." : "Submit offer"}
+                      {isSubmitting ? (
+                        <div className="flex items-center">
+                          <BrownHatLoader size="small" />
+                          <span className="ml-2">Submitting...</span>
+                        </div>
+                      ) : "Submit offer"}
                     </button>
                   </div>
                 )}

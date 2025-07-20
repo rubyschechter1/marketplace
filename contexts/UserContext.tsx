@@ -12,7 +12,7 @@ interface User {
   avatarUrl?: string
   languages: string[]
   unreadMessages: number
-  unreadConversations?: number
+  unreadMessagesCount?: number
 }
 
 interface UserContextType {
@@ -49,7 +49,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         const user = {
           ...userData.user,
           unreadMessages: userData.user._count?.messagesReceived || 0,
-          unreadConversations: unreadData.unreadCount || 0
+          unreadMessagesCount: unreadData.unreadCount || 0
         }
         setUser(user)
       } else {

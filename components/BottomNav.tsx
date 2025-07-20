@@ -47,9 +47,9 @@ export default function BottomNav() {
               >
                 <div className="relative">
                   <Icon size={24} strokeWidth={1.5} />
-                  {item.href === "/messages" && user && user.unreadConversations !== undefined && user.unreadConversations > 0 ? (
+                  {item.href === "/messages" && user && user.unreadMessagesCount !== undefined && user.unreadMessagesCount > 0 ? (
                     <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                      {user.unreadConversations > 99 ? "99+" : user.unreadConversations}
+                      {user.unreadMessagesCount > 99 ? "99+" : user.unreadMessagesCount}
                     </div>
                   ) : null}
                 </div>

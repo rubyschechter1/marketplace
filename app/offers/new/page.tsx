@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Plus, ArrowLeft } from "lucide-react"
 import Button from "@/components/ui/Button"
+import BrownHatLoader from "@/components/BrownHatLoader"
 
 export default function NewOfferPage() {
   const router = useRouter()
@@ -258,7 +259,12 @@ export default function NewOfferPage() {
             disabled={isSubmitting || !formData.offeringTitle}
             className="mt-8"
           >
-            {isSubmitting ? "Creating offer..." : "Submit Offer"}
+            {isSubmitting ? (
+              <div className="flex items-center justify-center">
+                <BrownHatLoader size="small" />
+                <span className="ml-2">Creating offer...</span>
+              </div>
+            ) : "Submit Offer"}
           </Button>
         </form>
       </div>

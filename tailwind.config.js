@@ -26,6 +26,15 @@ module.exports = {
       },
       borderWidth: {
         'thin': '0.5px',
+      },
+      keyframes: {
+        tilt: {
+          '0%, 100%': { transform: 'rotate(-15deg)' },
+          '50%': { transform: 'rotate(15deg)' },
+        }
+      },
+      animation: {
+        tilt: 'tilt 1.5s ease-in-out infinite',
       }
     },
   },

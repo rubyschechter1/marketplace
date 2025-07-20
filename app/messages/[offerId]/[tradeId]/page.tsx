@@ -8,6 +8,7 @@ import ProfileThumbnail from "@/components/ProfileThumbnail"
 import { ChevronLeft, Send } from "lucide-react"
 import Link from "next/link"
 import { useUser } from "@/contexts/UserContext"
+import BrownHatLoader from "@/components/BrownHatLoader"
 
 interface Message {
   id: string
@@ -205,7 +206,9 @@ export default function MessagePage({
     return (
       <AuthLayout variant="fullHeight">
         <div className="max-w-md mx-auto p-6">
-          <p>Loading...</p>
+          <div className="py-12">
+            <BrownHatLoader size="large" text="Loading conversation..." />
+          </div>
         </div>
       </AuthLayout>
     )
@@ -282,7 +285,12 @@ export default function MessagePage({
                 disabled={accepting}
                 className="w-full bg-tan text-black border border-black p-3 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {accepting ? 'Updating...' : tradeData.status === 'accepted' ? 'cancel trade' : 'accept trade'}
+                {accepting ? (
+                  <div className="flex items-center justify-center">
+                    <BrownHatLoader size="small" />
+                    <span className="ml-2">Updating...</span>
+                  </div>
+                ) : tradeData.status === 'accepted' ? 'cancel trade' : 'accept trade'}
               </button>
             </div>
           )}
@@ -356,8 +364,17 @@ export default function MessagePage({
                 disabled={!newMessage.trim() || sending}
                 className="bg-tan text-black border border-black px-4 py-2 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm"
               >
-                {sending ? "Sending..." : "Send"}
-                <Send size={16} className="ml-2" />
+                {sending ? (
+                  <>
+                    <BrownHatLoader size="small" />
+                    <span className="ml-2">Sending...</span>
+                  </>
+                ) : (
+                  <>
+                    Send
+                    <Send size={16} className="ml-2" />
+                  </>
+                )}
               </button>
             </div>
           </div>

@@ -9,6 +9,8 @@ import Link from "next/link"
 import OfferCard from "@/components/OfferCard"
 import LocationHeader from "@/components/LocationHeader"
 import { useLocation } from "@/contexts/LocationContext"
+import BrownHatLoader from "@/components/BrownHatLoader"
+import OfferCardSkeleton from "@/components/OfferCardSkeleton"
 
 interface Offer {
   id: string
@@ -160,7 +162,11 @@ export default function SearchPage() {
         {/* Search Results */}
         <div className="space-y-4">
           {loading ? (
-            <p className="text-body text-gray text-center py-12">Loading {filterType}s...</p>
+            <>
+              <OfferCardSkeleton />
+              <OfferCardSkeleton />
+              <OfferCardSkeleton />
+            </>
           ) : filteredOffers.length === 0 ? (
             <p className="text-body text-gray text-center py-12">
               {searchTerm 

@@ -5,6 +5,8 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import AuthLayout from "@/components/AuthLayout"
 import { useUser } from "@/contexts/UserContext"
+import BrownHatLoader from "@/components/BrownHatLoader"
+import ConversationSkeleton from "@/components/ConversationSkeleton"
 
 interface Conversation {
   id: string
@@ -52,7 +54,10 @@ export default function MessagesPage() {
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(true)
 
+  console.log('MessagesPage render - loading:', loading, 'status:', status, 'conversations:', conversations.length)
+
   useEffect(() => {
+    console.log('MessagesPage useEffect - status:', status, 'loading:', loading)
     if (status === "loading") return
     if (status === "unauthenticated") {
       router.push('/')
@@ -62,20 +67,27 @@ export default function MessagesPage() {
     const abortController = new AbortController()
 
     async function fetchConversations() {
+      console.log('fetchConversations started')
       try {
         const response = await fetch('/api/messages/conversations', {
           signal: abortController.signal
         })
+        console.log('fetchConversations response status:', response.status)
         if (response.ok) {
           const data = await response.json()
+          console.log('fetchConversations data:', data)
           setConversations(data.conversations || [])
+          setLoading(false)
+        } else {
+          setLoading(false)
         }
       } catch (error: any) {
         if (error.name !== 'AbortError') {
           console.error('Error fetching conversations:', error)
+          setLoading(false)
+        } else {
+          console.log('Fetch was aborted, not changing loading state')
         }
-      } finally {
-        setLoading(false)
       }
     }
 
@@ -96,11 +108,16 @@ export default function MessagesPage() {
     }
   }
 
-  if (loading) {
+  if (loading || status === "loading") {
     return (
       <AuthLayout>
         <main className="p-4 max-w-md mx-auto">
-          <p>Loading...</p>
+          <h1 className="text-2xl font-bold mb-6">Messages</h1>
+          <div className="space-y-3">
+            <ConversationSkeleton />
+            <ConversationSkeleton />
+            <ConversationSkeleton />
+          </div>
         </main>
       </AuthLayout>
     )

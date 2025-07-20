@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Plus, ArrowLeft } from "lucide-react"
 import Button from "@/components/ui/Button"
+import AuthLayout from "@/components/AuthLayout"
 
 export default function NewAskPage() {
   const router = useRouter()
@@ -80,7 +81,7 @@ export default function NewAskPage() {
   }
 
   return (
-    <div className="min-h-screen bg-tan">
+    <AuthLayout>
       <div className="max-w-md mx-auto p-6">
         {/* Header */}
         <div className="flex items-center mb-8">
@@ -164,6 +165,6 @@ export default function NewAskPage() {
           </Button>
         </form>
       </div>
-    </div>
+    </AuthLayout>
   )
 }

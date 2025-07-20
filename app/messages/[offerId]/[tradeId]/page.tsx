@@ -464,22 +464,6 @@ export default function MessagePage({
                     {new Date(message.createdAt).toLocaleDateString()}
                   </p>
                   
-                  {/* Show review form after review request message */}
-                  {isReviewRequest && (showReviewForm || existingReview) && (
-                    <div className="mt-4">
-                      <ReviewForm
-                        proposedTradeId={tradeId}
-                        revieweeName={otherUser.firstName}
-                        existingReview={existingReview || undefined}
-                        onSubmit={() => {
-                          // Hide the review form after submission
-                          setShowReviewForm(false)
-                          // Don't clear existingReview so user can still edit
-                          // The system message will show the review was submitted
-                        }}
-                      />
-                    </div>
-                  )}
                 </div>
               )
             }
@@ -510,6 +494,24 @@ export default function MessagePage({
               </div>
             )
           })}
+          
+          {/* Review Form at bottom of messages */}
+          {(showReviewForm || existingReview) && (
+            <div className="mt-4">
+              <ReviewForm
+                proposedTradeId={tradeId}
+                revieweeName={otherUser.firstName}
+                existingReview={existingReview || undefined}
+                onSubmit={() => {
+                  // Hide the review form after submission
+                  setShowReviewForm(false)
+                  // Don't clear existingReview so user can still edit
+                  // The system message will show the review was submitted
+                }}
+              />
+            </div>
+          )}
+          
           {/* Scroll anchor */}
           <div ref={messagesEndRef} />
           </div>

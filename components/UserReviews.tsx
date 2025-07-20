@@ -96,10 +96,11 @@ export default function UserReviews({ userId }: UserReviewsProps) {
                 </p>
                 <div className="flex gap-0.5">
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <Star 
+                    <img
                       key={star}
-                      size={14}
-                      className={star <= review.rating ? 'fill-black text-black' : 'fill-none text-gray-300'}
+                      src={star <= review.rating ? '/images/brownhat.png' : '/images/hat_full_empty.png'}
+                      alt={star <= review.rating ? 'Selected hat' : 'Empty hat'}
+                      className="w-5 h-5 object-contain"
                     />
                   ))}
                 </div>

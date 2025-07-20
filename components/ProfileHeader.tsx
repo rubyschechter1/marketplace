@@ -267,17 +267,18 @@ export default function ProfileHeader({ user, isOwnProfile, reputationScore }: P
             <span className="text-sm text-gray italic">Verified</span>
           </div>
 
-          {/* Star Rating - Only show if there are reviews */}
+          {/* Hat Rating - Only show if there are reviews */}
           {reputationScore && reputationScore.totalReviews > 0 && (
-            <div className="flex items-center gap-1 mb-2">
+            <div className="flex items-center gap-0.5 mb-2">
               {[1, 2, 3, 4, 5].map((star) => (
-                <Star 
-                  key={star} 
-                  size={16} 
-                  className={star <= Math.round(Number(reputationScore.averageRating)) 
-                    ? "fill-black text-black" 
-                    : "fill-none text-gray-300"
-                  } 
+                <img
+                  key={star}
+                  src={star <= Math.round(Number(reputationScore.averageRating)) 
+                    ? '/images/brownhat.png' 
+                    : '/images/hat_full_empty.png'
+                  }
+                  alt={star <= Math.round(Number(reputationScore.averageRating)) ? 'Selected hat' : 'Empty hat'}
+                  className="w-5 h-5 object-contain"
                 />
               ))}
               <span className="text-sm ml-1">

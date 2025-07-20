@@ -19,7 +19,7 @@ export default function LocationHeader({ user }: LocationHeaderProps) {
     <div className="flex items-center gap-3 mb-8">
       <ProfileThumbnail 
         user={user}
-        size="sm"
+        size="md"
       />
       <p className="text-body">
         You are currently in {location.loading ? "..." : location.displayLocation}

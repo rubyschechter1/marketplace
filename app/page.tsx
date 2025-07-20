@@ -109,7 +109,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
             <>
               {/* Your offers */}
               <div className="mb-8">
-                <h2 className="text-lg font-normal mb-4">Your offered items</h2>
+                <h2 className="text-lg font-normal mb-4 text-center">Your offered items</h2>
                 {offers.length === 0 ? (
                   <div className="border border-thin rounded-xl p-6">
                     <p className="text-body text-gray text-center">
@@ -122,7 +122,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
                       <Link 
                         key={offer.id}
                         href={`/offers/${offer.id}`}
-                        className="block"
+                        className="block relative"
                       >
                         {offer.item?.imageUrl ? (
                           <img 
@@ -137,6 +137,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
                             </span>
                           </div>
                         )}
+                        {/* Offer count in bottom left */}
+                        <div className="absolute bottom-3 left-3 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                          {offer._count?.proposedTrades || 0} offer{(offer._count?.proposedTrades || 0) !== 1 ? 's' : ''}
+                        </div>
                       </Link>
                     ))}
                   </div>
@@ -145,7 +149,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
               
               {/* Your asks */}
               <div>
-                <h2 className="text-lg font-normal mb-4">Your asks</h2>
+                <h2 className="text-lg font-normal mb-4 text-center">Your asks</h2>
                 {asks.length === 0 ? (
                   <div className="border border-thin rounded-xl p-6">
                     <p className="text-body text-gray text-center">
@@ -158,7 +162,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
                       <Link 
                         key={ask.id}
                         href={`/offers/${ask.id}`}
-                        className="block bg-tan border border-black rounded-xl p-4 hover:bg-black hover:text-tan transition-colors relative min-h-[110px] flex items-center justify-center"
+                        className="block bg-tan border border-black rounded-xl p-16 hover:bg-black hover:text-tan transition-colors relative aspect-square flex items-center justify-center"
                       >
                         <div className="text-center">
                           <p className="text-lg font-normal italic mb-2">

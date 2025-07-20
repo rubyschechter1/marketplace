@@ -110,47 +110,69 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
               {/* Your offers */}
               <div className="mb-8">
                 <h2 className="text-lg font-normal mb-4">Your offered items</h2>
-                <div className="space-y-4">
-                  {offers.length === 0 ? (
-                    <div className="border border-thin rounded-xl p-6">
-                      <p className="text-body text-gray text-center">
-                        You haven't created any offers yet
-                      </p>
-                    </div>
-                  ) : (
-                    offers.map((offer: any) => (
-                      <OfferCard 
+                {offers.length === 0 ? (
+                  <div className="border border-thin rounded-xl p-6">
+                    <p className="text-body text-gray text-center">
+                      You haven't created any offers yet
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-6">
+                    {offers.map((offer: any) => (
+                      <Link 
                         key={offer.id}
-                        offer={offer}
-                        currentUserId={session.user.id}
-                        fromPage="/"
-                      />
-                    ))
-                  )}
-                </div>
+                        href={`/offers/${offer.id}`}
+                        className="block"
+                      >
+                        {offer.item?.imageUrl ? (
+                          <img 
+                            src={offer.item.imageUrl}
+                            alt={offer.item.name}
+                            className="w-full aspect-square object-cover rounded-xl hover:opacity-80 transition-opacity"
+                          />
+                        ) : (
+                          <div className="w-full aspect-square bg-gray/20 rounded-xl flex items-center justify-center hover:bg-gray/30 transition-colors">
+                            <span className="text-gray text-sm text-center px-2">
+                              {offer.item?.name || offer.title}
+                            </span>
+                          </div>
+                        )}
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
               
               {/* Your asks */}
               <div>
                 <h2 className="text-lg font-normal mb-4">Your asks</h2>
-                <div className="space-y-4">
-                  {asks.length === 0 ? (
-                    <div className="border border-thin rounded-xl p-6">
-                      <p className="text-body text-gray text-center">
-                        You haven't created any asks yet
-                      </p>
-                    </div>
-                  ) : (
-                    asks.map((ask: any) => (
-                      <OfferCard 
+                {asks.length === 0 ? (
+                  <div className="border border-thin rounded-xl p-6">
+                    <p className="text-body text-gray text-center">
+                      You haven't created any asks yet
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-6">
+                    {asks.map((ask: any) => (
+                      <Link 
                         key={ask.id}
-                        offer={ask}
-                        currentUserId={session.user.id}
-                        fromPage="/"
-                      />
-                    ))
-                  )}
-                </div>
+                        href={`/offers/${ask.id}`}
+                        className="block bg-tan border border-black rounded-xl p-4 hover:bg-black hover:text-tan transition-colors relative min-h-[110px] flex items-center justify-center"
+                      >
+                        <div className="text-center">
+                          <p className="text-lg font-normal italic mb-2">
+                            {ask.title}
+                          </p>
+                        </div>
+                        {/* Offer count in bottom left */}
+                        <div className="absolute bottom-3 left-3 text-xs">
+                          {ask._count?.proposedTrades || 0} offer{(ask._count?.proposedTrades || 0) !== 1 ? 's' : ''}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
             </>
           )

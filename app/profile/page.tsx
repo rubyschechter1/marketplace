@@ -111,7 +111,8 @@ export default function ProfilePage() {
           id: user.id,
           firstName: user.firstName,
           lastName: user.lastName || undefined,
-          avatarUrl: user.avatarUrl
+          avatarUrl: user.avatarUrl,
+          createdAt: user.createdAt
         }} isOwnProfile={isOwnProfile} />
 
         {/* Email Section - Only show for own profile */}
@@ -178,12 +179,6 @@ export default function ProfilePage() {
           </p>
         </div>
 
-        {/* Member Since */}
-        <div className="mb-6">
-          <p className="text-sm">
-            Member since {user.createdAt ? new Date(user.createdAt).getFullYear() : "Unknown"}
-          </p>
-        </div>
 
         {/* Reviews Section */}
         <div className="mb-8">

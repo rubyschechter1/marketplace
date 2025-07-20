@@ -300,7 +300,7 @@ export default function MessagePage({
           >
             <ChevronLeft size={24} />
           </button>
-          <Link href={`/offers/${offerId}`} className="flex items-center flex-1">
+          <Link href={`/offers/${offerId}?from=${encodeURIComponent(`conversation-${offerId}-${tradeId}${fromPage ? `-origin-${fromPage}` : ''}`)}`} className="flex items-center flex-1">
             {/* Show offer item image for regular offers, or proposed item image for asks */}
             {(tradeData.offer.item?.imageUrl || tradeData.offeredItem?.imageUrl) && (
               <img

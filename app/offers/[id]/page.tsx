@@ -6,14 +6,16 @@ import AuthLayout from "@/components/AuthLayout"
 import ProfileThumbnail from "@/components/ProfileThumbnail"
 import Link from "next/link"
 import { MapPin, ChevronLeft } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useLocation } from "@/contexts/LocationContext"
 import BrownHatLoader from "@/components/BrownHatLoader"
 
 export default function OfferPage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { location } = useLocation()
+  const fromPage = searchParams.get('from')
   const [offer, setOffer] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [offerId, setOfferId] = useState<string>("")
@@ -219,10 +221,41 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
       <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="p-4 pb-0">
-          <Link href="/" className="inline-flex items-center text-gray hover:text-black mb-4">
+          <button 
+            onClick={() => {
+              if (fromPage?.startsWith('conversation-')) {
+                // Parse the fromPage parameter to extract conversation details and original source
+                const conversationData = fromPage.replace('conversation-', '')
+                
+                // Check if there's origin information
+                if (conversationData.includes('-origin-')) {
+                  const [conversationPart, originPart] = conversationData.split('-origin-')
+                  const [conversationOfferId, tradeId] = conversationPart.split('-')
+                  
+                  if (conversationOfferId && tradeId) {
+                    router.push(`/messages/${conversationOfferId}/${tradeId}?from=${encodeURIComponent(originPart)}`)
+                  } else {
+                    router.push('/')
+                  }
+                } else {
+                  // Simple conversation format without origin
+                  const parts = conversationData.split('-')
+                  if (parts.length >= 2) {
+                    const [conversationOfferId, tradeId] = parts
+                    router.push(`/messages/${conversationOfferId}/${tradeId}`)
+                  } else {
+                    router.push('/')
+                  }
+                }
+              } else {
+                router.push('/')
+              }
+            }}
+            className="inline-flex items-center text-gray hover:text-black mb-4"
+          >
             <ChevronLeft size={20} className="mr-1" />
             Back
-          </Link>
+          </button>
         </div>
 
         {/* Image - only for regular offers */}

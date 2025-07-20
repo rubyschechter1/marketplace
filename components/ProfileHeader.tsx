@@ -12,6 +12,7 @@ interface ProfileHeaderProps {
     firstName: string
     lastName?: string
     avatarUrl?: string | null
+    createdAt?: string
   }
   isOwnProfile: boolean
 }
@@ -268,6 +269,13 @@ export default function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps
               <Star key={star} size={16} className="fill-black text-black" />
             ))}
             <span className="text-sm ml-1">5.0</span>
+          </div>
+
+          {/* Member Since */}
+          <div className="mb-2">
+            <p className="text-sm text-gray">
+              Member since {user.createdAt ? new Date(user.createdAt).getFullYear() : "Unknown"}
+            </p>
           </div>
 
           {/* Upload photo button - Only show for own profile when no avatar */}

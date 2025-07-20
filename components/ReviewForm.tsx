@@ -23,6 +23,7 @@ export default function ReviewForm({
   const [content, setContent] = useState(existingReview?.content || "")
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
+  const [showConfirmation, setShowConfirmation] = useState(false)
 
   const handleSubmit = async () => {
     if (rating === 0) {
@@ -49,6 +50,7 @@ export default function ReviewForm({
         throw new Error(data.error || "Failed to submit review")
       }
 
+      setShowConfirmation(true)
       onSubmit()
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to submit review")
@@ -57,13 +59,32 @@ export default function ReviewForm({
     }
   }
 
+  if (showConfirmation) {
+    return (
+      <div className="mx-5 p-4 bg-tan border border-black rounded-lg">
+        <h3 className="font-medium mb-3 text-center">
+          Review Submitted Successfully!
+        </h3>
+        <p className="text-center text-sm mb-4">
+          Thank you for rating your exchange with {revieweeName}
+        </p>
+        <button
+          onClick={() => setShowConfirmation(false)}
+          className="w-full bg-tan text-black border border-black p-2 rounded-lg hover:bg-black hover:text-tan transition-colors"
+        >
+          Edit Review
+        </button>
+      </div>
+    )
+  }
+
   return (
-    <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-      <h3 className="font-medium mb-3">
-        {existingReview ? "Update your review" : "Rate your experience"} with {revieweeName}
+    <div className="mx-5 p-4 bg-tan border border-black rounded-lg">
+      <h3 className="font-medium mb-3 text-center">
+        {existingReview ? "Update your review" : "Rate your exchange"} with {revieweeName}
       </h3>
       
-      <div className="mb-4">
+      <div className="mb-4 flex justify-center">
         <StarRating 
           rating={rating} 
           onRatingChange={setRating}
@@ -75,7 +96,7 @@ export default function ReviewForm({
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="Share your experience (optional)"
-        className="w-full p-3 border border-gray/20 rounded-lg resize-none"
+        className="w-full p-2 bg-tan border border-black rounded-lg resize-none placeholder-gray focus:outline-none focus:ring-1 focus:ring-black"
         rows={3}
       />
 
@@ -86,7 +107,7 @@ export default function ReviewForm({
       <button
         onClick={handleSubmit}
         disabled={submitting || rating === 0}
-        className="mt-3 w-full py-2 bg-green text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        className="mt-3 w-full bg-tan text-black border border-black p-2 rounded-lg hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {submitting ? "Submitting..." : existingReview ? "Update Review" : "Submit Review"}
       </button>

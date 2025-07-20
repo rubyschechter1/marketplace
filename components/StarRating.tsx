@@ -1,7 +1,5 @@
 "use client"
 
-import { Star } from "lucide-react"
-
 interface StarRatingProps {
   rating: number
   onRatingChange?: (rating: number) => void
@@ -16,9 +14,9 @@ export default function StarRating({
   size = "medium" 
 }: StarRatingProps) {
   const sizeClasses = {
-    small: "w-4 h-4",
-    medium: "w-5 h-5",
-    large: "w-6 h-6"
+    small: "w-6 h-6",
+    medium: "w-7 h-7",
+    large: "w-8 h-8"
   }
 
   const handleClick = (value: number) => {
@@ -37,12 +35,10 @@ export default function StarRating({
           className={`${readonly ? 'cursor-default' : 'cursor-pointer hover:scale-110'} transition-transform`}
           type="button"
         >
-          <Star
-            className={`${sizeClasses[size]} ${
-              value <= rating 
-                ? 'fill-yellow-500 text-yellow-500' 
-                : 'text-gray-300'
-            }`}
+          <img
+            src={value <= rating ? '/images/brownhat.png' : '/images/hat_full_empty.png'}
+            alt={value <= rating ? 'Selected hat' : 'Empty hat'}
+            className={`${sizeClasses[size]} object-contain ${value <= rating ? 'scale-110' : ''}`}
           />
         </button>
       ))}

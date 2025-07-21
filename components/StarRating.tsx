@@ -36,9 +36,9 @@ export default function StarRating({
           type="button"
         >
           <img
-            src={value <= rating ? '/images/brownhat.png' : '/images/hat_full_empty.png'}
+            src={value <= rating ? '/images/brownhat.png' : '/images/hat_full_filled.png'}
             alt={value <= rating ? 'Selected hat' : 'Empty hat'}
-            className={`${sizeClasses[size]} object-contain ${value <= rating ? 'scale-110' : ''}`}
+            className={`${sizeClasses[size]} object-contain ${value <= rating ? 'scale-110' : 'translate-y-1.5'}`}
           />
         </button>
       ))}

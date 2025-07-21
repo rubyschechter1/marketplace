@@ -158,7 +158,7 @@ export default function MessagesPage() {
                   ) : (
                     <div className="w-16 h-16 bg-gray/20 rounded-md flex-shrink-0" />
                   )}
-                  <div className={`flex-1 bg-tan border ${message.unreadCount && message.unreadCount > 0 ? 'border-2 border-black' : 'border-black'} rounded-sm p-4 hover:bg-tan/80 hover:border-2 hover:border-black transition-all cursor-pointer relative`}>
+                  <div className={`flex-1 bg-tan border ${message.unreadCount && message.unreadCount > 0 ? 'border-2 border-black' : 'border-black'} rounded-sm p-4 transition-all cursor-pointer relative shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]`}>
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="text-body font-normal mb-1">
                         {message.offer?.item?.name || message.offer?.title}

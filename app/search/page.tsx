@@ -133,25 +133,33 @@ export default function SearchPage() {
           />
         </div>
 
-        {/* Offers/Asks Toggle */}
+        {/* Offers/Asks Toggle Slider */}
         <div className="mb-8">
-          <div className="inline-flex border border-black rounded-sm overflow-hidden">
+          <div className="relative inline-flex bg-tan border border-black rounded-sm p-1 shadow-[3px_3px_0px_#000000]">
+            {/* Sliding background indicator */}
+            <div 
+              className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-black rounded-sm transition-all duration-200 ease-out ${
+                filterType === "offer" ? "left-1" : "left-[calc(50%+2px)]"
+              }`}
+            />
+            
+            {/* Buttons */}
             <button 
               onClick={() => setFilterType("offer")}
-              className={`px-6 py-2 text-body transition-colors ${
+              className={`relative z-10 px-6 py-2 text-body transition-colors duration-200 rounded-sm ${
                 filterType === "offer" 
-                  ? "bg-black text-tan" 
-                  : "bg-tan text-black hover:bg-gray-100"
+                  ? "text-tan" 
+                  : "text-black hover:text-gray"
               }`}
             >
               Offers
             </button>
             <button 
               onClick={() => setFilterType("ask")}
-              className={`px-6 py-2 text-body transition-colors ${
+              className={`relative z-10 px-6 py-2 text-body transition-colors duration-200 rounded-sm ${
                 filterType === "ask" 
-                  ? "bg-black text-tan" 
-                  : "bg-tan text-black hover:bg-gray-100"
+                  ? "text-tan" 
+                  : "text-black hover:text-gray"
               }`}
             >
               Asks

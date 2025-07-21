@@ -249,7 +249,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                 router.push('/')
               }
             }}
-            className="inline-flex items-center text-gray hover:text-black mb-4"
+            className="inline-flex items-center text-black hover:text-gray mb-4"
           >
             <ChevronLeft size={20} className="mr-1" />
             Back
@@ -258,7 +258,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
 
         {/* Image - only for regular offers */}
         {offer.type !== 'ask' && offer.item?.imageUrl && (
-          <div className="relative aspect-square">
+          <div className="relative aspect-square mx-5">
             <img
               src={offer.item.imageUrl}
               alt={offer.item.name}
@@ -270,11 +270,11 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
         {/* Content */}
         <div className="p-6">
           {/* Title */}
-          <h1 className="text-header font-normal mb-3">{offer.title}</h1>
+          <h1 className="text-header font-normal mb-3 -mt-0.5 -ml-0.5">{offer.title}</h1>
           
           {/* Deleted status banner */}
           {isDeleted && (
-            <div className="bg-gray/10 border border-gray/20 rounded-sm p-3 mb-6">
+            <div className="bg-gray/10 border border-gray/20 rounded-sm p-3 mb-6 -ml-0.5">
               <p className="text-center text-gray">
                 This {offer.type === 'ask' ? 'ask' : 'offer'} has been deleted
               </p>
@@ -283,7 +283,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
           
           {/* Description - moved outside the box */}
           {offer.description && !isDeleted && (
-            <div className="text-body mb-6">
+            <div className="text-body mb-6 -ml-0.5">
               {offer.description}
             </div>
           )}
@@ -295,6 +295,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                 user={offer.traveler}
                 size="sm"
                 clickable={!isOwner}
+                className="-ml-[3.375rem]"
               />
             )}
             <div className="flex-1 border border-black rounded-sm p-4">
@@ -479,6 +480,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                     <ProfileThumbnail 
                       user={trade.proposer}
                       size="sm"
+                      className="-ml-[3.375rem]"
                     />
                     <div className={`flex-1 border border-black rounded-sm p-4 ${isAccepted ? 'bg-black text-tan' : ''}`}>
                       <div className="flex items-start gap-3">
@@ -545,7 +547,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
             <div className="mt-8 mb-4">
               <button
                 onClick={handleDeleteOffer}
-                className="w-full bg-tan text-black border border-black p-3 rounded-sm hover:bg-red-600 hover:text-white hover:border-red-600 transition-colors"
+                className="w-full bg-tan text-black border border-black p-3 rounded-sm hover:bg-black hover:text-tan hover:border-black transition-colors"
               >
                 Delete {offer.type === 'ask' ? 'ask' : 'offer'}
               </button>

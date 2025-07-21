@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "@/lib/auth"
 import { PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()
@@ -9,6 +11,8 @@ export async function GET(
 ) {
   try {
     const { id } = await context.params
+    const session = await getServerSession(authOptions)
+    const viewerId = session?.user?.id
 
     // Get all reviews for the user
     const reviews = await prisma.reviews.findMany({
@@ -43,13 +47,28 @@ export async function GET(
       orderBy: { createdAt: 'desc' }
     })
 
+    // Filter reviews based on Airbnb-style mutual review visibility
+    let visibleReviews = reviews
+    if (viewerId && viewerId !== id) {
+      // Only show reviews where the viewer has also reviewed the same trade
+      const viewerReviews = await prisma.reviews.findMany({
+        where: { reviewerId: viewerId },
+        select: { proposedTradeId: true }
+      })
+      const viewerTradeIds = new Set(viewerReviews.map(r => r.proposedTradeId))
+      
+      visibleReviews = reviews.filter(review => 
+        viewerTradeIds.has(review.proposedTradeId)
+      )
+    }
+
     // Get user's reputation score
     const reputationScore = await prisma.userReputationScores.findUnique({
       where: { userId: id }
     })
 
     return NextResponse.json({
-      reviews,
+      reviews: visibleReviews,
       reputationScore: reputationScore || {
         totalReviews: 0,
         averageRating: 0,

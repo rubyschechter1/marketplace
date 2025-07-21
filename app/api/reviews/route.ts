@@ -121,16 +121,10 @@ export async function POST(request: NextRequest) {
     // Update user reputation score
     await updateUserReputationScore(revieweeId)
 
-    // Get reviewer's name for the system message
-    const reviewer = await prisma.travelers.findUnique({
-      where: { id: reviewerId },
-      select: { firstName: true }
-    })
-
     // Create a system message to show the review was submitted
     const reviewMessage = existingReview
-      ? `${reviewer?.firstName || 'User'} updated their review`
-      : `${reviewer?.firstName || 'User'} submitted a review`
+      ? 'Review updated'
+      : 'Review submitted'
     
     await prisma.messages.create({
       data: {

@@ -74,7 +74,7 @@ export default function MessagePage({
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [accepting, setAccepting] = useState(false)
-  const [showReviewForm, setShowReviewForm] = useState(false)
+  const [showReviewForm, setShowReviewForm] = useState<string | false>(false)
   const [existingReview, setExistingReview] = useState<{ rating: number; content: string | null } | null>(null)
   const [isItemAvailable, setIsItemAvailable] = useState(true)
   const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set())
@@ -422,14 +422,14 @@ export default function MessagePage({
                 <button 
                   onClick={handleAcceptTrade}
                   disabled={accepting}
-                  className="w-full bg-tan text-black border border-black p-3 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-tan text-black border border-black p-2 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {accepting ? (
                     <div className="flex items-center justify-center">
                       <BrownHatLoader size="small" />
                       <span className="ml-2">Updating...</span>
                     </div>
-                  ) : tradeData.status === 'accepted' ? 'cancel trade' : 'accept trade'}
+                  ) : tradeData.status === 'accepted' ? 'Cancel trade' : 'accept trade'}
                 </button>
               ) : (
                 <div className="w-full bg-gray/10 text-gray border border-gray/20 p-3 rounded-sm text-center">
@@ -452,16 +452,59 @@ export default function MessagePage({
             if (isSystemMessage) {
               // Check if this is a review request message
               const isReviewRequest = message.content.includes('rate your experience')
+              // Check if this is a review submission message
+              const isReviewSubmission = message.content === 'Review submitted' || message.content === 'Review updated'
               
               return (
                 <div key={message.id} className="mb-4">
                   <div className="bg-gray/10 rounded-sm p-3">
                     <p className="text-center text-gray text-sm">{message.content}</p>
+                    
+                    {/* Show Update review button for review submission messages */}
+                    {isReviewSubmission && tradeData.status === 'accepted' && (
+                      <>
+                        <button
+                          onClick={() => setShowReviewForm(showReviewForm ? false : message.id)}
+                          className="w-full mt-3 bg-tan text-black border border-black p-2 rounded-sm hover:bg-black hover:text-tan transition-colors text-sm"
+                        >
+                          {showReviewForm === message.id ? 'Hide review form' : 'Update review'}
+                        </button>
+                        
+                        {/* Inline Review Form */}
+                        {showReviewForm === message.id && (
+                          <div className="mt-3">
+                            <ReviewForm
+                              proposedTradeId={tradeId}
+                              revieweeName={otherUser.firstName}
+                              existingReview={existingReview || undefined}
+                              onSubmit={() => {
+                                // Hide the review form after submission
+                                setShowReviewForm(false)
+                                // Refresh messages to show the new system message
+                                setTimeout(async () => {
+                                  const messagesResponse = await fetch(`/api/messages/${offerId}/${tradeId}`)
+                                  if (messagesResponse.ok) {
+                                    const data = await messagesResponse.json()
+                                    setMessages(data.messages || [])
+                                    // Scroll to bottom to see new message
+                                    setTimeout(() => {
+                                      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+                                    }, 100)
+                                  }
+                                }, 500)
+                              }}
+                              inline={true}
+                            />
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
+                  
+                  {/* Date outside the gray box, like regular messages */}
                   <p className="text-right text-xs text-gray mt-1">
                     {new Date(message.createdAt).toLocaleDateString()}
                   </p>
-                  
                 </div>
               )
             }
@@ -493,22 +536,6 @@ export default function MessagePage({
             )
           })}
           
-          {/* Review Form at bottom of messages */}
-          {(showReviewForm || existingReview) && (
-            <div className="mt-4">
-              <ReviewForm
-                proposedTradeId={tradeId}
-                revieweeName={otherUser.firstName}
-                existingReview={existingReview || undefined}
-                onSubmit={() => {
-                  // Hide the review form after submission
-                  setShowReviewForm(false)
-                  // Don't clear existingReview so user can still edit
-                  // The system message will show the review was submitted
-                }}
-              />
-            </div>
-          )}
           
           {/* Scroll anchor */}
           <div ref={messagesEndRef} />

@@ -11,13 +11,15 @@ interface ReviewFormProps {
     rating: number
     content: string | null
   }
+  inline?: boolean
 }
 
 export default function ReviewForm({ 
   proposedTradeId, 
   revieweeName,
   onSubmit,
-  existingReview
+  existingReview,
+  inline = false
 }: ReviewFormProps) {
   const [rating, setRating] = useState(existingReview?.rating || 0)
   const [content, setContent] = useState(existingReview?.content || "")
@@ -59,8 +61,8 @@ export default function ReviewForm({
 
 
   return (
-    <div className="mx-5 p-4 bg-tan border border-black rounded-lg">
-      <h3 className="font-medium mb-3 text-center">
+    <div className={`${inline ? '' : 'mx-5'} p-4 bg-gray/10 rounded-sm`}>
+      <h3 className="font-medium mb-3 text-center text-gray text-sm">
         {existingReview ? "Update your review" : "Rate your exchange"} with {revieweeName}
       </h3>
       
@@ -76,7 +78,7 @@ export default function ReviewForm({
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="Share your experience (optional)"
-        className="w-full p-2 bg-tan border border-black rounded-lg resize-none placeholder-gray focus:outline-none focus:ring-1 focus:ring-black"
+        className="w-full p-2 bg-tan border border-gray/20 rounded-sm resize-none placeholder-gray focus:outline-none focus:ring-1 focus:ring-gray"
         rows={3}
       />
 
@@ -87,9 +89,9 @@ export default function ReviewForm({
       <button
         onClick={handleSubmit}
         disabled={submitting || rating === 0}
-        className="mt-3 w-full bg-tan text-black border border-black p-2 rounded-lg hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="mt-3 w-full bg-tan text-black border border-black p-2 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {submitting ? "Submitting..." : existingReview ? "Update Review" : "Submit Review"}
+        {submitting ? "Submitting..." : existingReview ? "Update review" : "Submit review"}
       </button>
     </div>
   )

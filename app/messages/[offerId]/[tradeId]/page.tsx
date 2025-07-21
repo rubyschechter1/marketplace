@@ -577,7 +577,7 @@ export default function MessagePage({
               <button
                 onClick={handleSendMessage}
                 disabled={!newMessage.trim() || sending}
-                className="bg-tan text-black border-2 border-black px-4 py-2 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm font-medium"
+                className="bg-tan text-black border-2 border-black px-4 py-2 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm font-medium shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
               >
                 {sending ? (
                   <>

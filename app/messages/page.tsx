@@ -146,7 +146,7 @@ export default function MessagesPage() {
                 <div
                   key={message.id}
                   onClick={() => handleConversationClick(message)}
-                  className="flex items-center gap-3"
+                  className="flex items-start gap-3"
                 >
                   {/* Show offer item image for regular offers, or proposed item image for asks */}
                   {(message.offer?.item?.imageUrl || message.proposedTrade?.offeredItem?.imageUrl) ? (
@@ -158,13 +158,13 @@ export default function MessagesPage() {
                   ) : (
                     <div className="w-16 h-16 bg-gray/20 rounded-md flex-shrink-0" />
                   )}
-                  <div className="flex-1 bg-tan border border-black rounded-sm p-4 hover:bg-tan/80 transition-colors cursor-pointer relative">
+                  <div className={`flex-1 bg-tan border ${message.unreadCount && message.unreadCount > 0 ? 'border-2 border-black' : 'border-black'} rounded-sm p-4 hover:bg-tan/80 hover:border-2 hover:border-black transition-all cursor-pointer relative`}>
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="text-body font-normal mb-1">
                         {message.offer?.item?.name || message.offer?.title}
                       </h3>
                       {message.unreadCount != null && message.unreadCount > 0 && (
-                        <div className="bg-red-500 text-white text-xs rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center font-medium flex-shrink-0">
+                        <div className="bg-black text-white text-xs rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center font-medium flex-shrink-0">
                           {message.unreadCount}
                         </div>
                       )}

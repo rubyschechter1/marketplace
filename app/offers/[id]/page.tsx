@@ -470,7 +470,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
 
           {/* Proposed Trades */}
           <div>
-            <h2 className="text-body font-normal mb-4">Proposed trades</h2>
+            <h2 className="text-body font-normal mb-4 text-center">Proposed trades</h2>
             
             <div className="space-y-3">
               {offer.proposedTrades?.map((trade: any) => {

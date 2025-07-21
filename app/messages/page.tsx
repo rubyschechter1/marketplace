@@ -112,7 +112,7 @@ export default function MessagesPage() {
     return (
       <AuthLayout>
         <main className="p-4 max-w-md mx-auto">
-          <h1 className="text-2xl font-bold mb-6">Messages</h1>
+          <h1 className="text-2xl font-bold mb-6 text-center">Messages</h1>
           <div className="space-y-3">
             <ConversationSkeleton />
             <ConversationSkeleton />
@@ -126,7 +126,7 @@ export default function MessagesPage() {
   return (
     <AuthLayout>
       <main className="p-4 max-w-md mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Messages</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">Messages</h1>
 
         {conversations.length === 0 ? (
           <div className="text-center py-12">

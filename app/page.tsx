@@ -138,7 +138,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
                           </div>
                         )}
                         {/* Offer count in bottom left */}
-                        <div className="absolute bottom-3 left-3 bg-tan text-black border border-black text-xs px-2 py-1 rounded-sm">
+                        <div className="absolute bottom-3 left-3 bg-tan text-black text-xs px-2 py-1 rounded-sm">
                           {offer._count?.proposedTrades || 0} offer{(offer._count?.proposedTrades || 0) !== 1 ? 's' : ''}
                         </div>
                       </Link>
@@ -170,7 +170,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
                           </p>
                         </div>
                         {/* Offer count in bottom left */}
-                        <div className="absolute bottom-3 left-3 bg-tan text-black border border-black text-xs px-2 py-1 rounded-sm">
+                        <div className="absolute bottom-3 left-3 bg-tan text-black text-xs px-2 py-1 rounded-sm">
                           {ask._count?.proposedTrades || 0} offer{(ask._count?.proposedTrades || 0) !== 1 ? 's' : ''}
                         </div>
                       </Link>

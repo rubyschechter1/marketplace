@@ -203,10 +203,8 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
   if (loading || !offer) {
     return (
       <AuthLayout>
-        <div className="max-w-md mx-auto p-6">
-          <div className="py-12">
-            <BrownHatLoader size="large" text="Loading offer..." />
-          </div>
+        <div className="max-w-md mx-auto p-6 h-screen flex items-center justify-center">
+          <BrownHatLoader size="large" text="Loading offer..." />
         </div>
       </AuthLayout>
     )

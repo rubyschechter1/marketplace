@@ -88,13 +88,13 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
         <div className="space-y-4 mb-8">
           <Link
             href="/offers/new"
-            className="block w-full bg-tan text-black border border-black p-4 rounded-xl hover:bg-black hover:text-tan transition-colors text-center text-button"
+            className="block w-full bg-tan text-black border border-black p-4 rounded-sm hover:bg-black hover:text-tan transition-colors text-center text-button"
           >
             Offer an item
           </Link>
           <Link
             href="/asks/new"
-            className="block w-full bg-tan text-black border border-black p-4 rounded-xl hover:bg-black hover:text-tan transition-colors text-center text-button"
+            className="block w-full bg-tan text-black border border-black p-4 rounded-sm hover:bg-black hover:text-tan transition-colors text-center text-button"
           >
             Post an ask
           </Link>
@@ -111,34 +111,34 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
               <div className="mb-8">
                 <h2 className="text-lg font-normal mb-4 text-center">Your offered items</h2>
                 {offers.length === 0 ? (
-                  <div className="border border-thin rounded-xl p-6">
+                  <div className="border border-thin rounded-sm p-6">
                     <p className="text-body text-gray text-center">
                       You haven't created any offers yet
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-2 gap-8">
                     {offers.map((offer: any) => (
                       <Link 
                         key={offer.id}
                         href={`/offers/${offer.id}`}
-                        className="block relative"
+                        className="block relative hover:ring-2 hover:ring-black transition-all rounded-sm"
                       >
                         {offer.item?.imageUrl ? (
                           <img 
                             src={offer.item.imageUrl}
                             alt={offer.item.name}
-                            className="w-full aspect-square object-cover rounded-xl hover:opacity-80 transition-opacity"
+                            className="w-full aspect-square object-cover rounded-sm"
                           />
                         ) : (
-                          <div className="w-full aspect-square bg-gray/20 rounded-xl flex items-center justify-center hover:bg-gray/30 transition-colors">
+                          <div className="w-full aspect-square bg-gray/20 rounded-sm flex items-center justify-center hover:bg-gray/30 transition-colors">
                             <span className="text-gray text-sm text-center px-2">
                               {offer.item?.name || offer.title}
                             </span>
                           </div>
                         )}
                         {/* Offer count in bottom left */}
-                        <div className="absolute bottom-3 left-3 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                        <div className="absolute bottom-3 left-3 bg-tan text-black border border-black text-xs px-2 py-1 rounded-sm">
                           {offer._count?.proposedTrades || 0} offer{(offer._count?.proposedTrades || 0) !== 1 ? 's' : ''}
                         </div>
                       </Link>
@@ -151,18 +151,18 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
               <div>
                 <h2 className="text-lg font-normal mb-4 text-center">Your asks</h2>
                 {asks.length === 0 ? (
-                  <div className="border border-thin rounded-xl p-6">
+                  <div className="border border-thin rounded-sm p-6">
                     <p className="text-body text-gray text-center">
                       You haven't created any asks yet
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-2 gap-8">
                     {asks.map((ask: any) => (
                       <Link 
                         key={ask.id}
                         href={`/offers/${ask.id}`}
-                        className="block bg-tan border border-black rounded-xl p-16 hover:bg-black hover:text-tan transition-colors relative aspect-square flex items-center justify-center"
+                        className="block bg-tan border border-black rounded-sm p-8 hover:bg-black hover:text-tan transition-colors relative aspect-square flex items-center justify-center"
                       >
                         <div className="text-center">
                           <p className="text-lg font-normal italic mb-2">
@@ -170,7 +170,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
                           </p>
                         </div>
                         {/* Offer count in bottom left */}
-                        <div className="absolute bottom-3 left-3 text-xs">
+                        <div className="absolute bottom-3 left-3 bg-tan text-black border border-black text-xs px-2 py-1 rounded-sm">
                           {ask._count?.proposedTrades || 0} offer{(ask._count?.proposedTrades || 0) !== 1 ? 's' : ''}
                         </div>
                       </Link>

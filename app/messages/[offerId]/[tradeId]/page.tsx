@@ -344,10 +344,8 @@ export default function MessagePage({
   if (loading || !tradeData) {
     return (
       <AuthLayout variant="fullHeight">
-        <div className="max-w-md mx-auto p-6">
-          <div className="py-12">
-            <BrownHatLoader size="large" text="Loading conversation..." />
-          </div>
+        <div className="max-w-md mx-auto p-6 h-screen flex items-center justify-center">
+          <BrownHatLoader size="large" text="Loading conversation..." />
         </div>
       </AuthLayout>
     )

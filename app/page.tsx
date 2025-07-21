@@ -122,7 +122,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
                       <Link 
                         key={offer.id}
                         href={`/offers/${offer.id}`}
-                        className="block relative border border-black rounded-sm transition-all shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]" 
+                        className="block relative border border-black rounded-sm transition-all shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
                         style={{ 
                           padding: '12px 12px 30px 12px'
                         }}

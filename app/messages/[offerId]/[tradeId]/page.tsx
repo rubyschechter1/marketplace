@@ -444,7 +444,7 @@ export default function MessagePage({
         <div className="flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto p-4">
           {/* Other messages */}
-          {messages.map((message) => {
+          {messages.map((message, index) => {
             const isOwnMessage = message.senderId === session?.user?.id
             const isSystemMessage = !message.senderId
             
@@ -453,15 +453,24 @@ export default function MessagePage({
               // Check if this is a review request message
               const isReviewRequest = message.content.includes('rate your experience')
               // Check if this is a review submission message
-              const isReviewSubmission = message.content === 'Review submitted' || message.content === 'Review updated'
+              const isReviewSubmission = message.content.includes('submitted a review') || message.content.includes('updated their review')
+              
+              // Find the most recent review submission message (only show button on the latest one)
+              const isLatestReviewMessage = isReviewSubmission && (() => {
+                // Find all review submission messages after this one
+                const laterReviewMessages = messages.slice(index + 1).filter(msg => 
+                  !msg.senderId && (msg.content.includes('submitted a review') || msg.content.includes('updated their review'))
+                )
+                return laterReviewMessages.length === 0 // This is the latest if no later ones exist
+              })()
               
               return (
                 <div key={message.id} className="mb-4">
                   <div className="bg-gray/10 rounded-sm p-3">
                     <p className="text-center text-gray text-sm">{message.content}</p>
                     
-                    {/* Show Update review button for review submission messages */}
-                    {isReviewSubmission && tradeData.status === 'accepted' && (
+                    {/* Show Update review button only for the most recent review submission message */}
+                    {isLatestReviewMessage && tradeData.status === 'accepted' && (
                       <>
                         <button
                           onClick={() => setShowReviewForm(showReviewForm ? false : message.id)}

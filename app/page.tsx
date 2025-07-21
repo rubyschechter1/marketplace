@@ -122,7 +122,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
                       <Link 
                         key={offer.id}
                         href={`/offers/${offer.id}`}
-                        className="block relative hover:ring-2 hover:ring-black transition-all rounded-sm"
+                        className="block relative border border-black rounded-sm hover:ring-2 hover:ring-black transition-all"
+                        style={{ padding: '12px 12px 30px 12px' }}
                       >
                         {offer.item?.imageUrl ? (
                           <img 
@@ -137,8 +138,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
                             </span>
                           </div>
                         )}
-                        {/* Offer count in bottom left */}
-                        <div className="absolute bottom-3 left-3 bg-tan text-black text-xs px-2 py-1 rounded-sm">
+                        {/* Offer count in bottom area */}
+                        <div className="absolute bottom-1 left-1 bg-tan text-black text-xs px-2 py-1 rounded-sm">
                           {offer._count?.proposedTrades || 0} offer{(offer._count?.proposedTrades || 0) !== 1 ? 's' : ''}
                         </div>
                       </Link>

@@ -249,7 +249,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                 router.push('/')
               }
             }}
-            className="inline-flex items-center text-black hover:text-gray mb-4"
+            className="inline-flex items-center text-black hover:text-gray mb-4 ml-[52px]"
           >
             <ChevronLeft size={20} className="mr-1" />
             Back
@@ -258,7 +258,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
 
         {/* Image - only for regular offers */}
         {offer.type !== 'ask' && offer.item?.imageUrl && (
-          <div className="relative aspect-square mx-5">
+          <div className="relative aspect-square ml-[76px] mr-5">
             <img
               src={offer.item.imageUrl}
               alt={offer.item.name}
@@ -270,11 +270,11 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
         {/* Content */}
         <div className="p-6">
           {/* Title */}
-          <h1 className="text-header font-normal mb-3 -mt-0.5 -ml-0.5">{offer.title}</h1>
+          <h1 className="text-header font-normal mb-3 -mt-0.5 ml-[52px]">{offer.title}</h1>
           
           {/* Deleted status banner */}
           {isDeleted && (
-            <div className="bg-gray/10 border border-gray/20 rounded-sm p-3 mb-6 -ml-0.5">
+            <div className="bg-gray/10 border border-gray/20 rounded-sm p-3 mb-6 ml-[52px]">
               <p className="text-center text-gray">
                 This {offer.type === 'ask' ? 'ask' : 'offer'} has been deleted
               </p>
@@ -283,7 +283,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
           
           {/* Description - moved outside the box */}
           {offer.description && !isDeleted && (
-            <div className="text-body mb-6 -ml-0.5">
+            <div className="text-body mb-6 ml-[52px]">
               {offer.description}
             </div>
           )}

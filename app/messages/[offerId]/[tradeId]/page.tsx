@@ -415,7 +415,7 @@ export default function MessagePage({
                 <button 
                   onClick={handleAcceptTrade}
                   disabled={accepting}
-                  className="w-full bg-tan text-black border border-black p-2 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-tan text-black border border-black p-2 rounded-sm hover:bg-black hover:text-tan transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
                 >
                   {accepting ? (
                     <div className="flex items-center justify-center">

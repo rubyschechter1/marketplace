@@ -386,7 +386,7 @@ export default function MessagePage({
         </div>
 
         {/* Fixed Trade Proposal Header */}
-        <div className="bg-tan border border-black rounded-sm mx-4 mt-4 shadow-lg z-10 relative">
+        <div className="bg-tan border border-black rounded-sm mx-4 mt-4 z-10 relative">
           {/* Initial trade proposal message */}
           <div className="flex items-start p-4 pb-2">
             <ProfileThumbnail 
@@ -415,7 +415,7 @@ export default function MessagePage({
                 <button 
                   onClick={handleAcceptTrade}
                   disabled={accepting}
-                  className="w-full bg-tan text-black border border-black p-2 rounded-sm hover:bg-black hover:text-tan transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
+                  className="w-full bg-tan text-black border border-black p-2 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
                 >
                   {accepting ? (
                     <div className="flex items-center justify-center">

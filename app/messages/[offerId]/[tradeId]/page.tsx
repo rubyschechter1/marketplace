@@ -129,13 +129,7 @@ export default function MessagePage({
           const data = await messagesResponse.json()
           setMessages(data.messages || [])
           
-          // Check for review request messages
-          const hasReviewRequest = data.messages.some((msg: Message) => 
-            !msg.senderId && msg.content.includes('rate your experience')
-          )
-          if (hasReviewRequest && trade.status === 'accepted') {
-            setShowReviewForm(true)
-          }
+          // Review form display is now handled by message-specific logic below
           
           // Refresh user context only once per conversation load
           if (!hasRefreshedUser.current) {
@@ -176,8 +170,7 @@ export default function MessagePage({
                       rating: userReview.rating,
                       content: userReview.content
                     })
-                    // Show the review form to allow editing
-                    setShowReviewForm(true)
+                    // Review form is now shown via message-specific buttons
                   }
                 }
               }

@@ -27,7 +27,7 @@ export default function ProfileThumbnail({
   }
 
   const baseClasses = `${sizeClasses[size]} bg-gray/20 rounded-lg flex items-center justify-center flex-shrink-0 ${className}`
-  const hoverClasses = clickable ? 'hover:bg-gray/30 transition-colors' : ''
+  const hoverClasses = clickable ? 'cursor-pointer hover:bg-gray/40 hover:scale-105 transition-all duration-200' : ''
   const combinedClasses = `${baseClasses} ${hoverClasses}`.trim()
 
   const content = user.avatarUrl ? (

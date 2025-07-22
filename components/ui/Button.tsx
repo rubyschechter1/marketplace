@@ -13,7 +13,7 @@ export default function Button({
   children, 
   ...props 
 }: ButtonProps) {
-  const baseStyles = 'py-3 px-6 text-button rounded-md transition-colors font-normal'
+  const baseStyles = 'py-3 px-6 text-button rounded-sm transition-colors font-normal'
   
   const variants = {
     primary: 'bg-tan text-black border border-black hover:bg-black hover:text-tan',

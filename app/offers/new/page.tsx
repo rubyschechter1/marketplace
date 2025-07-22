@@ -265,7 +265,7 @@ export default function NewOfferPage() {
                 <BrownHatLoader size="small" />
                 <span className="ml-2">Creating offer...</span>
               </div>
-            ) : "Submit Offer"}
+            ) : "Submit offer"}
           </Button>
         </form>
       </div>

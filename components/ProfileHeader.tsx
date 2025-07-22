@@ -282,7 +282,7 @@ export default function ProfileHeader({ user, isOwnProfile, reputationScore }: P
                 />
               ))}
               <span className="text-sm ml-1">
-                {Number(reputationScore.averageRating).toFixed(1)} ({reputationScore.totalReviews})
+                ({reputationScore.totalReviews})
               </span>
             </div>
           )}

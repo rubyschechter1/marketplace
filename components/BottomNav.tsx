@@ -33,7 +33,7 @@ export default function BottomNav() {
   ]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-tan border-t border-black">
+    <nav className="fixed bottom-0 left-0 right-0 bg-tan border-t border-black z-50">
       <div className="max-w-md mx-auto">
         <div className="flex justify-around items-center h-16 -translate-y-[5px]">
           {navItems.map((item) => {
@@ -54,7 +54,7 @@ export default function BottomNav() {
                     alt={item.label}
                     width={item.href === "/search" ? 28 : item.href === "/profile" ? 48 : 40}
                     height={item.href === "/search" ? 28 : item.href === "/profile" ? 48 : 40}
-                    className={`transition-opacity ${item.href === "/search" ? "-rotate-[10deg] -translate-y-[2px]" : "-translate-y-[3px]"} ${item.href === "/messages" ? "-translate-y-[1px]" : ""} ${item.href === "/profile" ? "translate-y-[2px]" : ""}`}
+                    className={`transition-opacity ${item.href === "/search" ? "-rotate-[10deg] -translate-y-[2px]" : "-translate-y-[3px]"} ${item.href === "/messages" ? "" : ""} ${item.href === "/profile" ? "translate-y-[2px]" : ""}`}
                   />
                   {item.href === "/messages" && user && user.unreadMessagesCount !== undefined && user.unreadMessagesCount > 0 ? (
                     <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">

@@ -352,9 +352,9 @@ export default function MessagePage({
 
   return (
     <AuthLayout variant="fullHeight">
-      <div className="max-w-md mx-auto flex flex-col h-screen pb-16">
+      <div className="max-w-md mx-auto flex flex-col h-screen pb-16 overflow-hidden">
         {/* Fixed Header */}
-        <div className="p-4 border-b border-gray/20 flex items-center bg-tan z-20 relative">
+        <div className="p-4 border-b border-gray/20 flex items-center bg-tan z-20 relative flex-shrink-0">
           <button 
             onClick={() => {
               if (fromPage === 'messages') {
@@ -386,55 +386,49 @@ export default function MessagePage({
         </div>
 
         {/* Fixed Trade Proposal Header */}
-        <div className="bg-tan border border-black rounded-sm mx-4 mt-4 z-10 relative">
+        <div className="bg-tan border border-black rounded-sm mx-4 mt-2 z-10 relative flex-shrink-0">
           {/* Initial trade proposal message */}
-          <div className="flex items-start p-4 pb-2">
+          <div className="flex items-center p-3">
             <ProfileThumbnail 
               user={tradeData.proposer} 
               size="sm" 
-              className="mr-3"
+              className="mr-2"
               fromPage={`/messages/${offerId}/${tradeId}`}
             />
-            <div className="flex-1">
-              <div className="bg-tan border border-black rounded-sm p-3">
-                <p className="text-body">
-                  <span className="font-normal">{tradeData.proposer.firstName} {tradeData.proposer.lastName}</span> offers <span className="italic">{tradeData.offeredItem.name}</span>
-                </p>
-              </div>
-              <p className="text-xs text-gray mt-1 text-right">
-                {new Date().toLocaleDateString()}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm">
+                <span className="font-normal">{tradeData.proposer.firstName}</span> offers <span className="italic">{tradeData.offeredItem.name}</span>
               </p>
             </div>
+            {/* Accept trade button (only for offer owner and if offer not deleted) - moved inline */}
+            {session?.user?.id === tradeData.offer.traveler.id && tradeData.offer.status !== 'deleted' && (
+              <div className="ml-2 flex-shrink-0">
+                {/* Show accept/cancel button only if item is available or trade is already accepted */}
+                {(isItemAvailable || tradeData.status === 'accepted') ? (
+                  <button 
+                    onClick={handleAcceptTrade}
+                    disabled={accepting}
+                    className="bg-tan text-black border border-black px-3 py-1 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] text-xs"
+                  >
+                    {accepting ? (
+                      <div className="flex items-center">
+                        <BrownHatLoader size="small" />
+                        <span className="ml-1">...</span>
+                      </div>
+                    ) : tradeData.status === 'accepted' ? 'Cancel trade' : 'Accept'}
+                  </button>
+                ) : (
+                  <div className="bg-gray/10 text-gray border border-gray/20 px-2 py-1 rounded-sm text-xs">
+                    Unavailable
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-
-          {/* Accept trade button (only for offer owner and if offer not deleted) */}
-          {session?.user?.id === tradeData.offer.traveler.id && tradeData.offer.status !== 'deleted' && (
-            <div className="p-4 pt-0">
-              {/* Show accept/cancel button only if item is available or trade is already accepted */}
-              {(isItemAvailable || tradeData.status === 'accepted') ? (
-                <button 
-                  onClick={handleAcceptTrade}
-                  disabled={accepting}
-                  className="w-full bg-tan text-black border border-black p-2 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
-                >
-                  {accepting ? (
-                    <div className="flex items-center justify-center">
-                      <BrownHatLoader size="small" />
-                      <span className="ml-2">Updating...</span>
-                    </div>
-                  ) : tradeData.status === 'accepted' ? 'Cancel trade' : 'accept trade'}
-                </button>
-              ) : (
-                <div className="w-full bg-gray/10 text-gray border border-gray/20 p-3 rounded-sm text-center">
-                  This item is no longer available
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Messages Container - Only This Scrolls */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden min-h-0">
           <div className="h-full overflow-y-auto p-4">
           {/* Other messages */}
           {messages.map((message, index) => {
@@ -545,7 +539,7 @@ export default function MessagePage({
         </div>
 
         {/* Fixed Bottom Section - either deleted message or input */}
-        <div className="border-t border-gray/20 bg-tan relative z-10">
+        <div className="border-t border-gray/20 bg-tan relative z-10 flex-shrink-0">
           {tradeData.offer.status === 'deleted' ? (
             <div className="bg-gray/10 p-4">
               <p className="text-center text-gray text-sm">
@@ -570,7 +564,7 @@ export default function MessagePage({
               <button
                 onClick={handleSendMessage}
                 disabled={!newMessage.trim() || sending}
-                className="bg-tan text-black border-2 border-black px-4 py-2 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm font-medium shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
+                className="bg-tan text-black border-2 border-black px-2.5 py-1 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-xs font-medium shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
               >
                 {sending ? (
                   <>

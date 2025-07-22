@@ -88,13 +88,13 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
         <div className="space-y-4 mb-8">
           <Link
             href="/offers/new"
-            className="block w-full bg-tan text-black border border-black p-4 rounded-sm hover:bg-black hover:text-tan transition-colors text-center text-button"
+            className="block w-full bg-tan text-black border border-black p-4 rounded-sm hover:bg-black hover:text-tan transition-all text-center text-button shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
           >
             Offer an item
           </Link>
           <Link
             href="/asks/new"
-            className="block w-full bg-tan text-black border border-black p-4 rounded-sm hover:bg-black hover:text-tan transition-colors text-center text-button"
+            className="block w-full bg-tan text-black border border-black p-4 rounded-sm hover:bg-black hover:text-tan transition-all text-center text-button shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
           >
             Post an ask
           </Link>

@@ -386,7 +386,7 @@ export default function MessagePage({
         </div>
 
         {/* Fixed Trade Proposal Header */}
-        <div className="bg-tan border border-black rounded-sm mx-4 mt-2 z-10 relative flex-shrink-0">
+        <div className="bg-tan border-2 border-black rounded-sm mx-4 mt-2 z-10 relative flex-shrink-0">
           {/* Initial trade proposal message */}
           <div className="flex items-center p-3">
             <ProfileThumbnail 

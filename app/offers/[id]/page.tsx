@@ -255,22 +255,26 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
             Back
           </button>
         </div>
+      </div>
 
-        {/* Image - only for regular offers */}
-        {offer.type !== 'ask' && offer.item?.imageUrl && (
-          <div className="relative aspect-square mx-6">
-            <img
-              src={offer.item.imageUrl}
-              alt={offer.item.name}
-              className="w-full h-full object-cover rounded-sm"
-            />
-          </div>
-        )}
+      {/* Image - moved outside container - only for regular offers */}
+      {offer.type !== 'ask' && offer.item?.imageUrl && (
+        <div className="w-64 aspect-square absolute left-[59px] z-10">
+          <img
+            src={offer.item.imageUrl}
+            alt={offer.item.name}
+            className="w-full h-full object-cover rounded-sm"
+          />
+        </div>
+      )}
 
+      <div className="max-w-md mx-auto" style={{ marginTop: offer.type !== 'ask' && offer.item?.imageUrl ? '280px' : '0' }}>
         {/* Content */}
         <div className="p-6">
-          {/* Title */}
-          <h1 className="text-header font-normal mb-3 -mt-0.5 ml-[2px]">{offer.title}</h1>
+          {/* Title - moved outside normal flow */}
+          <div className="absolute left-[59px] z-10" style={{ marginTop: '-320px' }}>
+            <h1 className="text-header font-normal mb-3">{offer.title}</h1>
+          </div>
           
           {/* Deleted status banner */}
           {isDeleted && (
@@ -298,7 +302,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                 className=""
               />
             )}
-            <div className="flex-1 border border-black rounded-sm p-4">
+            <div className="flex-1 rounded-sm p-4" style={{ border: '6px solid #000000' }}>
               <div className="text-body mb-3">
                 {offer.type === 'ask' ? (
                   <>
@@ -482,7 +486,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                       size="sm"
                       className=""
                     />
-                    <div className={`flex-1 border border-black rounded-sm p-4 ${isAccepted ? 'bg-black text-tan' : ''}`}>
+                    <div className={`flex-1 rounded-sm p-4 ${isAccepted ? 'bg-black text-tan' : ''}`} style={{ border: '6px solid #000000' }}>
                       <div className="flex items-start gap-3">
                         <div className="flex-1">
                           {isAccepted && (

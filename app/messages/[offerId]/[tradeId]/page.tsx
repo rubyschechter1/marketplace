@@ -372,13 +372,13 @@ export default function MessagePage({
           >
             <ChevronLeft size={24} />
           </button>
-          <Link href={`/offers/${offerId}?from=${encodeURIComponent(`conversation-${offerId}-${tradeId}${fromPage ? `-origin-${fromPage}` : ''}`)}`} className="flex items-center flex-1">
+          <Link href={`/offers/${offerId}?from=${encodeURIComponent(`conversation-${offerId}-${tradeId}${fromPage ? `-origin-${fromPage}` : ''}`)}`} className="flex items-center justify-center flex-1">
             {/* Show offer item image for regular offers, or proposed item image for asks */}
             {(tradeData.offer.item?.imageUrl || tradeData.offeredItem?.imageUrl) && (
               <img
                 src={tradeData.offer.item?.imageUrl || tradeData.offeredItem?.imageUrl}
                 alt={itemName}
-                className="w-10 h-10 object-cover rounded-sm mr-3"
+                className="w-10 h-10 object-cover rounded-lg mr-3"
               />
             )}
             <h1 className="text-header font-normal">{itemName}</h1>

@@ -295,7 +295,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                 user={offer.traveler}
                 size="sm"
                 clickable={!isOwner}
-                className="-ml-[3.375rem]"
+                className=""
               />
             )}
             <div className="flex-1 border border-black rounded-sm p-4">
@@ -480,7 +480,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                     <ProfileThumbnail 
                       user={trade.proposer}
                       size="sm"
-                      className="-ml-[3.375rem]"
+                      className=""
                     />
                     <div className={`flex-1 border border-black rounded-sm p-4 ${isAccepted ? 'bg-black text-tan' : ''}`}>
                       <div className="flex items-start gap-3">

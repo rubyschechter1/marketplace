@@ -544,7 +544,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
 
           {/* Delete button - only for owner and not already deleted */}
           {isOwner && !isDeleted && (
-            <div className="mt-8 mb-4">
+            <div className="mt-8 mb-4 ml-[52px]">
               <button
                 onClick={handleDeleteOffer}
                 className="w-full bg-tan text-black border border-black p-3 rounded-sm hover:bg-black hover:text-tan hover:border-black transition-colors"

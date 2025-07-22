@@ -204,7 +204,7 @@ export default function ProfilePage() {
         {/* Sign Out Button - Only for own profile */}
         {isOwnProfile && (
           <div className="w-full mb-6">
-            <SignOutButton className="w-full bg-tan text-black border border-black rounded-lg py-3 text-sm hover:bg-black hover:text-tan transition-colors" />
+            <SignOutButton className="w-full bg-tan text-black border border-black rounded-md py-3 text-sm hover:bg-black hover:text-tan transition-colors" />
           </div>
         )}
 
@@ -213,7 +213,7 @@ export default function ProfilePage() {
           <div className="w-full">
             <button 
               onClick={handleBackClick}
-              className="w-full bg-tan text-black border border-black rounded-lg py-3 text-sm hover:bg-black hover:text-tan transition-colors flex items-center justify-center"
+              className="w-full bg-tan text-black border border-black rounded-md py-3 text-sm hover:bg-black hover:text-tan transition-colors flex items-center justify-center"
             >
               <ChevronLeft size={20} className="mr-1" />
               Back

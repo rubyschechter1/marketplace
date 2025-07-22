@@ -212,7 +212,7 @@ export default function ProfileHeader({ user, isOwnProfile, reputationScore }: P
               <button
                 onClick={uploadCroppedImage}
                 disabled={uploading || !completedCrop}
-                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
+                className="text-sm bg-tan text-black px-4 py-2 rounded-md border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
               >
                 {uploading ? "Saving..." : "Save Photo"}
               </button>
@@ -225,7 +225,7 @@ export default function ProfileHeader({ user, isOwnProfile, reputationScore }: P
                   setError("")
                 }}
                 disabled={uploading}
-                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
+                className="text-sm bg-tan text-black px-4 py-2 rounded-md border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>

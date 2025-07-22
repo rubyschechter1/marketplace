@@ -244,7 +244,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              className="w-full border border-black rounded-lg p-4 mb-3 text-sm min-h-[100px] focus:outline-none focus:ring-1 focus:ring-black resize-none bg-tan placeholder-gray"
+              className="w-full border border-black rounded-md p-4 mb-3 text-sm min-h-[100px] focus:outline-none focus:ring-1 focus:ring-black resize-none bg-tan placeholder-gray"
               placeholder="Tell other travelers about yourself!"
               maxLength={500}
               autoFocus
@@ -253,14 +253,14 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
               <button
                 onClick={handleSaveBio}
                 disabled={loading}
-                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
+                className="text-sm bg-tan text-black px-4 py-2 rounded-md border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
               >
                 {loading ? "Saving..." : "Save"}
               </button>
               <button
                 onClick={handleCancelBio}
                 disabled={loading}
-                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
+                className="text-sm bg-tan text-black px-4 py-2 rounded-md border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -275,7 +275,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
             )}
             <button
               onClick={() => setIsEditingBio(true)}
-              className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors"
+              className="text-sm bg-tan text-black px-4 py-2 rounded-md border border-black hover:bg-black hover:text-tan transition-colors"
             >
               Edit
             </button>
@@ -328,7 +328,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
                 value={newLanguage}
                 onChange={(e) => handleLanguageInputChange(e.target.value)}
                 placeholder="Start typing a language..."
-                className="w-full px-3 py-2 border border-black rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black bg-tan placeholder-gray"
+                className="w-full px-3 py-2 border border-black rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-black bg-tan placeholder-gray"
                 onKeyPress={(e) => {
                   if (e.key === 'Escape') {
                     setNewLanguage("")
@@ -342,7 +342,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
                 autoFocus
               />
               {showDropdown && filteredLanguages.length > 0 && (
-                <div className="absolute top-full left-0 right-0 bg-tan border border-black rounded-lg mt-1 max-h-40 overflow-y-auto z-10">
+                <div className="absolute top-full left-0 right-0 bg-tan border border-black rounded-md mt-1 max-h-40 overflow-y-auto z-10">
                   {filteredLanguages.map((language, index) => (
                     <button
                       key={index}
@@ -365,7 +365,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
                   setSessionLanguages([])
                   setError("")
                 }}
-                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors"
+                className="text-sm bg-tan text-black px-4 py-2 rounded-md border border-black hover:bg-black hover:text-tan transition-colors"
               >
                 Save
               </button>
@@ -383,7 +383,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
                   setSessionLanguages([])
                   setError("")
                 }}
-                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors"
+                className="text-sm bg-tan text-black px-4 py-2 rounded-md border border-black hover:bg-black hover:text-tan transition-colors"
               >
                 Cancel
               </button>
@@ -392,7 +392,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
         ) : (
           <button
             onClick={() => setIsAddingLanguage(true)}
-            className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors"
+            className="text-sm bg-tan text-black px-4 py-2 rounded-md border border-black hover:bg-black hover:text-tan transition-colors"
           >
             {user.languages.length > 0 ? "Edit languages" : "Add language"}
           </button>
@@ -444,7 +444,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
                 value={newCountry}
                 onChange={(e) => handleCountryInputChange(e.target.value)}
                 placeholder="Start typing a country..."
-                className="w-full px-3 py-2 border border-black rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-black bg-tan placeholder-gray"
+                className="w-full px-3 py-2 border border-black rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-black bg-tan placeholder-gray"
                 onKeyPress={(e) => {
                   if (e.key === 'Escape') {
                     setNewCountry("")
@@ -458,7 +458,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
                 autoFocus
               />
               {showCountryDropdown && filteredCountries.length > 0 && (
-                <div className="absolute top-full left-0 right-0 bg-tan border border-black rounded-lg mt-1 max-h-40 overflow-y-auto z-10">
+                <div className="absolute top-full left-0 right-0 bg-tan border border-black rounded-md mt-1 max-h-40 overflow-y-auto z-10">
                   {filteredCountries.map((country, index) => (
                     <button
                       key={index}
@@ -481,7 +481,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
                   setSessionCountries([])
                   setError("")
                 }}
-                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors"
+                className="text-sm bg-tan text-black px-4 py-2 rounded-md border border-black hover:bg-black hover:text-tan transition-colors"
               >
                 Save
               </button>
@@ -499,7 +499,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
                   setSessionCountries([])
                   setError("")
                 }}
-                className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors"
+                className="text-sm bg-tan text-black px-4 py-2 rounded-md border border-black hover:bg-black hover:text-tan transition-colors"
               >
                 Cancel
               </button>
@@ -508,7 +508,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
         ) : (
           <button
             onClick={() => setIsAddingCountry(true)}
-            className="text-sm bg-tan text-black px-4 py-2 rounded-lg border border-black hover:bg-black hover:text-tan transition-colors"
+            className="text-sm bg-tan text-black px-4 py-2 rounded-md border border-black hover:bg-black hover:text-tan transition-colors"
           >
             {user.countriesVisited && user.countriesVisited.length > 0 ? "Edit countries" : "Add country"}
           </button>
@@ -516,7 +516,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-tan border border-red-600 rounded-lg text-sm text-red-600">
+        <div className="mb-4 p-3 bg-tan border border-red-600 rounded-md text-sm text-red-600">
           {error}
         </div>
       )}

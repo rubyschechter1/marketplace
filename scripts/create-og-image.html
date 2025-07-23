@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create OG Image</title>
+</head>
+<body>
+    <canvas id="canvas" width="1200" height="630" style="border: 1px solid #000;"></canvas>
+    <br>
+    <button onclick="downloadImage()">Download OG Image</button>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Fill with tan background color (same as your site)
+        ctx.fillStyle = '#D2B48C'; // tan color
+        ctx.fillRect(0, 0, 1200, 630);
+        
+        // Load and draw the brown hat image
+        const img = new Image();
+        img.onload = function() {
+            // Calculate size and position to center the image nicely
+            const aspectRatio = img.width / img.height;
+            const maxHeight = 300; // Max height for the hat
+            const height = Math.min(maxHeight, img.height);
+            const width = height * aspectRatio;
+            
+            // Center the image
+            const x = (1200 - width) / 2;
+            const y = (630 - height) / 2 - 50; // Slightly above center for text space
+            
+            ctx.drawImage(img, x, y, width, height);
+            
+            // Add text
+            ctx.fillStyle = '#000000'; // black text
+            ctx.font = 'bold 60px serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Brown Straw Hat', 600, y + height + 80);
+            
+            ctx.font = '36px serif';
+            ctx.fillText('Barter for Travelers', 600, y + height + 130);
+        };
+        
+        // Load the brownhat.png image
+        img.src = '../public/images/brownhat.png';
+        
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.download = 'og-image.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+    </script>
+</body>
+</html>

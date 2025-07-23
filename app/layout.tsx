@@ -13,8 +13,13 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://brownstrawhat.com'),
   title: "Brown Straw Hat - Barter for Travelers",
   description: "Trade items with fellow travelers - no money needed",
+  keywords: "barter, trade, travelers, exchange, marketplace, no money",
+  authors: [{ name: "Brown Straw Hat" }],
+  creator: "Brown Straw Hat",
+  publisher: "Brown Straw Hat",
   icons: {
     icon: [
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
@@ -25,6 +30,30 @@ export const metadata: Metadata = {
     shortcut: "/favicon.ico",
   },
   manifest: "/manifest.json",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://brownstrawhat.com",
+    siteName: "Brown Straw Hat",
+    title: "Brown Straw Hat - Barter for Travelers",
+    description: "Trade items with fellow travelers - no money needed. Join our community of travelers who share and exchange items through bartering.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Brown Straw Hat - Barter Marketplace for Travelers",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Brown Straw Hat - Barter for Travelers",
+    description: "Trade items with fellow travelers - no money needed",
+    images: ["/og-image.png"],
+    creator: "@brownstrawhat",
+    site: "@brownstrawhat",
+  },
 };
 
 export default function RootLayout({

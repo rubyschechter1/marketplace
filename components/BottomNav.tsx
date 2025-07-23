@@ -27,7 +27,7 @@ export default function BottomNav() {
     },
     {
       href: "/profile",
-      icon: "/images/profile.png",
+      icon: "/images/hat_navcon.png",
       label: "Me"
     }
   ]

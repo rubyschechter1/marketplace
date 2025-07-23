@@ -11,7 +11,7 @@ export default function LocationPermissionScreen() {
     
     // Check for specific error types
     if (location.error.includes("denied")) {
-      return "Location access is required to use Brownhat. Please enable location in your browser settings and refresh the page."
+      return "Location access is required to use Brownstrawhat. Please enable location in your browser settings and refresh the page."
     } else if (location.error.includes("unavailable")) {
       return "Unable to determine your location. Please ensure location services are enabled on your device."
     } else if (location.error.includes("timeout")) {
@@ -46,7 +46,7 @@ export default function LocationPermissionScreen() {
             </div>
           ) : (
             <p className="text-body mb-6">
-              Brownhat needs your location to show nearby travelers and calculate distances to offers.
+              Brownstrawhat needs your location to show nearby travelers and calculate distances to offers.
             </p>
           )}
         </div>

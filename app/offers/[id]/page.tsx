@@ -221,30 +221,13 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
         <div className="p-4 pb-0 flex justify-between items-center">
           <button 
             onClick={() => {
+              // Try using window.history.back() if from conversation
               if (fromPage?.startsWith('conversation-')) {
-                // Parse the fromPage parameter to extract conversation details and original source
-                const conversationData = fromPage.replace('conversation-', '')
-                
-                // Check if there's origin information
-                if (conversationData.includes('-origin-')) {
-                  const [conversationPart, originPart] = conversationData.split('-origin-')
-                  const [conversationOfferId, tradeId] = conversationPart.split('-')
-                  
-                  if (conversationOfferId && tradeId) {
-                    router.push(`/messages/${conversationOfferId}/${tradeId}?from=${encodeURIComponent(originPart)}`)
-                  } else {
-                    router.push('/')
-                  }
-                } else {
-                  // Simple conversation format without origin
-                  const parts = conversationData.split('-')
-                  if (parts.length >= 2) {
-                    const [conversationOfferId, tradeId] = parts
-                    router.push(`/messages/${conversationOfferId}/${tradeId}`)
-                  } else {
-                    router.push('/')
-                  }
-                }
+                window.history.back()
+              } else if (fromPage === 'home') {
+                router.push('/')
+              } else if (fromPage === '/search') {
+                router.push('/search')
               } else {
                 router.push('/')
               }
@@ -284,8 +267,10 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
           
           {/* Description - moved outside the box */}
           {offer.description && !isDeleted && (
-            <div className="text-body mb-6 ml-[2px]">
-              {offer.description}
+            <div className="text-body mb-6 flex justify-center">
+              <div className="w-64">
+                {offer.description}
+              </div>
             </div>
           )}
 

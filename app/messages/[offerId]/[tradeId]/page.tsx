@@ -90,7 +90,7 @@ export default function MessagePage({
       hasRefreshedUser.current = false
     })
     searchParams.then(sp => {
-      setFromPage(sp.from || 'home')
+      setFromPage(sp.from || 'messages')
     })
   }, [params, searchParams])
 
@@ -372,7 +372,7 @@ export default function MessagePage({
           >
             <ChevronLeft size={24} />
           </button>
-          <Link href={`/offers/${offerId}?from=${encodeURIComponent(`conversation-${offerId}-${tradeId}${fromPage ? `-origin-${fromPage}` : ''}`)}`} className="flex items-center justify-start flex-1 ml-[68px]">
+          <Link href={`/offers/${offerId}?from=${encodeURIComponent(`conversation-${offerId}-${tradeId}`)}`} className="flex items-center justify-start flex-1 ml-[68px]">
             {/* Show offer item image for regular offers, or proposed item image for asks */}
             {(tradeData.offer.item?.imageUrl || tradeData.offeredItem?.imageUrl) && (
               <img

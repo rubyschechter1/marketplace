@@ -46,7 +46,7 @@ export default function OfferCard({ offer, currentUserId, fromPage }: OfferCardP
 
       {/* Card content */}
       <Link 
-        href={`/offers/${offer.id}`}
+        href={`/offers/${offer.id}${fromPage ? `?from=${encodeURIComponent(fromPage)}` : ''}`}
         className="flex-1 bg-tan border border-black rounded-xl p-4 pb-8 block relative"
       >
         <div className="flex items-start gap-3">

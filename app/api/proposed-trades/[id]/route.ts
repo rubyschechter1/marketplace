@@ -97,7 +97,7 @@ export async function PUT(
     const body = await request.json()
     const { status } = body
 
-    if (!status || !['accepted', 'pending', 'rejected', 'withdrawn'].includes(status)) {
+    if (!status || !['accepted', 'pending', 'rejected', 'withdrawn', 'unavailable'].includes(status)) {
       return NextResponse.json(
         { error: "Invalid status" },
         { status: 400 }
@@ -136,6 +136,24 @@ export async function PUT(
         { error: "Only the offer owner can accept or reject trades" },
         { status: 403 }
       )
+    }
+
+    // Check if trying to accept when another trade is already accepted
+    if (status === 'accepted') {
+      const existingAcceptedTrade = await prisma.proposedTrades.findFirst({
+        where: {
+          offerId: proposedTrade.offerId,
+          status: 'accepted',
+          id: { not: proposedTrade.id }
+        }
+      })
+      
+      if (existingAcceptedTrade) {
+        return NextResponse.json(
+          { error: "Another trade has already been accepted for this offer" },
+          { status: 409 }
+        )
+      }
     }
 
     // Only proposer can withdraw
@@ -189,7 +207,7 @@ export async function PUT(
         })
       }
 
-      // If accepting a trade, create system messages for other trades
+      // If accepting a trade, reject all other pending trades
       if (status === 'accepted') {
         // Find all other pending trades for this offer
         const otherTrades = await tx.proposedTrades.findMany({
@@ -197,6 +215,19 @@ export async function PUT(
             offerId: proposedTrade.offerId,
             id: { not: proposedTrade.id },
             status: 'pending'
+          }
+        })
+
+        // Update all other pending trades to 'unavailable' status
+        await tx.proposedTrades.updateMany({
+          where: {
+            offerId: proposedTrade.offerId,
+            id: { not: proposedTrade.id },
+            status: 'pending'
+          },
+          data: {
+            status: 'unavailable',
+            updatedAt: new Date()
           }
         })
 
@@ -208,7 +239,45 @@ export async function PUT(
               proposedTradeId: otherTrade.id,
               senderId: null, // System message
               recipientId: null,
-              content: 'Another trade was accepted for this offer'
+              content: 'This item is no longer available - another trade was accepted'
+            }
+          })
+        }
+      }
+
+      // If unaccepting a trade (changing from accepted back to pending), make other trades available again
+      if (status === 'pending' && proposedTrade.status === 'accepted') {
+        // Find all unavailable trades for this offer
+        const unavailableTrades = await tx.proposedTrades.findMany({
+          where: {
+            offerId: proposedTrade.offerId,
+            id: { not: proposedTrade.id },
+            status: 'unavailable'
+          }
+        })
+
+        // Update all unavailable trades back to 'pending' status
+        await tx.proposedTrades.updateMany({
+          where: {
+            offerId: proposedTrade.offerId,
+            id: { not: proposedTrade.id },
+            status: 'unavailable'
+          },
+          data: {
+            status: 'pending',
+            updatedAt: new Date()
+          }
+        })
+
+        // Create system messages for each restored trade
+        for (const unavailableTrade of unavailableTrades) {
+          await tx.messages.create({
+            data: {
+              offerId: proposedTrade.offerId,
+              proposedTradeId: unavailableTrade.id,
+              senderId: null, // System message
+              recipientId: null,
+              content: 'This item is available again - the previous trade was cancelled'
             }
           })
         }

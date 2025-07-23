@@ -403,8 +403,8 @@ export default function MessagePage({
             {/* Accept trade button (only for offer owner and if offer not deleted) - moved inline */}
             {session?.user?.id === tradeData.offer.traveler.id && tradeData.offer.status !== 'deleted' && (
               <div className="ml-2 flex-shrink-0">
-                {/* Show accept/cancel button only if item is available or trade is already accepted */}
-                {(isItemAvailable || tradeData.status === 'accepted') ? (
+                {/* Show accept/cancel button based on trade status */}
+                {tradeData.status === 'accepted' ? (
                   <button 
                     onClick={handleAcceptTrade}
                     disabled={accepting}
@@ -415,11 +415,28 @@ export default function MessagePage({
                         <BrownHatLoader size="small" />
                         <span className="ml-1">...</span>
                       </div>
-                    ) : tradeData.status === 'accepted' ? 'Cancel trade' : 'Accept'}
+                    ) : 'Cancel trade'}
+                  </button>
+                ) : tradeData.status === 'unavailable' ? (
+                  <div className="bg-gray/10 text-gray border border-gray/20 px-2 py-1 rounded-sm text-xs">
+                    Unavailable
+                  </div>
+                ) : tradeData.status === 'pending' ? (
+                  <button 
+                    onClick={handleAcceptTrade}
+                    disabled={accepting}
+                    className="bg-tan text-black border border-black px-3 py-1 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] text-xs"
+                  >
+                    {accepting ? (
+                      <div className="flex items-center">
+                        <BrownHatLoader size="small" />
+                        <span className="ml-1">...</span>
+                      </div>
+                    ) : 'Accept'}
                   </button>
                 ) : (
                   <div className="bg-gray/10 text-gray border border-gray/20 px-2 py-1 rounded-sm text-xs">
-                    Unavailable
+                    {tradeData.status}
                   </div>
                 )}
               </div>

@@ -103,7 +103,7 @@ model proposedTrades {
   offerId          String     @map("offer_id") @db.Uuid
   proposerId       String     @map("proposer_id") @db.Uuid
   offeredItemId    String     @map("offered_item_id") @db.Uuid
-  status           String     @default("pending") @db.VarChar(20) // pending, accepted, rejected, withdrawn
+  status           String     @default("pending") @db.VarChar(20) // pending, accepted, rejected, withdrawn, unavailable
   createdAt        DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt        DateTime   @default(now()) @map("updated_at") @db.Timestamptz(6)
   

@@ -11,7 +11,7 @@ import { cookies, headers } from "next/headers"
 
 async function getUserOffers() {
   const cookieStore = await cookies()
-  const response = await fetch(`${process.env.NEXTAUTH_URL}/api/offers/mine?status=active&limit=5`, {
+  const response = await fetch(`${process.env.NEXTAUTH_URL}/api/offers/mine?status=active`, {
     headers: {
       cookie: cookieStore.toString(),
     },

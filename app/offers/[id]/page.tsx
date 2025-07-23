@@ -218,7 +218,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
     <AuthLayout>
       <div className="max-w-md mx-auto">
         {/* Header */}
-        <div className="p-4 pb-0">
+        <div className="p-4 pb-0 flex justify-between items-center">
           <button 
             onClick={() => {
               if (fromPage?.startsWith('conversation-')) {
@@ -249,17 +249,18 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                 router.push('/')
               }
             }}
-            className="inline-flex items-center text-black hover:text-gray mb-4 ml-[3px]"
+            className="inline-flex items-center text-black hover:text-gray ml-[3px]"
           >
-            <ChevronLeft size={20} className="mr-1" />
-            Back
+            <ChevronLeft size={20} />
           </button>
+          
+          <h1 className="text-header font-normal flex-1 text-center mr-6">{offer.title}</h1>
         </div>
       </div>
 
       {/* Image - moved outside container - only for regular offers */}
       {offer.type !== 'ask' && offer.item?.imageUrl && (
-        <div className="w-64 aspect-square absolute left-[59px] z-10">
+        <div className="aspect-square absolute left-[26px] right-[26px] z-10" style={{ marginTop: '20px' }}>
           <img
             src={offer.item.imageUrl}
             alt={offer.item.name}
@@ -268,13 +269,9 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
         </div>
       )}
 
-      <div className="max-w-md mx-auto" style={{ marginTop: offer.type !== 'ask' && offer.item?.imageUrl ? '280px' : '0' }}>
+      <div className="max-w-md mx-auto" style={{ marginTop: offer.type !== 'ask' && offer.item?.imageUrl ? '330px' : '0' }}>
         {/* Content */}
         <div className="p-6">
-          {/* Title - moved outside normal flow */}
-          <div className="absolute left-[59px] z-10" style={{ marginTop: '-320px' }}>
-            <h1 className="text-header font-normal mb-3">{offer.title}</h1>
-          </div>
           
           {/* Deleted status banner */}
           {isDeleted && (
@@ -302,7 +299,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                 className=""
               />
             )}
-            <div className="flex-1 rounded-sm p-4" style={{ border: '6px solid #000000' }}>
+            <div className="flex-1 rounded-sm p-4 border border-black">
               <div className="text-body mb-3">
                 {offer.type === 'ask' ? (
                   <>
@@ -474,7 +471,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
 
           {/* Proposed Trades */}
           <div>
-            <h2 className="text-body font-normal mb-4 text-center">Proposed trades</h2>
+            <h2 className="text-body font-normal mb-4 text-center ml-[52px]">Proposed trades</h2>
             
             <div className="space-y-3">
               {offer.proposedTrades?.map((trade: any) => {
@@ -541,7 +538,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                 })}
 
               {(!offer.proposedTrades || offer.proposedTrades.length === 0) && (
-                <p className="text-body text-gray">No proposed trades yet</p>
+                <p className="text-body text-gray text-center ml-[52px]">No proposed trades yet</p>
               )}
             </div>
           </div>

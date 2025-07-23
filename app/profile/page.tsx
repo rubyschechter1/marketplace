@@ -111,8 +111,12 @@ export default function ProfilePage() {
     )
   }
 
+  // Separate offers from asks
+  const actualOffers = (user.offers || []).filter((offer: any) => offer.item?.name) // Has an item = actual offer
+  const asks = (user.offers || []).filter((offer: any) => !offer.item?.name) // No item = ask
+  
   // Get list of offered items
-  const offeredItems = (user.offers || []).map((offer: any) => offer.item?.name).filter(Boolean)
+  const offeredItems = actualOffers.map((offer: any) => offer.item.name)
 
   return (
     <AuthLayout>
@@ -185,7 +189,7 @@ export default function ProfilePage() {
 
         {/* Offered Items Section */}
         <div className="mb-6">
-          <h2 className="text-lg mb-2">Has offered {(user.offers || []).length} items</h2>
+          <h2 className="text-lg mb-2">Has offered {actualOffers.length} items</h2>
           <p className="text-sm text-gray italic">
             {offeredItems.length > 0 
               ? offeredItems.join(', ')
@@ -193,6 +197,7 @@ export default function ProfilePage() {
             }
           </p>
         </div>
+
 
 
         {/* Reviews Section */}
@@ -215,7 +220,6 @@ export default function ProfilePage() {
               onClick={handleBackClick}
               className="w-full bg-tan text-black border border-black rounded-md py-3 text-sm hover:bg-black hover:text-tan transition-colors flex items-center justify-center"
             >
-              <ChevronLeft size={20} className="mr-1" />
               Back
             </button>
           </div>

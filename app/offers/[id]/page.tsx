@@ -260,7 +260,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
 
       {/* Image - moved outside container - only for regular offers */}
       {offer.type !== 'ask' && offer.item?.imageUrl && (
-        <div className="aspect-square absolute left-[26px] right-[26px] z-10" style={{ marginTop: '20px' }}>
+        <div className="w-64 h-64 absolute left-1/2 transform -translate-x-1/2 z-10" style={{ marginTop: '20px' }}>
           <img
             src={offer.item.imageUrl}
             alt={offer.item.name}
@@ -269,7 +269,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
         </div>
       )}
 
-      <div className="max-w-md mx-auto" style={{ marginTop: offer.type !== 'ask' && offer.item?.imageUrl ? '330px' : '0' }}>
+      <div className="max-w-md mx-auto" style={{ marginTop: offer.type !== 'ask' && offer.item?.imageUrl ? '270px' : '0' }}>
         {/* Content */}
         <div className="p-6">
           
@@ -290,7 +290,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
           )}
 
           {/* Offer Details Box with Profile Thumbnail */}
-          <div className="flex items-start gap-3 mb-6">
+          <div className="flex justify-center items-start gap-3 mb-6" style={{ marginLeft: '-50px' }}>
             {offer.traveler && (
               <ProfileThumbnail 
                 user={offer.traveler}
@@ -299,7 +299,8 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                 className=""
               />
             )}
-            <div className="flex-1 rounded-sm p-4 border border-black">
+            <div className="w-64 rounded-sm p-4 border border-black">
+              <div className="flex-1">
               <div className="text-body mb-3">
                 {offer.type === 'ask' ? (
                   <>
@@ -466,24 +467,25 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                   {offer.distance !== undefined && ` · ${offer.distance}km`}
                 </div>
               </div>
+              </div>
             </div>
           </div>
 
           {/* Proposed Trades */}
           <div>
-            <h2 className="text-body font-normal mb-4 text-center ml-[52px]">Proposed trades</h2>
+            <h2 className="text-body font-normal mb-4 text-center">Proposed trades</h2>
             
             <div className="space-y-3">
               {offer.proposedTrades?.map((trade: any) => {
                 const isAccepted = trade.status === 'accepted'
                 return (
-                  <div key={trade.id} className="flex items-start gap-3">
+                  <div key={trade.id} className="flex justify-center items-start gap-3" style={{ marginLeft: '-50px' }}>
                     <ProfileThumbnail 
                       user={trade.proposer}
                       size="sm"
                       className=""
                     />
-                    <div className={`flex-1 rounded-sm p-4 ${isAccepted ? 'bg-black text-tan' : ''}`} style={{ border: '6px solid #000000' }}>
+                    <div className={`w-64 rounded-sm p-4 border border-black ${isAccepted ? 'bg-black text-tan' : ''}`}>
                       <div className="flex items-start gap-3">
                         <div className="flex-1">
                           {isAccepted && (
@@ -538,20 +540,22 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                 })}
 
               {(!offer.proposedTrades || offer.proposedTrades.length === 0) && (
-                <p className="text-body text-gray text-center ml-[52px]">No proposed trades yet</p>
+                <p className="text-body text-gray text-center">No proposed trades yet</p>
               )}
             </div>
           </div>
 
           {/* Delete button - only for owner and not already deleted */}
           {isOwner && !isDeleted && (
-            <div className="mt-8 mb-4 ml-[52px]">
+            <div className="mt-8 mb-4 flex justify-center">
+              <div className="w-64">
               <button
                 onClick={handleDeleteOffer}
                 className="w-full bg-tan text-black border border-black p-3 rounded-sm hover:bg-black hover:text-tan hover:border-black transition-colors"
               >
                 Delete {offer.type === 'ask' ? 'ask' : 'offer'}
               </button>
+              </div>
             </div>
           )}
         </div>

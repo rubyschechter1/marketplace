@@ -40,6 +40,7 @@ interface TradeData {
     imageUrl?: string
   }
   offeredItemInstance?: {
+    id: string
     catalogItem: {
       name: string
       imageUrl?: string
@@ -60,6 +61,7 @@ interface TradeData {
       imageUrl?: string
     }
     itemInstance?: {
+      id: string
       catalogItem: {
         name: string
         imageUrl?: string

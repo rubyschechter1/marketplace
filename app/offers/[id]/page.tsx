@@ -181,7 +181,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
       itemName = selectedInventoryItem.catalogItem.name
       tradeData.offeredItemInstanceId = selectedInventoryItem.id
     } else {
-      itemName = isOtherSelected ? customItemText : selectedItem
+      itemName = isOtherSelected ? customItemText : (selectedItem || "")
       if (!itemName) return
       
       // Create an item for what the user is offering

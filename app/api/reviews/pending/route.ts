@@ -33,11 +33,21 @@ export async function GET(request: NextRequest) {
         offer: {
           include: {
             traveler: true,
-            item: true
+            item: true,
+            itemInstance: {
+              include: {
+                catalogItem: true
+              }
+            }
           }
         },
         proposer: true,
         offeredItem: true,
+        offeredItemInstance: {
+          include: {
+            catalogItem: true
+          }
+        },
         reviews: {
           where: {
             reviewerId: session.user.id
@@ -79,8 +89,12 @@ export async function GET(request: NextRequest) {
           offerId: trade.offer.id,
           offerTitle: trade.offer.title,
           offerType: trade.offer.type,
-          offeredItemName: trade.offer.type === 'ask' ? trade.offeredItem.name : trade.offer.item?.name,
-          yourItemName: trade.offer.type === 'ask' ? trade.offer.item?.name : trade.offeredItem.name
+          offeredItemName: trade.offer.type === 'ask' 
+            ? (trade.offeredItem?.name || trade.offeredItemInstance?.catalogItem?.name)
+            : (trade.offer.item?.name || trade.offer.itemInstance?.catalogItem?.name),
+          yourItemName: trade.offer.type === 'ask' 
+            ? (trade.offer.item?.name || trade.offer.itemInstance?.catalogItem?.name)
+            : (trade.offeredItem?.name || trade.offeredItemInstance?.catalogItem?.name)
         },
         exchangeDate: trade.exchangeDate?.extractedDate || null
       }

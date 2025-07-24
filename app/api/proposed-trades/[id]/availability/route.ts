@@ -26,6 +26,11 @@ export async function GET(
       where: { id: tradeId },
       include: {
         offeredItem: true,
+        offeredItemInstance: {
+          include: {
+            catalogItem: true
+          }
+        },
         offer: {
           include: {
             traveler: true
@@ -49,29 +54,57 @@ export async function GET(
       )
     }
 
+    // Get the item name from either regular item or inventory item
+    const itemName = currentTrade.offeredItem?.name || 
+                    currentTrade.offeredItemInstance?.catalogItem?.name ||
+                    "Unknown item"
+
     // Check if the offered item is already accepted in another trade
-    const acceptedTrades = await prisma.proposedTrades.findMany({
-      where: {
-        offeredItemId: currentTrade.offeredItemId,
-        status: 'accepted',
-        id: {
-          not: tradeId // Exclude the current trade
-        }
-      },
-      include: {
-        offer: {
-          include: {
-            item: true
+    let acceptedTrades: any[] = []
+    
+    if (currentTrade.offeredItemId) {
+      // Check for regular catalog item trades
+      acceptedTrades = await prisma.proposedTrades.findMany({
+        where: {
+          offeredItemId: currentTrade.offeredItemId,
+          status: 'accepted',
+          id: {
+            not: tradeId // Exclude the current trade
+          }
+        },
+        include: {
+          offer: {
+            include: {
+              item: true
+            }
           }
         }
-      }
-    })
+      })
+    } else if (currentTrade.offeredItemInstanceId) {
+      // Check for inventory item trades
+      acceptedTrades = await prisma.proposedTrades.findMany({
+        where: {
+          offeredItemInstanceId: currentTrade.offeredItemInstanceId,
+          status: 'accepted',
+          id: {
+            not: tradeId // Exclude the current trade
+          }
+        },
+        include: {
+          offer: {
+            include: {
+              item: true
+            }
+          }
+        }
+      })
+    }
 
     const isItemAvailable = acceptedTrades.length === 0
 
     return NextResponse.json({
       isAvailable: isItemAvailable,
-      itemName: currentTrade.offeredItem.name,
+      itemName: itemName,
       acceptedInTrades: acceptedTrades.map(trade => ({
         offerId: trade.offerId,
         offerTitle: trade.offer.title,

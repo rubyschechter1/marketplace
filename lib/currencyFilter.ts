@@ -1,4 +1,5 @@
 // Currency and money-related filtering for barter-only platform
+import { validateContent as validateContentModeration } from './contentModeration'
 
 const CURRENCY_PATTERNS = [
   // Currency symbols
@@ -158,7 +159,14 @@ export function getCurrencyError(fieldName: string = 'This field'): string {
   return `${fieldName} cannot contain currency symbols or money-related terms. This is a bartering platform - no money involved! 🤝`
 }
 
-export function validateNoCurrency(text: string, fieldName: string = 'This field'): { isValid: boolean; error?: string } {
+export function validateNoCurrency(text: string, fieldName: string = 'This field', context: 'offer' | 'message' | 'profile' | 'review' = 'offer'): { isValid: boolean; error?: string } {
+  // First check for inappropriate content
+  const contentCheck = validateContentModeration(text, fieldName, context)
+  if (!contentCheck.isValid) {
+    return contentCheck
+  }
+
+  // Then check for currency content
   if (containsCurrency(text)) {
     return {
       isValid: false,

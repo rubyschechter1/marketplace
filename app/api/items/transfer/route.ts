@@ -80,8 +80,8 @@ export async function POST(request: NextRequest) {
 
       catalogItem = transferredItem.catalogItem
     } else if (itemName) {
-      // Validate item name for currency content
-      const nameValidation = validateNoCurrency(itemName, "Item name")
+      // Validate item name for currency content and inappropriate content
+      const nameValidation = validateNoCurrency(itemName, "Item name", "offer")
       if (!nameValidation.isValid) {
         return NextResponse.json(
           { error: nameValidation.error },
@@ -89,9 +89,9 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Validate item description for currency content
+      // Validate item description for currency content and inappropriate content
       if (itemDescription) {
-        const descValidation = validateNoCurrency(itemDescription, "Item description")
+        const descValidation = validateNoCurrency(itemDescription, "Item description", "offer")
         if (!descValidation.isValid) {
           return NextResponse.json(
             { error: descValidation.error },

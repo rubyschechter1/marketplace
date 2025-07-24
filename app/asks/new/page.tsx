@@ -31,8 +31,8 @@ export default function NewAskPage() {
   }
 
   const handleOfferingItemChange = (index: number, value: string) => {
-    // Check for currency content
-    const validation = validateNoCurrency(value, "Offering items")
+    // Check for currency content and inappropriate content
+    const validation = validateNoCurrency(value, "Offering items", "offer")
     if (!validation.isValid) {
       setError(validation.error!)
       return
@@ -96,15 +96,15 @@ export default function NewAskPage() {
     setIsSubmitting(true)
     setError("")
 
-    // Validate all form fields for currency content
-    const titleValidation = validateNoCurrency(formData.askTitle, "Ask title")
+    // Validate all form fields for currency content and inappropriate content
+    const titleValidation = validateNoCurrency(formData.askTitle, "Ask title", "offer")
     if (!titleValidation.isValid) {
       setError(titleValidation.error!)
       setIsSubmitting(false)
       return
     }
 
-    const descriptionValidation = validateNoCurrency(formData.askDescription, "Ask description")
+    const descriptionValidation = validateNoCurrency(formData.askDescription, "Ask description", "offer")
     if (!descriptionValidation.isValid) {
       setError(descriptionValidation.error!)
       setIsSubmitting(false)
@@ -115,7 +115,7 @@ export default function NewAskPage() {
     for (let i = 0; i < formData.offeringItems.length; i++) {
       const item = formData.offeringItems[i]
       if (item.trim()) {
-        const itemValidation = validateNoCurrency(item, `Offering item ${i + 1}`)
+        const itemValidation = validateNoCurrency(item, `Offering item ${i + 1}`, "offer")
         if (!itemValidation.isValid) {
           setError(itemValidation.error!)
           setIsSubmitting(false)
@@ -177,7 +177,7 @@ export default function NewAskPage() {
               placeholder="add a title (e.g. warm winter jacket)"
               value={formData.askTitle}
               onChange={(e) => {
-                const validation = validateNoCurrency(e.target.value, "Ask title")
+                const validation = validateNoCurrency(e.target.value, "Ask title", "offer")
                 if (!validation.isValid) {
                   setError(validation.error!)
                   return
@@ -192,7 +192,7 @@ export default function NewAskPage() {
               placeholder="describe what you're looking for (e.g. I need a warm jacket for winter hiking, size M or L)"
               value={formData.askDescription}
               onChange={(e) => {
-                const validation = validateNoCurrency(e.target.value, "Ask description")
+                const validation = validateNoCurrency(e.target.value, "Ask description", "offer")
                 if (!validation.isValid) {
                   setError(validation.error!)
                   return

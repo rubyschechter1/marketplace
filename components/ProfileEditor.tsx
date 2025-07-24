@@ -120,8 +120,8 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
   }
 
   const handleSaveBio = async () => {
-    // Validate bio for currency content
-    const validation = validateNoCurrency(bio, "Bio")
+    // Validate bio for currency content and inappropriate content
+    const validation = validateNoCurrency(bio, "Bio", "profile")
     if (!validation.isValid) {
       setBioError(validation.error!)
       setError(validation.error!)
@@ -257,8 +257,8 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
                 value={bio}
                 onChange={(e) => {
                   const value = e.target.value
-                  // Real-time validation for currency content
-                  const validation = validateNoCurrency(value, "Bio")
+                  // Real-time validation for currency content and inappropriate content
+                  const validation = validateNoCurrency(value, "Bio", "profile")
                   if (!validation.isValid) {
                     setBioError(validation.error!)
                   } else {

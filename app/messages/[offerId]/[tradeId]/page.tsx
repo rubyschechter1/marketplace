@@ -278,8 +278,8 @@ export default function MessagePage({
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !tradeData) return
 
-    // Validate message for currency content
-    const validation = validateNoCurrency(newMessage, "Messages")
+    // Validate message for currency content and inappropriate content
+    const validation = validateNoCurrency(newMessage, "Messages", "message")
     if (!validation.isValid) {
       setMessageError(validation.error!)
       return
@@ -470,15 +470,15 @@ export default function MessagePage({
   const handleGiveNewItem = async (itemName: string, itemDescription?: string, itemImageUrl?: string) => {
     if (!otherUser) return
     
-    // Validate item name and description for currency content
-    const nameValidation = validateNoCurrency(itemName, "Item name")
+    // Validate item name and description for currency content and inappropriate content
+    const nameValidation = validateNoCurrency(itemName, "Item name", "offer")
     if (!nameValidation.isValid) {
       alert(nameValidation.error!)
       return
     }
 
     if (itemDescription) {
-      const descValidation = validateNoCurrency(itemDescription, "Item description")
+      const descValidation = validateNoCurrency(itemDescription, "Item description", "offer")
       if (!descValidation.isValid) {
         alert(descValidation.error!)
         return
@@ -758,8 +758,8 @@ export default function MessagePage({
                 value={newMessage}
                 onChange={(e) => {
                   const value = e.target.value
-                  // Real-time validation for currency content
-                  const validation = validateNoCurrency(value, "Messages")
+                  // Real-time validation for currency content and inappropriate content
+                  const validation = validateNoCurrency(value, "Messages", "message")
                   if (!validation.isValid) {
                     setMessageError(validation.error!)
                   } else {

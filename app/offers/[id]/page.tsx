@@ -186,8 +186,8 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
       itemName = isOtherSelected ? customItemText : (selectedItem || "")
       if (!itemName) return
       
-      // Validate item name for currency content
-      const validation = validateNoCurrency(itemName, "Item name")
+      // Validate item name for currency content and inappropriate content
+      const validation = validateNoCurrency(itemName, "Item name", "offer")
       if (!validation.isValid) {
         setCustomItemError(validation.error!)
         return
@@ -459,8 +459,8 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                             value={customItemText}
                             onChange={(e) => {
                               const value = e.target.value
-                              // Real-time validation for currency content
-                              const validation = validateNoCurrency(value, "Custom item name")
+                              // Real-time validation for currency content and inappropriate content
+                              const validation = validateNoCurrency(value, "Custom item name", "offer")
                               if (!validation.isValid) {
                                 setCustomItemError(validation.error!)
                               } else {

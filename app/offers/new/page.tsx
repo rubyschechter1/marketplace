@@ -108,8 +108,8 @@ export default function NewOfferPage() {
   }
 
   const handleSeekingItemChange = (index: number, value: string) => {
-    // Check for currency content
-    const validation = validateNoCurrency(value, "Looking for items")
+    // Check for currency content and inappropriate content
+    const validation = validateNoCurrency(value, "Looking for items", "offer")
     if (!validation.isValid) {
       setError(validation.error!)
       return
@@ -137,15 +137,15 @@ export default function NewOfferPage() {
     setIsSubmitting(true)
     setError("")
 
-    // Validate all form fields for currency content
-    const titleValidation = validateNoCurrency(formData.offeringTitle, "Item title")
+    // Validate all form fields for currency content and inappropriate content
+    const titleValidation = validateNoCurrency(formData.offeringTitle, "Item title", "offer")
     if (!titleValidation.isValid) {
       setError(titleValidation.error!)
       setIsSubmitting(false)
       return
     }
 
-    const descriptionValidation = validateNoCurrency(formData.offeringDescription, "Item description")
+    const descriptionValidation = validateNoCurrency(formData.offeringDescription, "Item description", "offer")
     if (!descriptionValidation.isValid) {
       setError(descriptionValidation.error!)
       setIsSubmitting(false)
@@ -156,7 +156,7 @@ export default function NewOfferPage() {
     for (let i = 0; i < formData.seekingItems.length; i++) {
       const item = formData.seekingItems[i]
       if (item.trim()) {
-        const itemValidation = validateNoCurrency(item, `Looking for item ${i + 1}`)
+        const itemValidation = validateNoCurrency(item, `Looking for item ${i + 1}`, "offer")
         if (!itemValidation.isValid) {
           setError(itemValidation.error!)
           setIsSubmitting(false)
@@ -367,7 +367,7 @@ export default function NewOfferPage() {
               value={formData.offeringTitle}
               onChange={(e) => {
                 if (!useInventory) {
-                  const validation = validateNoCurrency(e.target.value, "Item title")
+                  const validation = validateNoCurrency(e.target.value, "Item title", "offer")
                   if (!validation.isValid) {
                     setError(validation.error!)
                     return
@@ -386,7 +386,7 @@ export default function NewOfferPage() {
               placeholder={useInventory ? "Add description for this offer (optional)" : "add description (optional)"}
               value={formData.offeringDescription}
               onChange={(e) => {
-                const validation = validateNoCurrency(e.target.value, "Item description")
+                const validation = validateNoCurrency(e.target.value, "Item description", "offer")
                 if (!validation.isValid) {
                   setError(validation.error!)
                   return

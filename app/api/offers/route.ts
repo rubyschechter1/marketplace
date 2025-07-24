@@ -113,9 +113,9 @@ export async function POST(req: Request) {
     const data = await req.json()
     const { type = "offer", itemId, itemInstanceId, title, description, askDescription, lookingFor, latitude, longitude, locationName } = data
 
-    // Validate content for currency references
+    // Validate content for currency references and inappropriate content
     if (title) {
-      const titleValidation = validateNoCurrency(title, "Title")
+      const titleValidation = validateNoCurrency(title, "Title", "offer")
       if (!titleValidation.isValid) {
         return NextResponse.json(
           { error: titleValidation.error },
@@ -125,7 +125,7 @@ export async function POST(req: Request) {
     }
 
     if (description) {
-      const descValidation = validateNoCurrency(description, "Description")
+      const descValidation = validateNoCurrency(description, "Description", "offer")
       if (!descValidation.isValid) {
         return NextResponse.json(
           { error: descValidation.error },
@@ -135,7 +135,7 @@ export async function POST(req: Request) {
     }
 
     if (askDescription) {
-      const askDescValidation = validateNoCurrency(askDescription, "Ask description")
+      const askDescValidation = validateNoCurrency(askDescription, "Ask description", "offer")
       if (!askDescValidation.isValid) {
         return NextResponse.json(
           { error: askDescValidation.error },
@@ -149,7 +149,7 @@ export async function POST(req: Request) {
       for (let i = 0; i < lookingFor.length; i++) {
         const item = lookingFor[i]
         if (item && typeof item === 'string') {
-          const itemValidation = validateNoCurrency(item, `Looking for item ${i + 1}`)
+          const itemValidation = validateNoCurrency(item, `Looking for item ${i + 1}`, "offer")
           if (!itemValidation.isValid) {
             return NextResponse.json(
               { error: itemValidation.error },

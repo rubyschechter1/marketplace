@@ -28,8 +28,8 @@ export async function POST(req: Request) {
       )
     }
 
-    // Validate message content for currency references
-    const contentValidation = validateNoCurrency(content, "Message content")
+    // Validate message content for currency references and inappropriate content
+    const contentValidation = validateNoCurrency(content, "Message content", "message")
     if (!contentValidation.isValid) {
       return NextResponse.json(
         { error: contentValidation.error },

@@ -16,9 +16,9 @@ export async function PUT(req: Request) {
     const data = await req.json()
     const { firstName, lastName, bio, avatarUrl, languages, countriesVisited } = data
 
-    // Validate content for currency references
+    // Validate content for currency references and inappropriate content
     if (firstName) {
-      const firstNameValidation = validateNoCurrency(firstName, "First name")
+      const firstNameValidation = validateNoCurrency(firstName, "First name", "profile")
       if (!firstNameValidation.isValid) {
         return NextResponse.json(
           { error: firstNameValidation.error },
@@ -28,7 +28,7 @@ export async function PUT(req: Request) {
     }
 
     if (lastName) {
-      const lastNameValidation = validateNoCurrency(lastName, "Last name")
+      const lastNameValidation = validateNoCurrency(lastName, "Last name", "profile")
       if (!lastNameValidation.isValid) {
         return NextResponse.json(
           { error: lastNameValidation.error },
@@ -38,7 +38,7 @@ export async function PUT(req: Request) {
     }
 
     if (bio) {
-      const bioValidation = validateNoCurrency(bio, "Bio")
+      const bioValidation = validateNoCurrency(bio, "Bio", "profile")
       if (!bioValidation.isValid) {
         return NextResponse.json(
           { error: bioValidation.error },

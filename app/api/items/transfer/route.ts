@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { PrismaClient } from "@prisma/client"
+import { validateNoCurrency } from "@/lib/currencyFilter"
 
 const prisma = new PrismaClient()
 
@@ -79,6 +80,26 @@ export async function POST(request: NextRequest) {
 
       catalogItem = transferredItem.catalogItem
     } else if (itemName) {
+      // Validate item name for currency content
+      const nameValidation = validateNoCurrency(itemName, "Item name")
+      if (!nameValidation.isValid) {
+        return NextResponse.json(
+          { error: nameValidation.error },
+          { status: 400 }
+        )
+      }
+
+      // Validate item description for currency content
+      if (itemDescription) {
+        const descValidation = validateNoCurrency(itemDescription, "Item description")
+        if (!descValidation.isValid) {
+          return NextResponse.json(
+            { error: descValidation.error },
+            { status: 400 }
+          )
+        }
+      }
+
       // Create new item and give it directly to recipient
       // First create the catalog item
       catalogItem = await prisma.items.create({

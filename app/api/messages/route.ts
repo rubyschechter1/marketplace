@@ -7,6 +7,7 @@ import { NewMessageEmail } from "@/emails/new-message"
 import { render } from '@react-email/render'
 import * as React from 'react'
 import { analyzeConversationForExchangeDate, saveExchangeDate } from "@/lib/ai/date-extraction"
+import { validateNoCurrency } from "@/lib/currencyFilter"
 
 const prisma = new PrismaClient()
 
@@ -23,6 +24,15 @@ export async function POST(req: Request) {
     if (!offerId || !recipientId || !content) {
       return NextResponse.json(
         { error: "Missing required fields" },
+        { status: 400 }
+      )
+    }
+
+    // Validate message content for currency references
+    const contentValidation = validateNoCurrency(content, "Message content")
+    if (!contentValidation.isValid) {
+      return NextResponse.json(
+        { error: contentValidation.error },
         { status: 400 }
       )
     }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { PrismaClient } from "@prisma/client"
+import { validateNoCurrency } from "@/lib/currencyFilter"
 
 const prisma = new PrismaClient()
 
@@ -15,7 +16,38 @@ export async function PUT(req: Request) {
     const data = await req.json()
     const { firstName, lastName, bio, avatarUrl, languages, countriesVisited } = data
 
-    // Validate input
+    // Validate content for currency references
+    if (firstName) {
+      const firstNameValidation = validateNoCurrency(firstName, "First name")
+      if (!firstNameValidation.isValid) {
+        return NextResponse.json(
+          { error: firstNameValidation.error },
+          { status: 400 }
+        )
+      }
+    }
+
+    if (lastName) {
+      const lastNameValidation = validateNoCurrency(lastName, "Last name")
+      if (!lastNameValidation.isValid) {
+        return NextResponse.json(
+          { error: lastNameValidation.error },
+          { status: 400 }
+        )
+      }
+    }
+
+    if (bio) {
+      const bioValidation = validateNoCurrency(bio, "Bio")
+      if (!bioValidation.isValid) {
+        return NextResponse.json(
+          { error: bioValidation.error },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Validate input length
     if (firstName && firstName.length > 50) {
       return NextResponse.json(
         { error: "First name too long (max 50 characters)" },

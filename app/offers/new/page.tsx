@@ -8,6 +8,7 @@ import Button from "@/components/ui/Button"
 import BrownHatLoader from "@/components/BrownHatLoader"
 import AuthLayout from "@/components/AuthLayout"
 import Image from "next/image"
+import { validateNoCurrency } from "@/lib/currencyFilter"
 
 export default function NewOfferPage() {
   const router = useRouter()
@@ -107,6 +108,14 @@ export default function NewOfferPage() {
   }
 
   const handleSeekingItemChange = (index: number, value: string) => {
+    // Check for currency content
+    const validation = validateNoCurrency(value, "Looking for items")
+    if (!validation.isValid) {
+      setError(validation.error!)
+      return
+    }
+    
+    setError("") // Clear any previous errors
     const newItems = [...formData.seekingItems]
     newItems[index] = value
     setFormData({
@@ -127,6 +136,34 @@ export default function NewOfferPage() {
     e.preventDefault()
     setIsSubmitting(true)
     setError("")
+
+    // Validate all form fields for currency content
+    const titleValidation = validateNoCurrency(formData.offeringTitle, "Item title")
+    if (!titleValidation.isValid) {
+      setError(titleValidation.error!)
+      setIsSubmitting(false)
+      return
+    }
+
+    const descriptionValidation = validateNoCurrency(formData.offeringDescription, "Item description")
+    if (!descriptionValidation.isValid) {
+      setError(descriptionValidation.error!)
+      setIsSubmitting(false)
+      return
+    }
+
+    // Validate all seeking items
+    for (let i = 0; i < formData.seekingItems.length; i++) {
+      const item = formData.seekingItems[i]
+      if (item.trim()) {
+        const itemValidation = validateNoCurrency(item, `Looking for item ${i + 1}`)
+        if (!itemValidation.isValid) {
+          setError(itemValidation.error!)
+          setIsSubmitting(false)
+          return
+        }
+      }
+    }
 
     try {
       // First, get user's location
@@ -328,7 +365,17 @@ export default function NewOfferPage() {
               type="text"
               placeholder={useInventory ? "Selected from inventory" : "add item title (e.g. blue tennis shoes)"}
               value={formData.offeringTitle}
-              onChange={(e) => setFormData({...formData, offeringTitle: e.target.value})}
+              onChange={(e) => {
+                if (!useInventory) {
+                  const validation = validateNoCurrency(e.target.value, "Item title")
+                  if (!validation.isValid) {
+                    setError(validation.error!)
+                    return
+                  }
+                  setError("")
+                }
+                setFormData({...formData, offeringTitle: e.target.value})
+              }}
               className={`w-full p-4 border border-black rounded-sm text-body focus:outline-none focus:ring-1 focus:ring-black ${
                 useInventory ? 'bg-gray-100 cursor-not-allowed' : 'bg-tan placeholder-gray'
               }`}
@@ -338,7 +385,15 @@ export default function NewOfferPage() {
             <textarea
               placeholder={useInventory ? "Add description for this offer (optional)" : "add description (optional)"}
               value={formData.offeringDescription}
-              onChange={(e) => setFormData({...formData, offeringDescription: e.target.value})}
+              onChange={(e) => {
+                const validation = validateNoCurrency(e.target.value, "Item description")
+                if (!validation.isValid) {
+                  setError(validation.error!)
+                  return
+                }
+                setError("")
+                setFormData({...formData, offeringDescription: e.target.value})
+              }}
               className="w-full p-4 mt-3 border border-black rounded-sm bg-tan placeholder-gray text-body focus:outline-none focus:ring-1 focus:ring-black resize-none"
               rows={3}
             />

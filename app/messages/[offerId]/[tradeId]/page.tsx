@@ -11,6 +11,7 @@ import { useUser } from "@/contexts/UserContext"
 import BrownHatLoader from "@/components/BrownHatLoader"
 import ReviewForm from "@/components/ReviewForm"
 import Image from "next/image"
+import { validateNoCurrency } from "@/lib/currencyFilter"
 
 interface Message {
   id: string
@@ -96,6 +97,7 @@ export default function MessagePage({
   const [showGiveItemModal, setShowGiveItemModal] = useState(false)
   const [inventoryItems, setInventoryItems] = useState<any[]>([])
   const [givingItem, setGivingItem] = useState(false)
+  const [messageError, setMessageError] = useState("")
   const hasRefreshedUser = useRef(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
@@ -276,6 +278,14 @@ export default function MessagePage({
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !tradeData) return
 
+    // Validate message for currency content
+    const validation = validateNoCurrency(newMessage, "Messages")
+    if (!validation.isValid) {
+      setMessageError(validation.error!)
+      return
+    }
+
+    setMessageError("") // Clear any previous errors
     setSending(true)
     try {
       // Determine recipient based on who is sending
@@ -459,6 +469,21 @@ export default function MessagePage({
 
   const handleGiveNewItem = async (itemName: string, itemDescription?: string, itemImageUrl?: string) => {
     if (!otherUser) return
+    
+    // Validate item name and description for currency content
+    const nameValidation = validateNoCurrency(itemName, "Item name")
+    if (!nameValidation.isValid) {
+      alert(nameValidation.error!)
+      return
+    }
+
+    if (itemDescription) {
+      const descValidation = validateNoCurrency(itemDescription, "Item description")
+      if (!descValidation.isValid) {
+        alert(descValidation.error!)
+        return
+      }
+    }
     
     setGivingItem(true)
     try {
@@ -728,19 +753,34 @@ export default function MessagePage({
             </div>
           ) : (
             <div className="p-4">
-            <textarea
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault()
-                  handleSendMessage()
-                }
-              }}
-              placeholder={`Write a message to ${otherUser.firstName}`}
-              className="w-full p-3 border border-black rounded-sm resize-none h-20 mb-3 text-body bg-tan placeholder-gray focus:outline-none focus:ring-1 focus:ring-black"
-            />
-            <div className="flex justify-between">
+            <div className="space-y-2">
+              <textarea
+                value={newMessage}
+                onChange={(e) => {
+                  const value = e.target.value
+                  // Real-time validation for currency content
+                  const validation = validateNoCurrency(value, "Messages")
+                  if (!validation.isValid) {
+                    setMessageError(validation.error!)
+                  } else {
+                    setMessageError("")
+                  }
+                  setNewMessage(value)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSendMessage()
+                  }
+                }}
+                placeholder={`Write a message to ${otherUser.firstName}`}
+                className="w-full p-3 border border-black rounded-sm resize-none h-20 text-body bg-tan placeholder-gray focus:outline-none focus:ring-1 focus:ring-black"
+              />
+              {messageError && (
+                <div className="text-red-600 text-xs">{messageError}</div>
+              )}
+            </div>
+            <div className="flex justify-between mt-3">
               <button
                 onClick={() => {
                   // Check if there's a specific item to give based on trade context

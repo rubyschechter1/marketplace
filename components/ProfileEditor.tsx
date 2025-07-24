@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { validateNoCurrency } from "@/lib/currencyFilter"
 
 // Top 200 most common languages
 const LANGUAGES = [
@@ -86,6 +87,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
   const [showCountryDropdown, setShowCountryDropdown] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [bioError, setBioError] = useState("")
   const [sessionLanguages, setSessionLanguages] = useState<string[]>([])
   const [sessionCountries, setSessionCountries] = useState<string[]>([])
   
@@ -118,6 +120,15 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
   }
 
   const handleSaveBio = async () => {
+    // Validate bio for currency content
+    const validation = validateNoCurrency(bio, "Bio")
+    if (!validation.isValid) {
+      setBioError(validation.error!)
+      setError(validation.error!)
+      return
+    }
+    
+    setBioError("")
     const success = await updateProfile({ bio })
     if (success) {
       setOriginalBio(bio)
@@ -241,14 +252,29 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
         <h2 className="text-lg mb-3">About</h2>
         {isEditingBio ? (
           <>
-            <textarea
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              className="w-full border border-black rounded-md p-4 mb-3 text-sm min-h-[100px] focus:outline-none focus:ring-1 focus:ring-black resize-none bg-tan placeholder-gray"
-              placeholder="Tell other travelers about yourself!"
-              maxLength={500}
-              autoFocus
-            />
+            <div className="space-y-2">
+              <textarea
+                value={bio}
+                onChange={(e) => {
+                  const value = e.target.value
+                  // Real-time validation for currency content
+                  const validation = validateNoCurrency(value, "Bio")
+                  if (!validation.isValid) {
+                    setBioError(validation.error!)
+                  } else {
+                    setBioError("")
+                  }
+                  setBio(value)
+                }}
+                className="w-full border border-black rounded-md p-4 text-sm min-h-[100px] focus:outline-none focus:ring-1 focus:ring-black resize-none bg-tan placeholder-gray"
+                placeholder="Tell other travelers about yourself!"
+                maxLength={500}
+                autoFocus
+              />
+              {bioError && (
+                <div className="text-red-600 text-xs">{bioError}</div>
+              )}
+            </div>
             <div className="flex gap-2">
               <button
                 onClick={handleSaveBio}

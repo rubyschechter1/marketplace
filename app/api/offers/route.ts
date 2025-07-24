@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { PrismaClient } from "@prisma/client"
 import { geocodeCoordinates } from "@/lib/location-utils"
 import { transformOffersWithLocation } from "@/lib/prisma-transforms"
+import { validateNoCurrency } from "@/lib/currencyFilter"
 
 const prisma = new PrismaClient()
 const SEARCH_RADIUS_KM = 10
@@ -111,6 +112,53 @@ export async function POST(req: Request) {
 
     const data = await req.json()
     const { type = "offer", itemId, itemInstanceId, title, description, askDescription, lookingFor, latitude, longitude, locationName } = data
+
+    // Validate content for currency references
+    if (title) {
+      const titleValidation = validateNoCurrency(title, "Title")
+      if (!titleValidation.isValid) {
+        return NextResponse.json(
+          { error: titleValidation.error },
+          { status: 400 }
+        )
+      }
+    }
+
+    if (description) {
+      const descValidation = validateNoCurrency(description, "Description")
+      if (!descValidation.isValid) {
+        return NextResponse.json(
+          { error: descValidation.error },
+          { status: 400 }
+        )
+      }
+    }
+
+    if (askDescription) {
+      const askDescValidation = validateNoCurrency(askDescription, "Ask description")
+      if (!askDescValidation.isValid) {
+        return NextResponse.json(
+          { error: askDescValidation.error },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Validate lookingFor items
+    if (lookingFor && Array.isArray(lookingFor)) {
+      for (let i = 0; i < lookingFor.length; i++) {
+        const item = lookingFor[i]
+        if (item && typeof item === 'string') {
+          const itemValidation = validateNoCurrency(item, `Looking for item ${i + 1}`)
+          if (!itemValidation.isValid) {
+            return NextResponse.json(
+              { error: itemValidation.error },
+              { status: 400 }
+            )
+          }
+        }
+      }
+    }
 
     // Validation based on type
     if (type === "offer") {

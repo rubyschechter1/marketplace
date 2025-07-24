@@ -7,6 +7,7 @@ import Image from "next/image"
 import { Plus, ArrowLeft, PackageOpen } from "lucide-react"
 import Button from "@/components/ui/Button"
 import AuthLayout from "@/components/AuthLayout"
+import { validateNoCurrency } from "@/lib/currencyFilter"
 
 export default function NewAskPage() {
   const router = useRouter()
@@ -30,6 +31,14 @@ export default function NewAskPage() {
   }
 
   const handleOfferingItemChange = (index: number, value: string) => {
+    // Check for currency content
+    const validation = validateNoCurrency(value, "Offering items")
+    if (!validation.isValid) {
+      setError(validation.error!)
+      return
+    }
+    
+    setError("") // Clear any previous errors
     const newItems = [...formData.offeringItems]
     newItems[index] = value
     setFormData({
@@ -87,6 +96,34 @@ export default function NewAskPage() {
     setIsSubmitting(true)
     setError("")
 
+    // Validate all form fields for currency content
+    const titleValidation = validateNoCurrency(formData.askTitle, "Ask title")
+    if (!titleValidation.isValid) {
+      setError(titleValidation.error!)
+      setIsSubmitting(false)
+      return
+    }
+
+    const descriptionValidation = validateNoCurrency(formData.askDescription, "Ask description")
+    if (!descriptionValidation.isValid) {
+      setError(descriptionValidation.error!)
+      setIsSubmitting(false)
+      return
+    }
+
+    // Validate all offering items
+    for (let i = 0; i < formData.offeringItems.length; i++) {
+      const item = formData.offeringItems[i]
+      if (item.trim()) {
+        const itemValidation = validateNoCurrency(item, `Offering item ${i + 1}`)
+        if (!itemValidation.isValid) {
+          setError(itemValidation.error!)
+          setIsSubmitting(false)
+          return
+        }
+      }
+    }
+
     try {
       // First, get user's location
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
@@ -139,14 +176,30 @@ export default function NewAskPage() {
               type="text"
               placeholder="add a title (e.g. warm winter jacket)"
               value={formData.askTitle}
-              onChange={(e) => setFormData({...formData, askTitle: e.target.value})}
+              onChange={(e) => {
+                const validation = validateNoCurrency(e.target.value, "Ask title")
+                if (!validation.isValid) {
+                  setError(validation.error!)
+                  return
+                }
+                setError("")
+                setFormData({...formData, askTitle: e.target.value})
+              }}
               className="w-full p-4 border border-black rounded-sm bg-tan placeholder-gray text-body focus:outline-none focus:ring-1 focus:ring-black"
               required
             />
             <textarea
               placeholder="describe what you're looking for (e.g. I need a warm jacket for winter hiking, size M or L)"
               value={formData.askDescription}
-              onChange={(e) => setFormData({...formData, askDescription: e.target.value})}
+              onChange={(e) => {
+                const validation = validateNoCurrency(e.target.value, "Ask description")
+                if (!validation.isValid) {
+                  setError(validation.error!)
+                  return
+                }
+                setError("")
+                setFormData({...formData, askDescription: e.target.value})
+              }}
               className="w-full p-4 mt-3 border border-black rounded-sm bg-tan placeholder-gray text-body focus:outline-none focus:ring-1 focus:ring-black resize-none"
               rows={3}
               required

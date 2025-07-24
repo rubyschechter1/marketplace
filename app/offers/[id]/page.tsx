@@ -10,6 +10,7 @@ import { MapPin, ChevronLeft, PackageOpen } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useLocation } from "@/contexts/LocationContext"
 import BrownHatLoader from "@/components/BrownHatLoader"
+import { validateNoCurrency } from "@/lib/currencyFilter"
 
 export default function OfferPage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session, status } = useSession()
@@ -33,6 +34,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
   const [inventoryItems, setInventoryItems] = useState<any[]>([])
   const [loadingInventory, setLoadingInventory] = useState(false)
   const [selectedInventoryItem, setSelectedInventoryItem] = useState<any>(null)
+  const [customItemError, setCustomItemError] = useState("")
 
   useEffect(() => {
     params.then(p => setOfferId(p.id))
@@ -183,6 +185,13 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
     } else {
       itemName = isOtherSelected ? customItemText : (selectedItem || "")
       if (!itemName) return
+      
+      // Validate item name for currency content
+      const validation = validateNoCurrency(itemName, "Item name")
+      if (!validation.isValid) {
+        setCustomItemError(validation.error!)
+        return
+      }
       
       // Create an item for what the user is offering
       const itemResponse = await fetch('/api/items', {
@@ -444,14 +453,29 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                         <div className="text-body mb-3">
                           {offer.type === 'ask' ? 'What are you offering?' : 'What are you offering?'}
                         </div>
-                        <input
-                          type="text"
-                          value={customItemText}
-                          onChange={(e) => setCustomItemText(e.target.value)}
-                          placeholder="Enter item name"
-                          className="w-full p-3 mb-3 border border-black rounded-sm bg-tan placeholder-gray text-body focus:outline-none focus:ring-1 focus:ring-black"
-                          autoFocus
-                        />
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            value={customItemText}
+                            onChange={(e) => {
+                              const value = e.target.value
+                              // Real-time validation for currency content
+                              const validation = validateNoCurrency(value, "Custom item name")
+                              if (!validation.isValid) {
+                                setCustomItemError(validation.error!)
+                              } else {
+                                setCustomItemError("")
+                              }
+                              setCustomItemText(value)
+                            }}
+                            placeholder="Enter item name"
+                            className="w-full p-3 border border-black rounded-sm bg-tan placeholder-gray text-body focus:outline-none focus:ring-1 focus:ring-black"
+                            autoFocus
+                          />
+                          {customItemError && (
+                            <div className="text-red-600 text-xs">{customItemError}</div>
+                          )}
+                        </div>
                       </>
                     ) : (
                       <div className="text-body mb-3">

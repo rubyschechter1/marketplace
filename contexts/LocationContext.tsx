@@ -24,16 +24,71 @@ interface LocationContextType {
 const LocationContext = createContext<LocationContextType | undefined>(undefined)
 
 export function LocationProvider({ children }: { children: ReactNode }) {
-  const [location, setLocation] = useState<LocationData>({
-    latitude: null,
-    longitude: null,
-    city: null,
-    country: null,
-    displayLocation: "Unknown Location",
-    loading: false,
-    error: null,
-    permissionState: 'unknown'
+  // Initialize state with cached data if available
+  const [location, setLocation] = useState<LocationData>(() => {
+    if (typeof window === 'undefined') {
+      return {
+        latitude: null,
+        longitude: null,
+        city: null,
+        country: null,
+        displayLocation: "Unknown Location",
+        loading: false,
+        error: null,
+        permissionState: 'unknown'
+      }
+    }
+
+    try {
+      const cached = localStorage.getItem('brownstrawhat-location')
+      if (cached) {
+        const parsedCache = JSON.parse(cached)
+        // Only use cache if it's recent (within 5 minutes)
+        if (Date.now() - parsedCache.timestamp < 300000) {
+          return {
+            ...parsedCache.data,
+            loading: false,
+            error: null
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error loading cached location:', error)
+    }
+
+    return {
+      latitude: null,
+      longitude: null,
+      city: null,
+      country: null,
+      displayLocation: "Unknown Location",
+      loading: false,
+      error: null,
+      permissionState: 'unknown'
+    }
   })
+
+  // Cache location data in localStorage
+  const cacheLocationData = (locationData: LocationData) => {
+    if (typeof window === 'undefined' || !locationData.latitude) return
+    
+    try {
+      const cacheData = {
+        data: {
+          latitude: locationData.latitude,
+          longitude: locationData.longitude,
+          city: locationData.city,
+          country: locationData.country,
+          displayLocation: locationData.displayLocation,
+          permissionState: locationData.permissionState
+        },
+        timestamp: Date.now()
+      }
+      localStorage.setItem('brownstrawhat-location', JSON.stringify(cacheData))
+    } catch (error) {
+      console.error('Error caching location:', error)
+    }
+  }
 
   const geocodeCoordinates = async (lat: number, lng: number) => {
     try {
@@ -125,7 +180,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
       const geocoded = await geocodeCoordinates(latitude, longitude)
       console.log("🗺️ Geocoded location:", geocoded)
 
-      setLocation({
+      const newLocationData = {
         latitude,
         longitude,
         city: geocoded.city,
@@ -133,8 +188,11 @@ export function LocationProvider({ children }: { children: ReactNode }) {
         displayLocation: geocoded.displayLocation,
         loading: false,
         error: null,
-        permissionState: 'granted'
-      })
+        permissionState: 'granted' as PermissionState
+      }
+      
+      setLocation(newLocationData)
+      cacheLocationData(newLocationData)
 
       // Update user's last known location
       // This could be done via an API call to update the user's profile
@@ -171,15 +229,20 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     // Check permission state on mount but don't request location
     checkPermissionState().then(state => {
       console.log("🗺️ Location permission state:", state)
-      setLocation(prev => ({ ...prev, permissionState: state }))
-      
-      // Only auto-request if already granted
-      if (state === 'granted') {
-        console.log("🗺️ Permission already granted, auto-requesting location...")
-        refreshLocation()
-      } else {
-        console.log("🗺️ Permission not granted, waiting for user action")
-      }
+      setLocation(prev => {
+        const newState = { ...prev, permissionState: state }
+        
+        // Auto-request if already granted OR if we have cached location data
+        if (state === 'granted' || (state !== 'denied' && prev.latitude)) {
+          console.log("🗺️ Permission granted or cached data available, auto-requesting location...")
+          // Use setTimeout to avoid state update during render
+          setTimeout(() => refreshLocation(), 0)
+        } else {
+          console.log("🗺️ Permission not granted, waiting for user action")
+        }
+        
+        return newState
+      })
     })
   }, [])
 

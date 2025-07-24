@@ -12,6 +12,8 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    console.log("🔍 Fetching conversations for user:", session.user.id)
+
     // Get the latest message from each conversation (grouped by offer and proposed trade)
     const conversations = await prisma.$queryRaw`
       WITH ranked_messages AS (
@@ -38,6 +40,9 @@ export async function GET(req: Request) {
       WHERE rm.rn = 1
       ORDER BY rm.created_at DESC
     `
+
+    console.log("📜 Raw conversations found:", (conversations as any[]).length)
+    console.log("📜 First conversation:", (conversations as any[])[0])
 
     // Get additional data for each conversation
     const conversationIds = (conversations as any[]).map(c => c.id)
@@ -67,12 +72,22 @@ export async function GET(req: Request) {
         },
         offer: {
           include: {
-            item: true
+            item: true,
+            itemInstance: {
+              include: {
+                catalogItem: true
+              }
+            }
           }
         },
         proposedTrade: {
           include: {
-            offeredItem: true
+            offeredItem: true,
+            offeredItemInstance: {
+              include: {
+                catalogItem: true
+              }
+            }
           }
         }
       }
@@ -109,9 +124,13 @@ export async function GET(req: Request) {
         return orderA - orderB
       })
 
+    console.log("📤 Final conversations being returned:", conversationsWithUnread.length)
+    console.log("📤 First final conversation:", conversationsWithUnread[0])
+
     return NextResponse.json({ conversations: conversationsWithUnread })
   } catch (error) {
-    console.error("Error fetching conversations:", error)
+    console.error("❌ Error fetching conversations:", error)
+    console.error("❌ Error details:", error instanceof Error ? error.message : error)
     return NextResponse.json(
       { error: "Failed to fetch conversations" },
       { status: 500 }

@@ -36,6 +36,12 @@ interface Conversation {
       name: string
       imageUrl?: string | null
     }
+    itemInstance?: {
+      catalogItem: {
+        name: string
+        imageUrl?: string | null
+      }
+    }
   }
   proposedTrade?: {
     id: string
@@ -43,6 +49,13 @@ interface Conversation {
       id: string
       name: string
       imageUrl?: string | null
+    }
+    offeredItemInstance?: {
+      catalogItem: {
+        id: string
+        name: string
+        imageUrl?: string | null
+      }
     }
   }
 }
@@ -100,9 +113,16 @@ export default function MessagesPage() {
   }, [status, router])
 
   const handleConversationClick = (message: Conversation) => {
+    console.log('handleConversationClick called with message:', message)
+    console.log('proposedTradeId:', message.proposedTradeId)
+    console.log('offerId:', message.offerId)
+    
     if (message.proposedTradeId) {
-      router.push(`/messages/${message.offerId}/${message.proposedTradeId}?from=messages`)
+      const conversationUrl = `/messages/${message.offerId}/${message.proposedTradeId}?from=messages`
+      console.log('Navigating to conversation:', conversationUrl)
+      router.push(conversationUrl)
     } else {
+      console.log('No proposedTradeId, falling back to offer page:', `/offers/${message.offerId}`)
       // Fallback to offer page if no proposed trade
       router.push(`/offers/${message.offerId}`)
     }
@@ -149,10 +169,19 @@ export default function MessagesPage() {
                   className="flex items-start gap-3"
                 >
                   {/* Show offer item image for regular offers, or proposed item image for asks */}
-                  {(message.offer?.item?.imageUrl || message.proposedTrade?.offeredItem?.imageUrl) ? (
+                  {(message.offer?.item?.imageUrl || 
+                    message.offer?.itemInstance?.catalogItem?.imageUrl || 
+                    message.proposedTrade?.offeredItem?.imageUrl ||
+                    message.proposedTrade?.offeredItemInstance?.catalogItem?.imageUrl) ? (
                     <img
-                      src={message.offer?.item?.imageUrl || message.proposedTrade?.offeredItem?.imageUrl || ''}
-                      alt={message.offer?.item?.name || message.proposedTrade?.offeredItem?.name || 'Item'}
+                      src={message.offer?.item?.imageUrl || 
+                           message.offer?.itemInstance?.catalogItem?.imageUrl ||
+                           message.proposedTrade?.offeredItem?.imageUrl ||
+                           message.proposedTrade?.offeredItemInstance?.catalogItem?.imageUrl || ''}
+                      alt={message.offer?.item?.name || 
+                           message.offer?.itemInstance?.catalogItem?.name ||
+                           message.proposedTrade?.offeredItem?.name ||
+                           message.proposedTrade?.offeredItemInstance?.catalogItem?.name || 'Item'}
                       className="w-16 h-16 object-cover rounded-md flex-shrink-0"
                     />
                   ) : (
@@ -161,7 +190,9 @@ export default function MessagesPage() {
                   <div className={`flex-1 bg-tan border ${message.unreadCount && message.unreadCount > 0 ? 'border-2 border-black' : 'border-black'} rounded-sm p-4 transition-all cursor-pointer relative shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]`}>
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="text-body font-normal mb-1">
-                        {message.offer?.item?.name || message.offer?.title}
+                        {message.offer?.item?.name || 
+                         message.offer?.itemInstance?.catalogItem?.name || 
+                         message.offer?.title}
                       </h3>
                       {message.unreadCount != null && message.unreadCount > 0 && (
                         <div className="bg-black text-white text-xs rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center font-medium flex-shrink-0">

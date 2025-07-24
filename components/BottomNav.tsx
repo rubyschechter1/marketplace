@@ -16,14 +16,19 @@ export default function BottomNav() {
       label: "Search"
     },
     {
+      href: "/messages",
+      icon: "/images/new_mail.png",
+      label: "Messages"
+    },
+    {
       href: "/",
       icon: "/images/new2_home.png",
       label: "Home"
     },
     {
-      href: "/messages",
-      icon: "/images/new_mail.png",
-      label: "Messages"
+      href: "/inventory",
+      icon: "/images/backpack.png",
+      label: "Inventory"
     },
     {
       href: "/profile",
@@ -52,8 +57,8 @@ export default function BottomNav() {
                   <Image
                     src={item.icon}
                     alt={item.label}
-                    width={item.href === "/search" ? 28 : item.href === "/profile" ? 48 : 40}
-                    height={item.href === "/search" ? 28 : item.href === "/profile" ? 48 : 40}
+                    width={item.href === "/search" ? 28 : item.href === "/profile" ? 48 : item.href === "/inventory" ? 37 : 40}
+                    height={item.href === "/search" ? 28 : item.href === "/profile" ? 48 : item.href === "/inventory" ? 37 : 40}
                     className={`transition-opacity ${item.href === "/search" ? "-rotate-[10deg] -translate-y-[2px]" : "-translate-y-[3px]"} ${item.href === "/messages" ? "translate-y-[1px]" : ""} ${item.href === "/profile" ? "translate-y-[2px]" : ""}`}
                   />
                   {item.href === "/messages" && user && user.unreadMessagesCount !== undefined && user.unreadMessagesCount > 0 ? (

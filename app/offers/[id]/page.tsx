@@ -64,7 +64,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
             trade.proposer?.id === session.user.id
           )
           if (userTrade) {
-            setUserProposedItem(userTrade.offeredItem?.name)
+            setUserProposedItem(userTrade.offeredItem?.name || userTrade.offeredItemInstance?.catalogItem?.name)
           }
         }
       } catch (error) {
@@ -242,17 +242,26 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
       </div>
 
       {/* Image - moved outside container - only for regular offers */}
-      {offer.type !== 'ask' && offer.item?.imageUrl && (
+      {offer.type !== 'ask' && (offer.item?.imageUrl || offer.itemInstance?.catalogItem?.imageUrl) && (
         <div className="w-64 h-64 absolute left-1/2 transform -translate-x-1/2 z-10" style={{ marginTop: '20px' }}>
           <img
-            src={offer.item.imageUrl}
-            alt={offer.item.name}
+            src={offer.item?.imageUrl || offer.itemInstance?.catalogItem?.imageUrl}
+            alt={offer.item?.name || offer.itemInstance?.catalogItem?.name}
             className="w-full h-full object-cover rounded-sm"
           />
+          {/* Item History Button - only show for inventory items */}
+          {offer.itemInstance && (
+            <Link 
+              href={`/history/${offer.itemInstance.id}`}
+              className="absolute bottom-2 right-2 bg-tan text-black border border-black px-3 py-1 rounded-sm text-sm hover:bg-black hover:text-tan transition-colors shadow-[2px_2px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[1px] hover:translate-y-[1px]"
+            >
+              Item History
+            </Link>
+          )}
         </div>
       )}
 
-      <div className="max-w-md mx-auto" style={{ marginTop: offer.type !== 'ask' && offer.item?.imageUrl ? '270px' : '0' }}>
+      <div className="max-w-md mx-auto" style={{ marginTop: offer.type !== 'ask' && (offer.item?.imageUrl || offer.itemInstance?.catalogItem?.imageUrl) ? '270px' : '0' }}>
         {/* Content */}
         <div className="p-6">
           
@@ -298,7 +307,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                 ) : (
                   <>
                     <span className="font-normal">{displayName}</span> {isOwner ? 'are' : 'is'} offering a{' '}
-                    <span className="italic">{offer.item?.name || offer.title}</span>
+                    <span className="italic">{offer.item?.name || offer.itemInstance?.catalogItem?.name || offer.title}</span>
                   </>
                 )}
               </div>
@@ -482,20 +491,20 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                             <span className="font-normal">
                               {trade.proposer?.firstName} {trade.proposer?.lastName}
                             </span>{' '}
-                            offers <span className="italic">{trade.offeredItem?.name}</span>
+                            offers <span className="italic">{trade.offeredItem?.name || trade.offeredItemInstance?.catalogItem?.name}</span>
                           </div>
                         </div>
                       {/* Show item image for asks */}
-                      {offer.type === 'ask' && trade.offeredItem?.imageUrl && (
+                      {offer.type === 'ask' && (trade.offeredItem?.imageUrl || trade.offeredItemInstance?.catalogItem?.imageUrl) && (
                         <a 
-                          href={trade.offeredItem.imageUrl}
+                          href={trade.offeredItem?.imageUrl || trade.offeredItemInstance?.catalogItem?.imageUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="block"
                         >
                           <img 
-                            src={trade.offeredItem.imageUrl}
-                            alt={trade.offeredItem.name}
+                            src={trade.offeredItem?.imageUrl || trade.offeredItemInstance?.catalogItem?.imageUrl}
+                            alt={trade.offeredItem?.name || trade.offeredItemInstance?.catalogItem?.name}
                             className="w-16 h-16 object-cover rounded-md hover:opacity-80 transition-opacity cursor-pointer"
                           />
                         </a>

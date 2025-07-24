@@ -31,10 +31,20 @@ export async function GET(
       include: {
         proposer: true,
         offeredItem: true,
+        offeredItemInstance: {
+          include: {
+            catalogItem: true
+          }
+        },
         offer: {
           include: {
             traveler: true,
-            item: true
+            item: true,
+            itemInstance: {
+              include: {
+                catalogItem: true
+              }
+            }
           }
         },
         reviews: {
@@ -110,10 +120,20 @@ export async function PUT(
       include: {
         proposer: true,
         offeredItem: true,
+        offeredItemInstance: {
+          include: {
+            catalogItem: true
+          }
+        },
         offer: {
           include: {
             traveler: true,
-            item: true
+            item: true,
+            itemInstance: {
+              include: {
+                catalogItem: true
+              }
+            }
           }
         }
       }
@@ -207,8 +227,68 @@ export async function PUT(
         })
       }
 
-      // If accepting a trade, reject all other pending trades
+      // If accepting a trade, handle inventory transfers and reject other pending trades
       if (status === 'accepted') {
+        // Handle inventory item transfers
+        const offerOwner = proposedTrade.offer.traveler!
+        const proposer = proposedTrade.proposer!
+
+        // Transfer offered item from proposer to offer owner
+        if (proposedTrade.offeredItemInstance) {
+          // Update ownership of the offered item instance
+          await tx.itemInstances.update({
+            where: { id: proposedTrade.offeredItemInstance.id },
+            data: {
+              currentOwnerId: offerOwner.id,
+              isAvailable: true // Available again in new owner's inventory
+            }
+          })
+
+          // Create history entry for the transfer
+          await tx.itemHistory.create({
+            data: {
+              itemInstanceId: proposedTrade.offeredItemInstance.id,
+              fromOwnerId: proposer.id,
+              toOwnerId: offerOwner.id,
+              tradeId: proposedTrade.id,
+              city: offerOwner.lastCity,
+              country: offerOwner.lastCountry,
+              transferMethod: "traded"
+            }
+          })
+        }
+
+        // Transfer requested item from offer owner to proposer
+        if (proposedTrade.offer.itemInstance) {
+          // Update ownership of the requested item instance
+          await tx.itemInstances.update({
+            where: { id: proposedTrade.offer.itemInstance.id },
+            data: {
+              currentOwnerId: proposer.id,
+              isAvailable: true // Available again in new owner's inventory
+            }
+          })
+
+          // Create history entry for the transfer
+          await tx.itemHistory.create({
+            data: {
+              itemInstanceId: proposedTrade.offer.itemInstance.id,
+              fromOwnerId: offerOwner.id,
+              toOwnerId: proposer.id,
+              tradeId: proposedTrade.id,
+              city: proposer.lastCity,
+              country: proposer.lastCountry,
+              transferMethod: "traded"
+            }
+          })
+
+          // Mark the offer as completed since the inventory item has been traded
+          await tx.offers.update({
+            where: { id: proposedTrade.offerId },
+            data: { status: 'completed' }
+          })
+        }
+
         // Find all other pending trades for this offer
         const otherTrades = await tx.proposedTrades.findMany({
           where: {
@@ -300,10 +380,20 @@ export async function PUT(
       include: {
         proposer: true,
         offeredItem: true,
+        offeredItemInstance: {
+          include: {
+            catalogItem: true
+          }
+        },
         offer: {
           include: {
             traveler: true,
-            item: true
+            item: true,
+            itemInstance: {
+              include: {
+                catalogItem: true
+              }
+            }
           }
         }
       }

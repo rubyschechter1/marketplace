@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("POSTGRES_PRISMA_URL")
 }
 
 model items {
@@ -19,6 +19,7 @@ model items {
   travelers        travelers?        @relation(fields: [createdBy], references: [id], onUpdate: NoAction)
   offers           offers[]
   proposedTrades   proposedTrades[]
+  instances        itemInstances[]
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -46,6 +47,7 @@ model offers {
   id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   travelerId       String?           @map("traveler_id") @db.Uuid
   itemId           String?           @map("item_id") @db.Uuid
+  itemInstanceId   String?           @map("item_instance_id") @db.Uuid // Link to specific inventory item
   title            String            @db.VarChar(200)
   description      String?
   lookingFor       String[]          @map("looking_for")
@@ -63,9 +65,11 @@ model offers {
   messages         messages[]
   proposedTrades   proposedTrades[]
   item             items?            @relation(fields: [itemId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  itemInstance     itemInstances?    @relation(fields: [itemInstanceId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   traveler         travelers?        @relation(fields: [travelerId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([itemId], map: "idx_offers_item")
+  @@index([itemInstanceId], map: "idx_offers_item_instance")
   @@index([latitude, longitude], map: "idx_offers_location")
   @@index([status], map: "idx_offers_status")
   @@index([travelerId], map: "idx_offers_traveler")
@@ -96,27 +100,35 @@ model travelers {
   reviewsGiven                              reviews[]         @relation("reviews_reviewer")
   reviewsReceived                           reviews[]         @relation("reviews_reviewee")
   reputationScore                           userReputationScores?
+  ownedItems                                itemInstances[]   @relation("itemInstances_currentOwner")
+  originalItems                             itemInstances[]   @relation("itemInstances_originalOwner")
+  historyReceived                           itemHistory[]     @relation("itemHistory_toOwner")
+  historyGiven                              itemHistory[]     @relation("itemHistory_fromOwner")
 }
 
 model proposedTrades {
-  id               String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  offerId          String     @map("offer_id") @db.Uuid
-  proposerId       String     @map("proposer_id") @db.Uuid
-  offeredItemId    String     @map("offered_item_id") @db.Uuid
-  status           String     @default("pending") @db.VarChar(20) // pending, accepted, rejected, withdrawn, unavailable
-  createdAt        DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt        DateTime   @default(now()) @map("updated_at") @db.Timestamptz(6)
+  id                    String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  offerId               String     @map("offer_id") @db.Uuid
+  proposerId            String     @map("proposer_id") @db.Uuid
+  offeredItemId         String?    @map("offered_item_id") @db.Uuid // For new catalog items
+  offeredItemInstanceId String?    @map("offered_item_instance_id") @db.Uuid // For inventory items
+  status                String     @default("pending") @db.VarChar(20) // pending, accepted, rejected, withdrawn, unavailable
+  createdAt             DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime   @default(now()) @map("updated_at") @db.Timestamptz(6)
   
-  offer            offers     @relation(fields: [offerId], references: [id], onDelete: Cascade)
-  proposer         travelers  @relation(fields: [proposerId], references: [id], onDelete: Cascade)
-  offeredItem      items      @relation(fields: [offeredItemId], references: [id])
-  messages         messages[]
-  reviews          reviews[]
-  exchangeDate     tradeExchangeDates?
+  offer                 offers     @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  proposer              travelers  @relation(fields: [proposerId], references: [id], onDelete: Cascade)
+  offeredItem           items?     @relation(fields: [offeredItemId], references: [id])
+  offeredItemInstance   itemInstances? @relation(fields: [offeredItemInstanceId], references: [id])
+  messages              messages[]
+  reviews               reviews[]
+  exchangeDate          tradeExchangeDates?
+  historyEntries        itemHistory[]
   
   @@map("proposed_trades")
   @@index([offerId], map: "idx_proposed_trades_offer")
   @@index([proposerId], map: "idx_proposed_trades_proposer")
+  @@index([offeredItemInstanceId], map: "idx_proposed_trades_offered_instance")
   @@index([status], map: "idx_proposed_trades_status")
 }
 
@@ -181,4 +193,48 @@ model userReputationScores {
   user             travelers @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@map("user_reputation_scores")
+}
+
+model itemInstances {
+  id                String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  catalogItemId     String     @map("catalog_item_id") @db.Uuid
+  currentOwnerId    String     @map("current_owner_id") @db.Uuid
+  originalOwnerId   String     @map("original_owner_id") @db.Uuid
+  serialNumber      String?    @map("serial_number") @db.VarChar(100)
+  acquisitionMethod String     @map("acquisition_method") @db.VarChar(50) // "created", "traded", "imported"
+  isAvailable       Boolean    @default(true) @map("is_available") // false if currently being offered
+  createdAt         DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  
+  catalogItem       items      @relation(fields: [catalogItemId], references: [id])
+  currentOwner      travelers  @relation("itemInstances_currentOwner", fields: [currentOwnerId], references: [id])
+  originalOwner     travelers  @relation("itemInstances_originalOwner", fields: [originalOwnerId], references: [id])
+  history          itemHistory[]
+  offers           offers[]   // Items can be offered for trade
+  proposedTrades   proposedTrades[] // When this item is offered in trades
+  
+  @@map("item_instances")
+  @@index([currentOwnerId], map: "idx_item_instances_current_owner")
+  @@index([catalogItemId], map: "idx_item_instances_catalog")
+}
+
+model itemHistory {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  itemInstanceId  String        @map("item_instance_id") @db.Uuid
+  fromOwnerId     String?       @map("from_owner_id") @db.Uuid
+  toOwnerId       String        @map("to_owner_id") @db.Uuid
+  tradeId         String?       @map("trade_id") @db.Uuid
+  location        String?       @db.VarChar(200)
+  city            String?       @db.VarChar(100)
+  country         String?       @db.VarChar(100)
+  transferDate    DateTime      @default(now()) @map("transfer_date") @db.Timestamptz(6)
+  transferMethod  String        @map("transfer_method") @db.VarChar(50) // "created", "traded", "imported"
+  
+  itemInstance    itemInstances @relation(fields: [itemInstanceId], references: [id], onDelete: Cascade)
+  fromOwner       travelers?    @relation("itemHistory_fromOwner", fields: [fromOwnerId], references: [id])
+  toOwner         travelers     @relation("itemHistory_toOwner", fields: [toOwnerId], references: [id])
+  trade           proposedTrades? @relation(fields: [tradeId], references: [id])
+  
+  @@map("item_history")
+  @@index([itemInstanceId], map: "idx_item_history_instance")
+  @@index([toOwnerId], map: "idx_item_history_to_owner")
 }

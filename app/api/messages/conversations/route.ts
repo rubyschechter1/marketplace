@@ -77,6 +77,13 @@ export async function GET(req: Request) {
               include: {
                 catalogItem: true
               }
+            },
+            traveler: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true
+              }
             }
           }
         },

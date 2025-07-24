@@ -5,7 +5,8 @@ import { useSession } from "next-auth/react"
 import AuthLayout from "@/components/AuthLayout"
 import ProfileThumbnail from "@/components/ProfileThumbnail"
 import Link from "next/link"
-import { MapPin, ChevronLeft } from "lucide-react"
+import Image from "next/image"
+import { MapPin, ChevronLeft, PackageOpen } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useLocation } from "@/contexts/LocationContext"
 import BrownHatLoader from "@/components/BrownHatLoader"
@@ -28,6 +29,10 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
   const [itemPhotoUrl, setItemPhotoUrl] = useState<string>("")
   const [itemPhotoPreview, setItemPhotoPreview] = useState<string>("")
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
+  const [showInventoryModal, setShowInventoryModal] = useState(false)
+  const [inventoryItems, setInventoryItems] = useState<any[]>([])
+  const [loadingInventory, setLoadingInventory] = useState(false)
+  const [selectedInventoryItem, setSelectedInventoryItem] = useState<any>(null)
 
   useEffect(() => {
     params.then(p => setOfferId(p.id))
@@ -121,6 +126,31 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
     }
   }
 
+  const fetchInventory = async () => {
+    setLoadingInventory(true)
+    try {
+      const response = await fetch('/api/inventory')
+      if (response.ok) {
+        const data = await response.json()
+        setInventoryItems(data.items || [])
+      }
+    } catch (error) {
+      console.error('Error fetching inventory:', error)
+    } finally {
+      setLoadingInventory(false)
+    }
+  }
+
+  const handleInventoryItemSelect = (item: any) => {
+    setSelectedInventoryItem(item)
+    setSelectedItem(null)
+    setIsOtherSelected(false)
+    setCustomItemText("")
+    setItemPhotoUrl(item.catalogItem.imageUrl || "")
+    setItemPhotoPreview(item.catalogItem.imageUrl || "")
+    setShowInventoryModal(false)
+  }
+
   const handleDeleteOffer = async () => {
     if (!confirm('Are you sure you want to delete this offer?')) {
       return
@@ -144,12 +174,17 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
   }
 
   const handleSubmitOffer = async () => {
-    const itemName = isOtherSelected ? customItemText : selectedItem
-    if (!itemName) return
+    let itemName = ""
+    let tradeData: any = { offerId: offer.id }
     
-    setIsSubmitting(true)
-    try {
-      // First create an item for what the user is offering
+    if (selectedInventoryItem) {
+      itemName = selectedInventoryItem.catalogItem.name
+      tradeData.offeredItemInstanceId = selectedInventoryItem.id
+    } else {
+      itemName = isOtherSelected ? customItemText : selectedItem
+      if (!itemName) return
+      
+      // Create an item for what the user is offering
       const itemResponse = await fetch('/api/items', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -165,15 +200,16 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
       }
       
       const { item } = await itemResponse.json()
-      
-      // Then create the proposed trade
+      tradeData.offeredItemId = item.id
+    }
+    
+    setIsSubmitting(true)
+    try {
+      // Create the proposed trade
       const tradeResponse = await fetch('/api/proposed-trades', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          offerId: offer.id,
-          offeredItemId: item.id
-        })
+        body: JSON.stringify(tradeData)
       })
       
       if (!tradeResponse.ok) {
@@ -188,6 +224,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
       setCustomItemText("")
       setItemPhotoUrl("")
       setItemPhotoPreview("")
+      setSelectedInventoryItem(null)
       
       // Refresh offer data to show new proposed trade
       const response = await fetch(`/api/offers/${offerId}`)
@@ -319,18 +356,18 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                   {offer.lookingFor.map((item: string, index: number) => (
                     <button 
                       key={index}
-                      className={`border px-3 py-1 rounded-sm text-sm transition-colors ${
+                      className={`px-3 py-1 rounded-sm text-sm transition-all ${
                         isOwner 
-                          ? 'bg-tan border-gray text-gray cursor-default' 
+                          ? 'bg-tan border border-gray text-gray cursor-default' 
                           : userProposedItem
                           ? userProposedItem === item
-                            ? 'bg-black text-tan border-black cursor-default'
-                            : 'bg-tan border-gray text-gray cursor-default'
+                            ? 'bg-tan text-black border-2 border-black cursor-default'
+                            : 'bg-tan border border-gray text-gray cursor-default'
                           : submittedItem === item
-                          ? 'bg-black text-tan border-black'
+                          ? 'bg-tan text-black border-2 border-black'
                           : selectedItem === item
-                          ? 'bg-black text-tan border-black hover:bg-tan hover:text-black hover:border-black'
-                          : 'bg-tan text-black border-black hover:bg-black hover:text-tan'
+                          ? 'bg-tan text-black border-2 border-black hover:border-1'
+                          : 'bg-tan text-black border border-black hover:border-1 hover:border-black'
                       }`}
                       disabled={isOwner || !!userProposedItem}
                       onClick={() => {
@@ -338,6 +375,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                           setSelectedItem(selectedItem === item ? null : item)
                           setIsOtherSelected(false)
                           setCustomItemText("")
+                          setSelectedInventoryItem(null)
                         }
                       }}
                     >
@@ -347,20 +385,21 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                   
                   {/* Other option */}
                   <button 
-                    className={`border px-3 py-1 rounded-sm text-sm transition-colors ${
+                    className={`px-3 py-1 rounded-sm text-sm transition-all ${
                       isOwner 
-                        ? 'bg-tan border-gray text-gray cursor-default' 
+                        ? 'bg-tan border border-gray text-gray cursor-default' 
                         : userProposedItem
-                        ? 'bg-tan border-gray text-gray cursor-default'
+                        ? 'bg-tan border border-gray text-gray cursor-default'
                         : isOtherSelected
-                        ? 'bg-black text-tan border-black hover:bg-tan hover:text-black hover:border-black'
-                        : 'bg-tan text-black border-black hover:bg-black hover:text-tan'
+                        ? 'bg-tan text-black border-2 border-black hover:border-1'
+                        : 'bg-tan text-black border border-black hover:border-1 hover:border-black'
                     }`}
                     disabled={isOwner || !!userProposedItem}
                     onClick={() => {
                       if (!isOwner && !userProposedItem) {
                         setIsOtherSelected(!isOtherSelected)
                         setSelectedItem(null)
+                        setSelectedInventoryItem(null)
                         if (!isOtherSelected) {
                           setCustomItemText("")
                         }
@@ -369,11 +408,38 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                   >
                     other
                   </button>
+                  
+                  {/* From Inventory option */}
+                  <button 
+                    className={`px-3 py-1 rounded-sm text-sm transition-all flex items-center ${
+                      isOwner 
+                        ? 'bg-tan border border-gray text-gray cursor-default' 
+                        : userProposedItem
+                        ? 'bg-tan border border-gray text-gray cursor-default'
+                        : selectedInventoryItem
+                        ? 'bg-tan text-black border-2 border-black hover:border-1'
+                        : 'bg-tan text-black border border-black hover:border-1 hover:border-black'
+                    }`}
+                    disabled={isOwner || !!userProposedItem}
+                    onClick={() => {
+                      if (!isOwner && !userProposedItem) {
+                        setShowInventoryModal(true)
+                        fetchInventory()
+                      }
+                    }}
+                  >
+                    <Image src="/images/backpack_icon.png" alt="Inventory" width={14} height={14} className="mr-1" />
+                    from inventory
+                  </button>
                 </div>
                 
-                {(selectedItem || isOtherSelected) && !submittedItem && !userProposedItem && (
+                {(selectedItem || isOtherSelected || selectedInventoryItem) && !submittedItem && !userProposedItem && (
                   <div className="mt-4">
-                    {isOtherSelected ? (
+                    {selectedInventoryItem ? (
+                      <div className="text-body mb-3">
+                        You are offering <span className="italic">{selectedInventoryItem.catalogItem.name}</span> from your inventory
+                      </div>
+                    ) : isOtherSelected ? (
                       <>
                         <div className="text-body mb-3">
                           {offer.type === 'ask' ? 'What are you offering?' : 'What are you offering?'}
@@ -393,8 +459,8 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                       </div>
                     )}
                     
-                    {/* Photo upload for asks */}
-                    {offer.type === 'ask' && (
+                    {/* Photo upload for asks - only show when not using inventory item */}
+                    {offer.type === 'ask' && !selectedInventoryItem && (
                       <div className="mb-3">
                         <div className="text-body mb-2">
                           You have <span className="italic">{offer.title}</span>
@@ -439,7 +505,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                     <button
                       onClick={handleSubmitOffer}
                       disabled={isSubmitting || (isOtherSelected && !customItemText.trim())}
-                      className="bg-tan text-black border border-black px-4 py-2 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                      className="bg-tan text-black border border-black px-4 py-2 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
                     >
                       {isSubmitting ? (
                         <div className="flex items-center">
@@ -554,6 +620,73 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
           )}
         </div>
       </div>
+      
+      {/* Inventory Selection Modal */}
+      {showInventoryModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-tan border border-black rounded-sm max-w-md w-full max-h-[80vh] overflow-hidden">
+            <div className="p-4 border-b border-black">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-normal">Select from Inventory</h3>
+                <button
+                  onClick={() => setShowInventoryModal(false)}
+                  className="text-black hover:text-gray"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-4 overflow-y-auto max-h-96">
+              {loadingInventory ? (
+                <div className="text-center py-8">
+                  <p className="text-body">Loading inventory...</p>
+                </div>
+              ) : inventoryItems.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-body text-gray">No items in your inventory yet.</p>
+                  <p className="text-sm text-gray mt-2">Items you receive from trades will appear here.</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {inventoryItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between p-3 border border-black rounded-sm bg-white hover:shadow-[2px_2px_0px_#000000] transition-shadow"
+                    >
+                      <div className="flex items-center space-x-3">
+                        {item.catalogItem.imageUrl ? (
+                          <img
+                            src={item.catalogItem.imageUrl}
+                            alt={item.catalogItem.name}
+                            className="w-10 h-10 object-cover rounded-sm"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 bg-gray-200 rounded-sm flex items-center justify-center">
+                            <PackageOpen size={16} className="text-gray" />
+                          </div>
+                        )}
+                        <div>
+                          <h5 className="font-normal">{item.catalogItem.name}</h5>
+                          {item.catalogItem.description && (
+                            <p className="text-sm text-gray">{item.catalogItem.description}</p>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleInventoryItemSelect(item)}
+                        className="bg-tan text-black border border-black px-3 py-1 rounded-sm text-sm hover:bg-black hover:text-tan transition-colors"
+                      >
+                        Select
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </AuthLayout>
   )
 }

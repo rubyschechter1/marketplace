@@ -242,7 +242,7 @@ export default function NewOfferPage() {
                   : 'bg-tan text-black border-black'
               }`}
             >
-              <Image src="/images/backpack.png" alt="Inventory" width={20} height={20} className="inline mr-2 -translate-y-px" />
+              <Image src="/images/backpack_icon.png" alt="Inventory" width={20} height={20} className="inline mr-2 -translate-y-px" />
               From Inventory
             </button>
           </div>

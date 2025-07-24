@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Star } from "lucide-react"
 import ReactCrop, { Crop, PixelCrop } from "react-image-crop"
@@ -26,6 +26,12 @@ export default function ProfileHeader({ user, isOwnProfile, reputationScore }: P
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState("")
+  const [currentAvatarUrl, setCurrentAvatarUrl] = useState(user.avatarUrl)
+  
+  // Sync local state when user prop changes
+  useEffect(() => {
+    setCurrentAvatarUrl(user.avatarUrl)
+  }, [user.avatarUrl])
   
   // Image cropping states
   const [isEditingAvatar, setIsEditingAvatar] = useState(false)
@@ -152,7 +158,8 @@ export default function ProfileHeader({ user, isOwnProfile, reputationScore }: P
         throw new Error("Failed to update profile")
       }
 
-      // Close modal and refresh
+      // Update local state immediately and close modal
+      setCurrentAvatarUrl(url)
       setIsEditingAvatar(false)
       setImageSrc("")
       setCrop(undefined)
@@ -238,9 +245,9 @@ export default function ProfileHeader({ user, isOwnProfile, reputationScore }: P
       <div className="flex gap-4 mb-6">
         {/* Avatar - Left side */}
         <div className="flex-shrink-0">
-          {user.avatarUrl ? (
+          {currentAvatarUrl ? (
             <img 
-              src={user.avatarUrl} 
+              src={currentAvatarUrl} 
               alt={`${user.firstName}'s avatar`}
               className={`w-20 h-20 rounded-md object-cover ${
                 isOwnProfile ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''
@@ -295,7 +302,7 @@ export default function ProfileHeader({ user, isOwnProfile, reputationScore }: P
           </div>
 
           {/* Upload photo button - Only show for own profile when no avatar */}
-          {isOwnProfile && !user.avatarUrl && (
+          {isOwnProfile && !currentAvatarUrl && (
             <button 
               onClick={handleAvatarClick}
               disabled={uploading}

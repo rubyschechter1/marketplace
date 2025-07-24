@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { Plus, ArrowLeft, PackageOpen } from "lucide-react"
 import Button from "@/components/ui/Button"
 import AuthLayout from "@/components/AuthLayout"
@@ -181,7 +182,7 @@ export default function NewAskPage() {
                 <button
                   type="button"
                   onClick={handleAddOfferingItem}
-                  className="flex-1 bg-tan text-black border border-black rounded-sm py-3 px-6 flex items-center justify-center hover:bg-black hover:text-tan transition-colors"
+                  className="flex-1 bg-tan text-black border border-black rounded-sm py-3 px-6 flex items-center justify-center transition-all shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
                 >
                   <Plus size={20} className="mr-2" />
                   <span className="text-body">Add item</span>
@@ -193,9 +194,9 @@ export default function NewAskPage() {
                     setShowInventoryModal(true)
                     fetchInventory()
                   }}
-                  className="flex-1 bg-tan text-black border border-black rounded-sm py-3 px-6 flex items-center justify-center hover:bg-black hover:text-tan transition-colors"
+                  className="flex-1 bg-tan text-black border border-black rounded-sm py-3 px-6 flex items-center justify-center transition-all shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
                 >
-                  <PackageOpen size={20} className="mr-2" />
+                  <Image src="/images/backpack_icon.png" alt="Inventory" width={20} height={20} className="mr-2" />
                   <span className="text-body">From inventory</span>
                 </button>
               </div>

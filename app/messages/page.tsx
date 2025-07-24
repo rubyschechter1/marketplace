@@ -32,6 +32,11 @@ interface Conversation {
     id: string
     title: string
     type?: string
+    traveler: {
+      id: string
+      firstName: string
+      lastName: string
+    }
     item?: {
       name: string
       imageUrl?: string | null
@@ -162,6 +167,29 @@ export default function MessagesPage() {
                 ? message.recipient 
                 : message.sender
               
+              // Determine the context for clearer labeling
+              const isAsk = message.offer?.type === 'ask'
+              const itemName = message.offer?.item?.name || 
+                               message.offer?.itemInstance?.catalogItem?.name || 
+                               message.offer?.title
+              const isMyOffer = message.offer?.traveler?.id === session?.user?.id
+              
+              // Create context-aware title based on ownership
+              let contextTitle = itemName
+              if (isAsk) {
+                if (isMyOffer) {
+                  contextTitle = `Your ask: ${itemName}`
+                } else {
+                  contextTitle = `${message.offer?.traveler?.firstName} is asking for: ${itemName}`
+                }
+              } else {
+                if (isMyOffer) {
+                  contextTitle = `Your offer: ${itemName}`
+                } else {
+                  contextTitle = `${message.offer?.traveler?.firstName} is offering: ${itemName}`
+                }
+              }
+              
               return (
                 <div
                   key={message.id}
@@ -185,14 +213,18 @@ export default function MessagesPage() {
                       className="w-16 h-16 object-cover rounded-md flex-shrink-0"
                     />
                   ) : (
-                    <div className="w-16 h-16 bg-gray/20 rounded-md flex-shrink-0" />
+                    <div className="w-16 h-16 bg-tan border border-black rounded-md flex-shrink-0 flex items-center justify-center">
+                      {message.offer?.type === 'ask' ? (
+                        <span className="text-xs font-normal text-black">Ask</span>
+                      ) : (
+                        <span className="text-xs font-normal text-black">Item</span>
+                      )}
+                    </div>
                   )}
                   <div className={`flex-1 bg-tan border ${message.unreadCount && message.unreadCount > 0 ? 'border-2 border-black' : 'border-black'} rounded-sm p-4 transition-all cursor-pointer relative shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]`}>
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="text-body font-normal mb-1">
-                        {message.offer?.item?.name || 
-                         message.offer?.itemInstance?.catalogItem?.name || 
-                         message.offer?.title}
+                        {contextTitle}
                       </h3>
                       {message.unreadCount != null && message.unreadCount > 0 && (
                         <div className="bg-black text-white text-xs rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center font-medium flex-shrink-0">

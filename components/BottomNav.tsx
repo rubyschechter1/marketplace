@@ -62,7 +62,7 @@ export default function BottomNav() {
                     className={`transition-opacity ${item.href === "/search" ? "-rotate-[10deg] -translate-y-[2px]" : "-translate-y-[3px]"} ${item.href === "/messages" ? "translate-y-[1px]" : ""} ${item.href === "/profile" ? "translate-y-[1px]" : ""}`}
                   />
                   {item.href === "/messages" && user && user.unreadMessagesCount !== undefined && user.unreadMessagesCount > 0 ? (
-                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                    <div className="absolute -top-1 -right-1 bg-black text-tan text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
                       {user.unreadMessagesCount > 99 ? "99+" : user.unreadMessagesCount}
                     </div>
                   ) : null}

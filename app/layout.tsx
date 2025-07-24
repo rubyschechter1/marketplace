@@ -54,6 +54,9 @@ export const metadata: Metadata = {
     creator: "@brownstrawhat",
     site: "@brownstrawhat",
   },
+  other: {
+    'theme-color': '#ffebb5',
+  },
 };
 
 export default function RootLayout({

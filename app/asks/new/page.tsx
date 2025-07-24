@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Plus, ArrowLeft } from "lucide-react"
+import { Plus, ArrowLeft, PackageOpen } from "lucide-react"
 import Button from "@/components/ui/Button"
 import AuthLayout from "@/components/AuthLayout"
 
@@ -11,6 +11,9 @@ export default function NewAskPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
+  const [showInventoryModal, setShowInventoryModal] = useState(false)
+  const [inventoryItems, setInventoryItems] = useState<any[]>([])
+  const [loadingInventory, setLoadingInventory] = useState(false)
   
   const [formData, setFormData] = useState({
     askTitle: "",
@@ -40,6 +43,42 @@ export default function NewAskPage() {
       ...formData,
       offeringItems: newItems.length === 0 ? [""] : newItems
     })
+  }
+
+  const fetchInventory = async () => {
+    setLoadingInventory(true)
+    try {
+      const response = await fetch('/api/inventory')
+      if (response.ok) {
+        const data = await response.json()
+        setInventoryItems(data.items || [])
+      }
+    } catch (error) {
+      console.error('Error fetching inventory:', error)
+    } finally {
+      setLoadingInventory(false)
+    }
+  }
+
+  const handleAddFromInventory = (itemName: string) => {
+    // Add the inventory item name to the offering items list
+    const newItems = [...formData.offeringItems]
+    const emptyIndex = newItems.findIndex(item => item === "")
+    
+    if (emptyIndex !== -1) {
+      // Replace empty slot
+      newItems[emptyIndex] = itemName
+    } else {
+      // Add to end
+      newItems.push(itemName)
+    }
+    
+    setFormData({
+      ...formData,
+      offeringItems: newItems
+    })
+    
+    setShowInventoryModal(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -138,14 +177,28 @@ export default function NewAskPage() {
                 </div>
               ))}
               
-              <button
-                type="button"
-                onClick={handleAddOfferingItem}
-                className="w-full bg-tan text-black border border-black rounded-sm p-4 flex items-center justify-center hover:bg-black hover:text-tan transition-colors"
-              >
-                <Plus size={20} className="mr-2" />
-                <span className="text-body">Add item</span>
-              </button>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleAddOfferingItem}
+                  className="flex-1 bg-tan text-black border border-black rounded-sm py-3 px-6 flex items-center justify-center hover:bg-black hover:text-tan transition-colors"
+                >
+                  <Plus size={20} className="mr-2" />
+                  <span className="text-body">Add item</span>
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowInventoryModal(true)
+                    fetchInventory()
+                  }}
+                  className="flex-1 bg-tan text-black border border-black rounded-sm py-3 px-6 flex items-center justify-center hover:bg-black hover:text-tan transition-colors"
+                >
+                  <PackageOpen size={20} className="mr-2" />
+                  <span className="text-body">From inventory</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -161,9 +214,76 @@ export default function NewAskPage() {
             disabled={isSubmitting || !formData.askTitle || !formData.askDescription}
             className="mt-8"
           >
-            {isSubmitting ? "Creating ask..." : "Submit Ask"}
+            {isSubmitting ? "Creating ask..." : "Submit ask"}
           </Button>
         </form>
+        
+        {/* Inventory Selection Modal */}
+        {showInventoryModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-tan border border-black rounded-sm max-w-md w-full max-h-[80vh] overflow-hidden">
+              <div className="p-4 border-b border-black">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-normal">Select from Inventory</h3>
+                  <button
+                    onClick={() => setShowInventoryModal(false)}
+                    className="text-black hover:text-gray"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-4 overflow-y-auto max-h-96">
+                {loadingInventory ? (
+                  <div className="text-center py-8">
+                    <p className="text-body">Loading inventory...</p>
+                  </div>
+                ) : inventoryItems.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-body text-gray">No items in your inventory yet.</p>
+                    <p className="text-sm text-gray mt-2">Items you receive from trades will appear here.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {inventoryItems.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between p-3 border border-black rounded-sm bg-white hover:shadow-[2px_2px_0px_#000000] transition-shadow"
+                      >
+                        <div className="flex items-center space-x-3">
+                          {item.catalogItem.imageUrl ? (
+                            <img
+                              src={item.catalogItem.imageUrl}
+                              alt={item.catalogItem.name}
+                              className="w-10 h-10 object-cover rounded-sm"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 bg-gray-200 rounded-sm flex items-center justify-center">
+                              <PackageOpen size={16} className="text-gray" />
+                            </div>
+                          )}
+                          <div>
+                            <h5 className="font-normal">{item.catalogItem.name}</h5>
+                            {item.catalogItem.description && (
+                              <p className="text-sm text-gray">{item.catalogItem.description}</p>
+                            )}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleAddFromInventory(item.catalogItem.name)}
+                          className="bg-tan text-black border border-black px-3 py-1 rounded-sm text-sm hover:bg-black hover:text-tan transition-colors"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </AuthLayout>
   )

@@ -246,10 +246,10 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemInst
                   {(entry.fromOwner || entry.toOwner) && (
                     <div className="text-sm text-gray mt-3 pt-3 border-t border-gray/20">
                       {entry.fromOwner && (
-                        <div>From: {entry.fromOwner.firstName} {entry.fromOwner.lastName}</div>
+                        <div>From: {session?.user?.id === entry.fromOwner.id ? 'You' : `${entry.fromOwner.firstName} ${entry.fromOwner.lastName}`}</div>
                       )}
                       {entry.toOwner && (
-                        <div>To: {entry.toOwner.firstName} {entry.toOwner.lastName}</div>
+                        <div>To: {session?.user?.id === entry.toOwner.id ? 'You' : `${entry.toOwner.firstName} ${entry.toOwner.lastName}`}</div>
                       )}
                     </div>
                   )}

@@ -579,9 +579,9 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                           )}
                           <div className={`text-body ${isAccepted ? 'text-tan' : ''}`}>
                             <span className="font-normal">
-                              {trade.proposer?.firstName} {trade.proposer?.lastName}
+                              {session?.user?.id === trade.proposer?.id ? 'You' : `${trade.proposer?.firstName} ${trade.proposer?.lastName}`}
                             </span>{' '}
-                            offers <span className="italic">{trade.offeredItem?.name || trade.offeredItemInstance?.catalogItem?.name}</span>
+                            {session?.user?.id === trade.proposer?.id ? 'offer' : 'offers'} <span className="italic">{trade.offeredItem?.name || trade.offeredItemInstance?.catalogItem?.name}</span>
                           </div>
                         </div>
                       {/* Show item image for asks */}

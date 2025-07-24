@@ -585,7 +585,7 @@ export default function MessagePage({
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm">
-                <span className="font-normal">{tradeData.proposer.firstName}</span> offers <span className="italic">{tradeData.offeredItem?.name || tradeData.offeredItemInstance?.catalogItem?.name}</span>
+                <span className="font-normal">{session?.user?.id === tradeData.proposer.id ? 'You' : tradeData.proposer.firstName}</span> {session?.user?.id === tradeData.proposer.id ? 'offer' : 'offers'} <span className="italic">{tradeData.offeredItem?.name || tradeData.offeredItemInstance?.catalogItem?.name}</span>
               </p>
             </div>
             {/* Accept trade button (only for offer owner and if offer not deleted) - moved inline */}

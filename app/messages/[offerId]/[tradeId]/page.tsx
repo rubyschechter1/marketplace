@@ -362,6 +362,61 @@ export default function MessagePage({
     }
   }
 
+  const handleSmartGiveItem = async () => {
+    if (!otherUser || !tradeData) return
+    
+    setGivingItem(true)
+    try {
+      // Determine what item should be given based on trade context
+      let itemToGive = null
+      let itemName = ""
+      
+      // If current user is the offer owner and it's their inventory item
+      if (session?.user?.id === tradeData.offer.traveler.id && tradeData.offer.itemInstance) {
+        itemToGive = tradeData.offer.itemInstance
+        itemName = tradeData.offer.itemInstance.catalogItem.name
+      }
+      // If current user is the proposer and it's their inventory item
+      else if (session?.user?.id === tradeData.proposer.id && tradeData.offeredItemInstance) {
+        itemToGive = tradeData.offeredItemInstance
+        itemName = tradeData.offeredItemInstance.catalogItem.name
+      }
+      
+      if (!itemToGive) {
+        alert('No specific item found for this trade context')
+        return
+      }
+
+      const response = await fetch('/api/items/transfer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientId: otherUser.id,
+          itemInstanceId: itemToGive.id,
+          offerId: offerId,
+          tradeId: tradeId
+        })
+      })
+
+      if (response.ok) {
+        // Refresh messages to show the system message
+        const messagesResponse = await fetch(`/api/messages/${offerId}/${tradeId}`)
+        if (messagesResponse.ok) {
+          const data = await messagesResponse.json()
+          setMessages(data.messages || [])
+        }
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to give item')
+      }
+    } catch (error) {
+      console.error('Error giving item:', error)
+      alert('Failed to give item')
+    } finally {
+      setGivingItem(false)
+    }
+  }
+
   const handleGiveInventoryItem = async (itemInstance: any) => {
     if (!otherUser) return
     
@@ -686,18 +741,45 @@ export default function MessagePage({
             <div className="flex justify-between">
               <button
                 onClick={() => {
-                  const confirmed = confirm(
-                    `⚠️ Important: Only click "Give Item" if you have already physically given the item to ${otherUser.firstName} in person.\n\n` +
-                    `This will:\n` +
-                    `• Move the item from your inventory to ${otherUser.firstName}'s inventory\n` +
-                    `• Add it to their item collection\n` +
-                    `• Create a permanent record in the item's history\n\n` +
-                    `Have you already physically given the item to ${otherUser.firstName}?`
-                  )
+                  // Check if there's a specific item to give based on trade context
+                  let hasSpecificItem = false
+                  let specificItemName = ""
                   
-                  if (confirmed) {
-                    setShowGiveItemModal(true)
-                    fetchInventory()
+                  if (session?.user?.id === tradeData.offer.traveler.id && tradeData.offer.itemInstance) {
+                    hasSpecificItem = true
+                    specificItemName = tradeData.offer.itemInstance.catalogItem.name
+                  } else if (session?.user?.id === tradeData.proposer.id && tradeData.offeredItemInstance) {
+                    hasSpecificItem = true
+                    specificItemName = tradeData.offeredItemInstance.catalogItem.name
+                  }
+                  
+                  if (hasSpecificItem) {
+                    const confirmed = confirm(
+                      `⚠️ Important: Only click "Give Item" if you have already physically given "${specificItemName}" to ${otherUser.firstName} in person.\n\n` +
+                      `This will:\n` +
+                      `• Transfer "${specificItemName}" from your inventory to ${otherUser.firstName}'s inventory\n` +
+                      `• Add it to their item collection\n` +
+                      `• Create a permanent record in the item's history\n\n` +
+                      `Have you already physically given "${specificItemName}" to ${otherUser.firstName}?`
+                    )
+                    
+                    if (confirmed) {
+                      handleSmartGiveItem()
+                    }
+                  } else {
+                    const confirmed = confirm(
+                      `⚠️ Important: Only click "Give Item" if you have already physically given the item to ${otherUser.firstName} in person.\n\n` +
+                      `This will:\n` +
+                      `• Move the item from your inventory to ${otherUser.firstName}'s inventory\n` +
+                      `• Add it to their item collection\n` +
+                      `• Create a permanent record in the item's history\n\n` +
+                      `Have you already physically given the item to ${otherUser.firstName}?`
+                    )
+                    
+                    if (confirmed) {
+                      setShowGiveItemModal(true)
+                      fetchInventory()
+                    }
                   }
                 }}
                 disabled={givingItem}

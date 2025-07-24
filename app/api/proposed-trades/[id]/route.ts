@@ -158,23 +158,7 @@ export async function PUT(
       )
     }
 
-    // Check if trying to accept when another trade is already accepted
-    if (status === 'accepted') {
-      const existingAcceptedTrade = await prisma.proposedTrades.findFirst({
-        where: {
-          offerId: proposedTrade.offerId,
-          status: 'accepted',
-          id: { not: proposedTrade.id }
-        }
-      })
-      
-      if (existingAcceptedTrade) {
-        return NextResponse.json(
-          { error: "Another trade has already been accepted for this offer" },
-          { status: 409 }
-        )
-      }
-    }
+    // For accepting trades, we'll do the check inside the transaction to prevent race conditions
 
     // Only proposer can withdraw
     if (status === 'withdrawn' && !isProposer) {
@@ -194,6 +178,21 @@ export async function PUT(
 
     // Start a transaction to update the trade and create system messages
     const result = await prisma.$transaction(async (tx) => {
+      // If accepting a trade, check for existing accepted trades within the transaction
+      if (status === 'accepted') {
+        const existingAcceptedTrade = await tx.proposedTrades.findFirst({
+          where: {
+            offerId: proposedTrade.offerId,
+            status: 'accepted',
+            id: { not: proposedTrade.id }
+          }
+        })
+        
+        if (existingAcceptedTrade) {
+          throw new Error("Another trade has already been accepted for this offer")
+        }
+      }
+
       // Update the proposed trade status
       const updatedTrade = await tx.proposedTrades.update({
         where: { id },
@@ -364,6 +363,8 @@ export async function PUT(
       }
 
       return updatedTrade
+    }, {
+      isolationLevel: 'Serializable', // Highest isolation level to prevent race conditions
     })
 
     // If trade was accepted, analyze conversation for exchange date
@@ -431,6 +432,15 @@ export async function PUT(
     return NextResponse.json(updatedProposedTrade)
   } catch (error) {
     console.error("Error updating proposed trade:", error)
+    
+    // Handle specific error for duplicate accepted trades
+    if (error instanceof Error && error.message === "Another trade has already been accepted for this offer") {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 409 }
+      )
+    }
+    
     return NextResponse.json(
       { error: "Failed to update proposed trade" },
       { status: 500 }

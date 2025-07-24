@@ -24,6 +24,11 @@ export async function GET(
       where: { id },
       include: {
         item: true,
+        itemInstance: {
+          include: {
+            catalogItem: true
+          }
+        },
         traveler: {
           select: {
             id: true,
@@ -44,6 +49,11 @@ export async function GET(
               },
             },
             offeredItem: true,
+            offeredItemInstance: {
+              include: {
+                catalogItem: true
+              }
+            },
           },
           orderBy: {
             createdAt: 'desc',

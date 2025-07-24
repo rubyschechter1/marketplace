@@ -2,12 +2,12 @@ import { NextResponse } from 'next/server'
 
 export async function GET() {
   return NextResponse.json({
-    ogImage: '/og-image.png?v=2',
-    twitterImage: '/og-image.png?v=2',
+    ogImage: '/images/linkimage.jpg?v=1',
+    twitterImage: '/images/linkimage.jpg?v=1',
     themeColor: '#ffebb5',
-    fullOgImageUrl: 'https://brownstrawhat.com/og-image.png?v=2',
-    fullTwitterImageUrl: 'https://brownstrawhat.com/og-image.png?v=2',
+    fullOgImageUrl: 'https://brownstrawhat.com/images/linkimage.jpg?v=1',
+    fullTwitterImageUrl: 'https://brownstrawhat.com/images/linkimage.jpg?v=1',
     timestamp: new Date().toISOString(),
-    note: 'These are the current meta tag values being served'
+    note: 'Now using linkimage.jpg for social media previews'
   })
 }

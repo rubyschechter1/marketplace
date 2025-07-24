@@ -1,6 +1,6 @@
 # Clear Social Media Link Preview Cache
 
-The OG image has been updated with a tan background, but social media platforms cache link previews aggressively. Here's how to force a refresh:
+The OG image has been updated to use linkimage.png with a tan background, but social media platforms cache link previews aggressively. Here's how to force a refresh:
 
 ## Manual Cache Clearing
 
@@ -25,17 +25,18 @@ The OG image has been updated with a tan background, but social media platforms 
 
 ## Technical Changes Made
 
-1. **Updated OG Image**: Changed background from brown to tan (#ffebb5)
-2. **Added Cache-busting**: Added `?v=2` parameter to image URLs
+1. **Updated OG Image**: Now using linkimage.png with tan background (#ffebb5)
+2. **Added Cache-busting**: Added `?v=1` parameter to image URLs
 3. **Added Theme Color**: Added theme-color meta tag for browser consistency
+4. **Changed Image Path**: Updated from og-image.png to images/linkimage.png
 
 ## Current Status
-- ✅ New tan OG image generated and deployed
-- ✅ Cache-busting parameters added
-- ✅ Meta tags updated with correct values
+- ✅ Using linkimage.png for social media previews
+- ✅ Cache-busting parameters added (?v=1)
+- ✅ Meta tags updated with new image path
 - 🔄 Waiting for social media cache refresh (24-48 hours for automatic refresh)
 
 ## Next Steps
 1. Use the manual cache clearing tools above
-2. Test link sharing after 24-48 hours
-3. If still showing brown, increment version to ?v=3 and repeat process
+2. Test link sharing after deploying changes
+3. If still showing old image, increment version to ?v=2 and repeat process

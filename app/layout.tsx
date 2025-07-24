@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     description: "Trade items with fellow travelers - no money needed. Join our community of travelers who share and exchange items through bartering.",
     images: [
       {
-        url: "/og-image.png?v=2",
+        url: "/images/linkimage.jpg?v=1",
         width: 1200,
         height: 630,
         alt: "Brown Straw Hat - Barter Marketplace for Travelers",
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Brown Straw Hat - Barter for Travelers",
     description: "Trade items with fellow travelers - no money needed",
-    images: ["/og-image.png?v=2"],
+    images: ["/images/linkimage.jpg?v=1"],
     creator: "@brownstrawhat",
     site: "@brownstrawhat",
   },

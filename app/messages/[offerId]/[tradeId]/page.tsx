@@ -94,8 +94,6 @@ export default function MessagePage({
   const [existingReview, setExistingReview] = useState<{ rating: number; content: string | null } | null>(null)
   const [isItemAvailable, setIsItemAvailable] = useState(true)
   const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set())
-  const [showGiveItemModal, setShowGiveItemModal] = useState(false)
-  const [inventoryItems, setInventoryItems] = useState<any[]>([])
   const [givingItem, setGivingItem] = useState(false)
   const [messageError, setMessageError] = useState("")
   const hasRefreshedUser = useRef(false)
@@ -362,17 +360,6 @@ export default function MessagePage({
     }
   }
 
-  const fetchInventory = async () => {
-    try {
-      const response = await fetch('/api/inventory')
-      if (response.ok) {
-        const data = await response.json()
-        setInventoryItems(data.items || [])
-      }
-    } catch (error) {
-      console.error('Error fetching inventory:', error)
-    }
-  }
 
   const handleSmartGiveItem = async () => {
     if (!otherUser || !tradeData) return
@@ -382,32 +369,61 @@ export default function MessagePage({
       // Determine what item should be given based on trade context
       let itemToGive = null
       let itemName = ""
+      let itemDescription = ""
+      let itemImageUrl = ""
+      let isInventoryItem = false
       
       // If current user is the offer owner and it's their inventory item
       if (session?.user?.id === tradeData.offer.traveler.id && tradeData.offer.itemInstance) {
         itemToGive = tradeData.offer.itemInstance
         itemName = tradeData.offer.itemInstance.catalogItem.name
+        isInventoryItem = true
       }
       // If current user is the proposer and it's their inventory item
       else if (session?.user?.id === tradeData.proposer.id && tradeData.offeredItemInstance) {
         itemToGive = tradeData.offeredItemInstance
         itemName = tradeData.offeredItemInstance.catalogItem.name
+        isInventoryItem = true
+      }
+      // If current user is the offer owner and it's a new item offer
+      else if (session?.user?.id === tradeData.offer.traveler.id && tradeData.offer.item) {
+        itemName = tradeData.offer.item.name
+        itemDescription = ""
+        itemImageUrl = tradeData.offer.item.imageUrl || ""
+        isInventoryItem = false
+      }
+      // If current user is the proposer and it's their offered item for an ask
+      else if (session?.user?.id === tradeData.proposer.id && tradeData.offeredItem) {
+        itemName = tradeData.offeredItem.name
+        itemDescription = ""
+        itemImageUrl = tradeData.offeredItem.imageUrl || ""
+        isInventoryItem = false
       }
       
-      if (!itemToGive) {
-        alert('No specific item found for this trade context')
+      if (!itemName) {
+        alert('No item found for this trade context')
         return
+      }
+
+      // Prepare request body based on whether it's an inventory item or new item
+      const requestBody: any = {
+        recipientId: otherUser.id,
+        offerId: offerId,
+        tradeId: tradeId
+      }
+
+      if (isInventoryItem && itemToGive) {
+        requestBody.itemInstanceId = itemToGive.id
+      } else {
+        requestBody.itemName = itemName
+        requestBody.itemDescription = itemDescription
+        requestBody.itemImageUrl = itemImageUrl
       }
 
       const response = await fetch('/api/items/transfer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          recipientId: otherUser.id,
-          itemInstanceId: itemToGive.id,
-          offerId: offerId,
-          tradeId: tradeId
-        })
+        body: JSON.stringify(requestBody)
       })
 
       if (response.ok) {
@@ -446,62 +462,6 @@ export default function MessagePage({
       })
 
       if (response.ok) {
-        setShowGiveItemModal(false)
-        // Refresh messages to show the system message
-        const messagesResponse = await fetch(`/api/messages/${offerId}/${tradeId}`)
-        if (messagesResponse.ok) {
-          const data = await messagesResponse.json()
-          setMessages(data.messages || [])
-        }
-        // Refresh inventory
-        fetchInventory()
-      } else {
-        const error = await response.json()
-        alert(error.error || 'Failed to give item')
-      }
-    } catch (error) {
-      console.error('Error giving item:', error)
-      alert('Failed to give item')
-    } finally {
-      setGivingItem(false)
-    }
-  }
-
-  const handleGiveNewItem = async (itemName: string, itemDescription?: string, itemImageUrl?: string) => {
-    if (!otherUser) return
-    
-    // Validate item name and description for currency content and inappropriate content
-    const nameValidation = validateNoCurrency(itemName, "Item name", "offer")
-    if (!nameValidation.isValid) {
-      alert(nameValidation.error!)
-      return
-    }
-
-    if (itemDescription) {
-      const descValidation = validateNoCurrency(itemDescription, "Item description", "offer")
-      if (!descValidation.isValid) {
-        alert(descValidation.error!)
-        return
-      }
-    }
-    
-    setGivingItem(true)
-    try {
-      const response = await fetch('/api/items/transfer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          recipientId: otherUser.id,
-          itemName: itemName,
-          itemDescription: itemDescription,
-          itemImageUrl: itemImageUrl,
-          offerId: offerId,
-          tradeId: tradeId
-        })
-      })
-
-      if (response.ok) {
-        setShowGiveItemModal(false)
         // Refresh messages to show the system message
         const messagesResponse = await fetch(`/api/messages/${offerId}/${tradeId}`)
         if (messagesResponse.ok) {
@@ -519,6 +479,7 @@ export default function MessagePage({
       setGivingItem(false)
     }
   }
+
 
   if (loading || !tradeData) {
     return (
@@ -560,7 +521,7 @@ export default function MessagePage({
           >
             <ChevronLeft size={24} />
           </button>
-          <Link href={`/offers/${offerId}?from=${encodeURIComponent(`conversation-${offerId}-${tradeId}`)}`} className="flex items-center justify-start flex-1 ml-[68px]">
+          <Link href={`/offers/${offerId}?from=${encodeURIComponent(`conversation-${offerId}-${tradeId}`)}`} className="flex items-center justify-center flex-1 -ml-12">
             {/* Show offer item image for regular offers, or proposed item image for asks */}
             {(tradeData.offer.item?.imageUrl || tradeData.offeredItem?.imageUrl) && (
               <img
@@ -795,33 +756,18 @@ export default function MessagePage({
                     specificItemName = tradeData.offeredItemInstance.catalogItem.name
                   }
                   
-                  if (hasSpecificItem) {
-                    const confirmed = confirm(
-                      `⚠️ Important: Only click "Give Item" if you have already physically given "${specificItemName}" to ${otherUser.firstName} in person.\n\n` +
-                      `This will:\n` +
-                      `• Transfer "${specificItemName}" from your inventory to ${otherUser.firstName}'s inventory\n` +
-                      `• Add it to their item collection\n` +
-                      `• Create a permanent record in the item's history\n\n` +
-                      `Have you already physically given "${specificItemName}" to ${otherUser.firstName}?`
-                    )
-                    
-                    if (confirmed) {
-                      handleSmartGiveItem()
-                    }
-                  } else {
-                    const confirmed = confirm(
-                      `⚠️ Important: Only click "Give Item" if you have already physically given the item to ${otherUser.firstName} in person.\n\n` +
-                      `This will:\n` +
-                      `• Move the item from your inventory to ${otherUser.firstName}'s inventory\n` +
-                      `• Add it to their item collection\n` +
-                      `• Create a permanent record in the item's history\n\n` +
-                      `Have you already physically given the item to ${otherUser.firstName}?`
-                    )
-                    
-                    if (confirmed) {
-                      setShowGiveItemModal(true)
-                      fetchInventory()
-                    }
+                  // Always use smart give item - it will automatically detect the correct item
+                  const confirmed = confirm(
+                    `⚠️ Important: Only click "Give Item" if you have already physically given the item to ${otherUser.firstName} in person.\n\n` +
+                    `This will:\n` +
+                    `• Transfer the item from your inventory to ${otherUser.firstName}'s inventory\n` +
+                    `• Add it to their item collection\n` +
+                    `• Create a permanent record in the item's history\n\n` +
+                    `Have you already physically given the item to ${otherUser.firstName}?`
+                  )
+                  
+                  if (confirmed) {
+                    handleSmartGiveItem()
                   }
                 }}
                 disabled={givingItem}
@@ -857,104 +803,6 @@ export default function MessagePage({
           )}
         </div>
 
-        {/* Give Item Modal */}
-        {showGiveItemModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-tan border border-black rounded-sm max-w-md w-full max-h-[80vh] overflow-hidden">
-              <div className="p-4 border-b border-black">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-normal">Give Item to {otherUser.firstName}</h3>
-                  <button
-                    onClick={() => setShowGiveItemModal(false)}
-                    className="text-black hover:text-gray"
-                  >
-                    ×
-                  </button>
-                </div>
-              </div>
-              
-              <div className="p-4 overflow-y-auto max-h-96">
-                {/* Inventory Items */}
-                {inventoryItems.length > 0 && (
-                  <div className="mb-6">
-                    <h4 className="text-body font-normal mb-3">From Your Inventory</h4>
-                    <div className="space-y-2">
-                      {inventoryItems.map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex items-center justify-between p-3 border border-black rounded-sm bg-white hover:shadow-[2px_2px_0px_#000000] transition-shadow"
-                        >
-                          <div className="flex items-center space-x-3">
-                            {item.catalogItem.imageUrl ? (
-                              <img
-                                src={item.catalogItem.imageUrl}
-                                alt={item.catalogItem.name}
-                                className="w-10 h-10 object-cover rounded-sm"
-                              />
-                            ) : (
-                              <div className="w-10 h-10 bg-gray-200 rounded-sm"></div>
-                            )}
-                            <div>
-                              <h5 className="font-normal">{item.catalogItem.name}</h5>
-                              {item.catalogItem.description && (
-                                <p className="text-sm text-gray">{item.catalogItem.description}</p>
-                              )}
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => handleGiveInventoryItem(item)}
-                            disabled={givingItem}
-                            className="bg-tan text-black border border-black px-3 py-1 rounded-sm text-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
-                          >
-                            {givingItem ? 'Giving...' : 'Give'}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Give New Item */}
-                <div>
-                  <h4 className="text-body font-normal mb-3">Give New Item</h4>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault()
-                      const formData = new FormData(e.target as HTMLFormElement)
-                      const itemName = formData.get('itemName') as string
-                      const itemDescription = formData.get('itemDescription') as string
-                      if (itemName.trim()) {
-                        handleGiveNewItem(itemName.trim(), itemDescription.trim() || undefined)
-                      }
-                    }}
-                    className="space-y-3"
-                  >
-                    <input
-                      name="itemName"
-                      type="text"
-                      placeholder="Item name (e.g., blue backpack)"
-                      className="w-full p-3 border border-black rounded-sm bg-white placeholder-gray text-body focus:outline-none focus:ring-1 focus:ring-black"
-                      required
-                    />
-                    <textarea
-                      name="itemDescription"
-                      placeholder="Description (optional)"
-                      className="w-full p-3 border border-black rounded-sm bg-white placeholder-gray text-body focus:outline-none focus:ring-1 focus:ring-black resize-none"
-                      rows={2}
-                    />
-                    <button
-                      type="submit"
-                      disabled={givingItem}
-                      className="w-full bg-tan text-black border border-black py-2 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
-                    >
-                      {givingItem ? 'Giving...' : 'Give Item'}
-                    </button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </AuthLayout>
   )

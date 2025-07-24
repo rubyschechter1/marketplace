@@ -10,11 +10,18 @@ const prisma = new PrismaClient()
 
 export async function POST(req: Request) {
   try {
-    const { email, firstName, lastName, password } = await req.json()
+    const { email, firstName, lastName, password, acceptedTerms } = await req.json()
 
     if (!email || !firstName || !lastName || !password) {
       return NextResponse.json(
         { error: "Missing required fields" },
+        { status: 400 }
+      )
+    }
+
+    if (!acceptedTerms) {
+      return NextResponse.json(
+        { error: "Terms of Service must be accepted to create an account" },
         { status: 400 }
       )
     }

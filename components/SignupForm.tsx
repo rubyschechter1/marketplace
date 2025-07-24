@@ -11,7 +11,8 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
     firstName: "",
     lastInitial: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
+    acceptedTerms: false
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -28,6 +29,12 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
       return
     }
 
+    if (!formData.acceptedTerms) {
+      setError("You must accept the Terms of Service to create an account")
+      setIsLoading(false)
+      return
+    }
+
     try {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
@@ -36,7 +43,8 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
           email: formData.email,
           firstName: formData.firstName,
           lastName: formData.lastInitial + ".",
-          password: formData.password
+          password: formData.password,
+          acceptedTerms: formData.acceptedTerms
         })
       })
 
@@ -147,6 +155,29 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
             required
             minLength={6}
           />
+        </div>
+
+        {/* Terms of Service Acceptance */}
+        <div className="flex items-start space-x-3">
+          <input
+            id="acceptedTerms"
+            type="checkbox"
+            checked={formData.acceptedTerms}
+            onChange={(e) => setFormData({...formData, acceptedTerms: e.target.checked})}
+            className="mt-1 w-4 h-4 accent-black"
+            required
+          />
+          <label htmlFor="acceptedTerms" className="text-sm text-gray leading-relaxed">
+            I acknowledge that I have read and agree to the{' '}
+            <a 
+              href="/terms" 
+              target="_blank" 
+              className="text-black underline hover:text-gray"
+            >
+              Terms of Service
+            </a>
+            , including the safety disclaimers for in-person meetings and the limitation of liability.
+          </label>
         </div>
 
         {error && (

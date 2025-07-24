@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
           proposedTradeId: tradeId,
           senderId: null, // System message
           recipientId: null,
-          content: `${session.user.name?.split(' ')[0] || 'Someone'} gave ${recipient.firstName} a ${catalogItem.name}`
+          content: `${session.user.name?.split(' ')[0] || 'Someone'} has given you ${catalogItem.name}! You can now see this item in your inventory.`
         }
       })
     }

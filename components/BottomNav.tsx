@@ -11,18 +11,18 @@ export default function BottomNav() {
 
   const navItems = [
     {
+      href: "/profile",
+      icon: "/images/hat_navcon.png",
+      label: "Me"
+    },
+    {
       href: "/search",
       icon: "/images/newsearch.png",
       label: "Search"
     },
     {
-      href: "/messages",
-      icon: "/images/new_mail.png",
-      label: "Messages"
-    },
-    {
       href: "/",
-      icon: "/images/new2_home.png",
+      icon: "/images/new_home.png",
       label: "Home"
     },
     {
@@ -31,9 +31,9 @@ export default function BottomNav() {
       label: "Inventory"
     },
     {
-      href: "/profile",
-      icon: "/images/hat_navcon.png",
-      label: "Me"
+      href: "/messages",
+      icon: "/images/new_mail.png",
+      label: "Messages"
     }
   ]
 
@@ -57,9 +57,9 @@ export default function BottomNav() {
                   <Image
                     src={item.icon}
                     alt={item.label}
-                    width={item.href === "/search" ? 28 : item.href === "/profile" ? 48 : item.href === "/inventory" ? 37 : 40}
-                    height={item.href === "/search" ? 28 : item.href === "/profile" ? 48 : item.href === "/inventory" ? 37 : 40}
-                    className={`transition-opacity ${item.href === "/search" ? "-rotate-[10deg] -translate-y-[2px]" : "-translate-y-[3px]"} ${item.href === "/messages" ? "translate-y-[1px]" : ""} ${item.href === "/profile" ? "translate-y-[2px]" : ""}`}
+                    width={item.href === "/search" ? 28 : item.href === "/profile" ? 48 : item.href === "/inventory" ? 37 : item.href === "/" ? 39 : 40}
+                    height={item.href === "/search" ? 28 : item.href === "/profile" ? 48 : item.href === "/inventory" ? 37 : item.href === "/" ? 39 : 40}
+                    className={`transition-opacity ${item.href === "/search" ? "-rotate-[10deg] -translate-y-[2px]" : "-translate-y-[3px]"} ${item.href === "/messages" ? "translate-y-[1px]" : ""} ${item.href === "/profile" ? "translate-y-[1px]" : ""}`}
                   />
                   {item.href === "/messages" && user && user.unreadMessagesCount !== undefined && user.unreadMessagesCount > 0 ? (
                     <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">

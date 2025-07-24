@@ -10,6 +10,7 @@ import Link from "next/link"
 import { useUser } from "@/contexts/UserContext"
 import BrownHatLoader from "@/components/BrownHatLoader"
 import ReviewForm from "@/components/ReviewForm"
+import Image from "next/image"
 
 interface Message {
   id: string
@@ -33,10 +34,16 @@ interface TradeData {
     firstName: string
     lastName: string
   }
-  offeredItem: {
+  offeredItem?: {
     id: string
     name: string
     imageUrl?: string
+  }
+  offeredItemInstance?: {
+    catalogItem: {
+      name: string
+      imageUrl?: string
+    }
   }
   offer: {
     id: string
@@ -48,9 +55,15 @@ interface TradeData {
       firstName: string
       lastName: string
     }
-    item: {
+    item?: {
       name: string
       imageUrl?: string
+    }
+    itemInstance?: {
+      catalogItem: {
+        name: string
+        imageUrl?: string
+      }
     }
   }
 }
@@ -78,6 +91,9 @@ export default function MessagePage({
   const [existingReview, setExistingReview] = useState<{ rating: number; content: string | null } | null>(null)
   const [isItemAvailable, setIsItemAvailable] = useState(true)
   const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set())
+  const [showGiveItemModal, setShowGiveItemModal] = useState(false)
+  const [inventoryItems, setInventoryItems] = useState<any[]>([])
+  const [givingItem, setGivingItem] = useState(false)
   const hasRefreshedUser = useRef(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
@@ -334,6 +350,94 @@ export default function MessagePage({
     }
   }
 
+  const fetchInventory = async () => {
+    try {
+      const response = await fetch('/api/inventory')
+      if (response.ok) {
+        const data = await response.json()
+        setInventoryItems(data.items || [])
+      }
+    } catch (error) {
+      console.error('Error fetching inventory:', error)
+    }
+  }
+
+  const handleGiveInventoryItem = async (itemInstance: any) => {
+    if (!otherUser) return
+    
+    setGivingItem(true)
+    try {
+      const response = await fetch('/api/items/transfer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientId: otherUser.id,
+          itemInstanceId: itemInstance.id,
+          offerId: offerId,
+          tradeId: tradeId
+        })
+      })
+
+      if (response.ok) {
+        setShowGiveItemModal(false)
+        // Refresh messages to show the system message
+        const messagesResponse = await fetch(`/api/messages/${offerId}/${tradeId}`)
+        if (messagesResponse.ok) {
+          const data = await messagesResponse.json()
+          setMessages(data.messages || [])
+        }
+        // Refresh inventory
+        fetchInventory()
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to give item')
+      }
+    } catch (error) {
+      console.error('Error giving item:', error)
+      alert('Failed to give item')
+    } finally {
+      setGivingItem(false)
+    }
+  }
+
+  const handleGiveNewItem = async (itemName: string, itemDescription?: string, itemImageUrl?: string) => {
+    if (!otherUser) return
+    
+    setGivingItem(true)
+    try {
+      const response = await fetch('/api/items/transfer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientId: otherUser.id,
+          itemName: itemName,
+          itemDescription: itemDescription,
+          itemImageUrl: itemImageUrl,
+          offerId: offerId,
+          tradeId: tradeId
+        })
+      })
+
+      if (response.ok) {
+        setShowGiveItemModal(false)
+        // Refresh messages to show the system message
+        const messagesResponse = await fetch(`/api/messages/${offerId}/${tradeId}`)
+        if (messagesResponse.ok) {
+          const data = await messagesResponse.json()
+          setMessages(data.messages || [])
+        }
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to give item')
+      }
+    } catch (error) {
+      console.error('Error giving item:', error)
+      alert('Failed to give item')
+    } finally {
+      setGivingItem(false)
+    }
+  }
+
   if (loading || !tradeData) {
     return (
       <AuthLayout variant="fullHeight">
@@ -348,7 +452,9 @@ export default function MessagePage({
     ? tradeData.offer.traveler 
     : tradeData.proposer
 
-  const itemName = tradeData.offer.item?.name || tradeData.offer.title
+  const itemName = tradeData.offer.item?.name || 
+                   tradeData.offer.itemInstance?.catalogItem?.name || 
+                   tradeData.offer.title
 
   return (
     <AuthLayout variant="fullHeight">
@@ -397,7 +503,7 @@ export default function MessagePage({
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm">
-                <span className="font-normal">{tradeData.proposer.firstName}</span> offers <span className="italic">{tradeData.offeredItem.name}</span>
+                <span className="font-normal">{tradeData.proposer.firstName}</span> offers <span className="italic">{tradeData.offeredItem?.name || tradeData.offeredItemInstance?.catalogItem?.name}</span>
               </p>
             </div>
             {/* Accept trade button (only for offer owner and if offer not deleted) - moved inline */}
@@ -577,7 +683,35 @@ export default function MessagePage({
               placeholder={`Write a message to ${otherUser.firstName}`}
               className="w-full p-3 border border-black rounded-sm resize-none h-20 mb-3 text-body bg-tan placeholder-gray focus:outline-none focus:ring-1 focus:ring-black"
             />
-            <div className="flex justify-end">
+            <div className="flex justify-between">
+              <button
+                onClick={() => {
+                  const confirmed = confirm(
+                    `⚠️ Important: Only click "Give Item" if you have already physically given the item to ${otherUser.firstName} in person.\n\n` +
+                    `This will:\n` +
+                    `• Move the item from your inventory to ${otherUser.firstName}'s inventory\n` +
+                    `• Add it to their item collection\n` +
+                    `• Create a permanent record in the item's history\n\n` +
+                    `Have you already physically given the item to ${otherUser.firstName}?`
+                  )
+                  
+                  if (confirmed) {
+                    setShowGiveItemModal(true)
+                    fetchInventory()
+                  }
+                }}
+                disabled={givingItem}
+                className="bg-tan text-black border-2 border-black px-2.5 py-1 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-xs font-medium shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
+              >
+                <Image 
+                  src="/images/brownhat_final.png" 
+                  alt="Give Item" 
+                  width={16} 
+                  height={16} 
+                  className="mr-2" 
+                />
+                Give item
+              </button>
               <button
                 onClick={handleSendMessage}
                 disabled={!newMessage.trim() || sending}
@@ -591,7 +725,6 @@ export default function MessagePage({
                 ) : (
                   <>
                     Send
-                    <Send size={16} className="ml-2" />
                   </>
                 )}
               </button>
@@ -599,6 +732,105 @@ export default function MessagePage({
           </div>
           )}
         </div>
+
+        {/* Give Item Modal */}
+        {showGiveItemModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-tan border border-black rounded-sm max-w-md w-full max-h-[80vh] overflow-hidden">
+              <div className="p-4 border-b border-black">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-normal">Give Item to {otherUser.firstName}</h3>
+                  <button
+                    onClick={() => setShowGiveItemModal(false)}
+                    className="text-black hover:text-gray"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-4 overflow-y-auto max-h-96">
+                {/* Inventory Items */}
+                {inventoryItems.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="text-body font-normal mb-3">From Your Inventory</h4>
+                    <div className="space-y-2">
+                      {inventoryItems.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex items-center justify-between p-3 border border-black rounded-sm bg-white hover:shadow-[2px_2px_0px_#000000] transition-shadow"
+                        >
+                          <div className="flex items-center space-x-3">
+                            {item.catalogItem.imageUrl ? (
+                              <img
+                                src={item.catalogItem.imageUrl}
+                                alt={item.catalogItem.name}
+                                className="w-10 h-10 object-cover rounded-sm"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 bg-gray-200 rounded-sm"></div>
+                            )}
+                            <div>
+                              <h5 className="font-normal">{item.catalogItem.name}</h5>
+                              {item.catalogItem.description && (
+                                <p className="text-sm text-gray">{item.catalogItem.description}</p>
+                              )}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleGiveInventoryItem(item)}
+                            disabled={givingItem}
+                            className="bg-tan text-black border border-black px-3 py-1 rounded-sm text-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
+                          >
+                            {givingItem ? 'Giving...' : 'Give'}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Give New Item */}
+                <div>
+                  <h4 className="text-body font-normal mb-3">Give New Item</h4>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      const formData = new FormData(e.target as HTMLFormElement)
+                      const itemName = formData.get('itemName') as string
+                      const itemDescription = formData.get('itemDescription') as string
+                      if (itemName.trim()) {
+                        handleGiveNewItem(itemName.trim(), itemDescription.trim() || undefined)
+                      }
+                    }}
+                    className="space-y-3"
+                  >
+                    <input
+                      name="itemName"
+                      type="text"
+                      placeholder="Item name (e.g., blue backpack)"
+                      className="w-full p-3 border border-black rounded-sm bg-white placeholder-gray text-body focus:outline-none focus:ring-1 focus:ring-black"
+                      required
+                    />
+                    <textarea
+                      name="itemDescription"
+                      placeholder="Description (optional)"
+                      className="w-full p-3 border border-black rounded-sm bg-white placeholder-gray text-body focus:outline-none focus:ring-1 focus:ring-black resize-none"
+                      rows={2}
+                    />
+                    <button
+                      type="submit"
+                      disabled={givingItem}
+                      className="w-full bg-tan text-black border border-black py-2 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
+                    >
+                      {givingItem ? 'Giving...' : 'Give Item'}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </AuthLayout>
   )

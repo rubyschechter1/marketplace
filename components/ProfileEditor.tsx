@@ -253,14 +253,14 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
               <button
                 onClick={handleSaveBio}
                 disabled={loading}
-                className="text-sm bg-tan text-black px-4 py-2 rounded-md border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
+                className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
               >
                 {loading ? "Saving..." : "Save"}
               </button>
               <button
                 onClick={handleCancelBio}
                 disabled={loading}
-                className="text-sm bg-tan text-black px-4 py-2 rounded-md border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
+                className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -275,9 +275,9 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
             )}
             <button
               onClick={() => setIsEditingBio(true)}
-              className="text-sm bg-tan text-black px-4 py-2 rounded-md border border-black hover:bg-black hover:text-tan transition-colors"
+              className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors"
             >
-              Edit
+              Edit about
             </button>
           </>
         )}
@@ -365,7 +365,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
                   setSessionLanguages([])
                   setError("")
                 }}
-                className="text-sm bg-tan text-black px-4 py-2 rounded-md border border-black hover:bg-black hover:text-tan transition-colors"
+                className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors"
               >
                 Save
               </button>
@@ -383,7 +383,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
                   setSessionLanguages([])
                   setError("")
                 }}
-                className="text-sm bg-tan text-black px-4 py-2 rounded-md border border-black hover:bg-black hover:text-tan transition-colors"
+                className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors"
               >
                 Cancel
               </button>
@@ -392,7 +392,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
         ) : (
           <button
             onClick={() => setIsAddingLanguage(true)}
-            className="text-sm bg-tan text-black px-4 py-2 rounded-md border border-black hover:bg-black hover:text-tan transition-colors"
+            className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors"
           >
             {user.languages.length > 0 ? "Edit languages" : "Add language"}
           </button>
@@ -481,7 +481,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
                   setSessionCountries([])
                   setError("")
                 }}
-                className="text-sm bg-tan text-black px-4 py-2 rounded-md border border-black hover:bg-black hover:text-tan transition-colors"
+                className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors"
               >
                 Save
               </button>
@@ -499,7 +499,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
                   setSessionCountries([])
                   setError("")
                 }}
-                className="text-sm bg-tan text-black px-4 py-2 rounded-md border border-black hover:bg-black hover:text-tan transition-colors"
+                className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors"
               >
                 Cancel
               </button>
@@ -508,7 +508,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
         ) : (
           <button
             onClick={() => setIsAddingCountry(true)}
-            className="text-sm bg-tan text-black px-4 py-2 rounded-md border border-black hover:bg-black hover:text-tan transition-colors"
+            className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors"
           >
             {user.countriesVisited && user.countriesVisited.length > 0 ? "Edit countries" : "Add country"}
           </button>

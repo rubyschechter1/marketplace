@@ -168,29 +168,71 @@ export async function PUT(
 
     // Start a transaction to update the trade and create system messages
     const result = await prisma.$transaction(async (tx) => {
-      // If accepting a trade, check for existing accepted trades within the transaction
+      let updatedOffer = null
+      let updatedTrade = null
+      
+      // Handle different status updates
       if (status === 'accepted') {
-        const existingAcceptedTrade = await tx.proposedTrades.findFirst({
-          where: {
-            offerId: proposedTrade.offerId,
-            status: 'accepted',
-            id: { not: proposedTrade.id }
-          }
+        // Check if offer already has an accepted trade
+        const offer = await tx.offers.findUnique({
+          where: { id: proposedTrade.offerId },
+          select: { acceptedTradeId: true }
         })
         
-        if (existingAcceptedTrade) {
+        if (offer?.acceptedTradeId && offer.acceptedTradeId !== id) {
           throw new Error("Another trade has already been accepted for this offer")
         }
+        
+        // Set this trade as the accepted one on the offer
+        updatedOffer = await tx.offers.update({
+          where: { id: proposedTrade.offerId },
+          data: { acceptedTradeId: id }
+        })
+        
+        // Also update the trade record for backward compatibility (will remove later)
+        updatedTrade = await tx.proposedTrades.update({
+          where: { id },
+          data: { 
+            status: 'accepted',
+            updatedAt: new Date()
+          }
+        })
+      } else if (status === 'rejected') {
+        // Mark trade as rejected
+        updatedTrade = await tx.proposedTrades.update({
+          where: { id },
+          data: { 
+            isRejected: true,
+            status: 'rejected', // Keep for backward compatibility
+            updatedAt: new Date()
+          }
+        })
+      } else if (status === 'withdrawn') {
+        // Mark trade as withdrawn
+        updatedTrade = await tx.proposedTrades.update({
+          where: { id },
+          data: { 
+            isWithdrawn: true,
+            status: 'withdrawn', // Keep for backward compatibility
+            updatedAt: new Date()
+          }
+        })
+      } else if (status === 'pending' && proposedTrade.offer.acceptedTradeId === id) {
+        // Unaccept the trade - clear acceptedTradeId from offer
+        updatedOffer = await tx.offers.update({
+          where: { id: proposedTrade.offerId },
+          data: { acceptedTradeId: null }
+        })
+        
+        // Also update the trade record for backward compatibility
+        updatedTrade = await tx.proposedTrades.update({
+          where: { id },
+          data: { 
+            status: 'pending',
+            updatedAt: new Date()
+          }
+        })
       }
-
-      // Update the proposed trade status
-      const updatedTrade = await tx.proposedTrades.update({
-        where: { id },
-        data: { 
-          status,
-          updatedAt: new Date()
-        }
-      })
 
       // Create system message for this trade's conversation
       let systemMessageContent = ''
@@ -216,31 +258,21 @@ export async function PUT(
         })
       }
 
-      // If accepting a trade, reject other pending trades (but don't transfer items yet)
+      // If accepting a trade, notify other pending trades (but don't transfer items yet)
       if (status === 'accepted') {
         // Find all other pending trades for this offer
         const otherTrades = await tx.proposedTrades.findMany({
           where: {
             offerId: proposedTrade.offerId,
             id: { not: proposedTrade.id },
-            status: 'pending'
-          }
-        })
-
-        // Update all other pending trades to 'unavailable' status
-        await tx.proposedTrades.updateMany({
-          where: {
-            offerId: proposedTrade.offerId,
-            id: { not: proposedTrade.id },
-            status: 'pending'
-          },
-          data: {
-            status: 'unavailable',
-            updatedAt: new Date()
+            status: 'pending',
+            isRejected: false,
+            isWithdrawn: false
           }
         })
 
         // Create system messages for each other trade
+        // Note: We no longer update their status - the UI will check acceptedTradeId on the offer
         for (const otherTrade of otherTrades) {
           await tx.messages.create({
             data: {
@@ -257,36 +289,24 @@ export async function PUT(
         // This ensures the "Send item" button workflow is properly followed
       }
 
-      // If unaccepting a trade (changing from accepted back to pending), make other trades available again
-      if (status === 'pending' && proposedTrade.status === 'accepted') {
-        // Find all unavailable trades for this offer
-        const unavailableTrades = await tx.proposedTrades.findMany({
+      // If unaccepting a trade (changing from accepted back to pending), notify other trades
+      if (status === 'pending' && proposedTrade.offer.acceptedTradeId === id) {
+        // Find all other pending trades for this offer that weren't rejected/withdrawn
+        const otherTrades = await tx.proposedTrades.findMany({
           where: {
             offerId: proposedTrade.offerId,
             id: { not: proposedTrade.id },
-            status: 'unavailable'
+            isRejected: false,
+            isWithdrawn: false
           }
         })
 
-        // Update all unavailable trades back to 'pending' status
-        await tx.proposedTrades.updateMany({
-          where: {
-            offerId: proposedTrade.offerId,
-            id: { not: proposedTrade.id },
-            status: 'unavailable'
-          },
-          data: {
-            status: 'pending',
-            updatedAt: new Date()
-          }
-        })
-
-        // Create system messages for each restored trade
-        for (const unavailableTrade of unavailableTrades) {
+        // Create system messages for each trade to notify them the item is available again
+        for (const otherTrade of otherTrades) {
           await tx.messages.create({
             data: {
               offerId: proposedTrade.offerId,
-              proposedTradeId: unavailableTrade.id,
+              proposedTradeId: otherTrade.id,
               senderId: null, // System message
               recipientId: null,
               content: 'This item is available again - the previous trade was cancelled'

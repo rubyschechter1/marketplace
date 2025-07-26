@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if trade is accepted
-    if (proposedTrade.status !== 'accepted') {
+    if (proposedTrade.offer.acceptedTradeId !== proposedTrade.id) {
       return NextResponse.json(
         { error: "Can only review accepted trades" },
         { status: 400 }

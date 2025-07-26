@@ -13,6 +13,7 @@ import BrownHatLoader from "@/components/BrownHatLoader"
 import ReviewForm from "@/components/ReviewForm"
 import Image from "next/image"
 import { formatDisplayName, getDisplayName } from "@/lib/formatName"
+import { getTradeStatus, isTradeStatus } from "@/lib/trade-status"
 
 interface Message {
   id: string
@@ -30,7 +31,9 @@ interface Message {
 
 interface TradeData {
   id: string
-  status?: string
+  status?: string // Will be removed in future
+  isRejected: boolean
+  isWithdrawn: boolean
   proposer: {
     id: string
     firstName: string
@@ -46,6 +49,7 @@ interface TradeData {
     title: string
     type?: string
     status?: string
+    acceptedTradeId: string | null
     traveler: {
       id: string
       firstName: string
@@ -710,7 +714,7 @@ export default function MessagePage({
             {session?.user?.id === tradeData.offer.traveler.id && tradeData.offer.status !== 'deleted' && (
               <div className="ml-2 flex-shrink-0">
                 {/* Show accept/cancel button based on trade status */}
-                {tradeData.status === 'accepted' ? (
+                {isTradeStatus(tradeData, 'accepted') ? (
                   existingReview ? (
                     <div className="bg-gray/10 text-gray border border-gray/20 px-3 py-1 rounded-sm text-xs cursor-not-allowed">
                       Item traded
@@ -987,7 +991,7 @@ export default function MessagePage({
             <div className="flex justify-between mt-3">
               {!itemAlreadyGiven ? (
                 <div className="flex flex-col">
-                  {tradeData.status === 'accepted' ? (
+                  {isTradeStatus(tradeData, 'accepted') ? (
                     existingReview ? (
                       <div className="bg-gray/20 text-gray border border-gray/30 px-2.5 py-1 rounded-sm flex items-center text-xs font-medium cursor-not-allowed">
                         <Image 

@@ -53,8 +53,8 @@ export async function DELETE(
       )
     }
 
-    // Check if the item is part of any pending trades
-    const pendingTrades = await prisma.proposedTrades.findMany({
+    // Check if the item is part of any active trades (not rejected/withdrawn)
+    const activeTrades = await prisma.proposedTrades.findMany({
       where: {
         OR: [
           { offeredItemId: id },
@@ -64,15 +64,37 @@ export async function DELETE(
             }
           }
         ],
-        status: {
-          in: ['pending', 'accepted']
+        isRejected: false,
+        isWithdrawn: false
+      },
+      include: {
+        offer: {
+          select: {
+            acceptedTradeId: true
+          }
         }
       }
     })
 
-    if (pendingTrades.length > 0) {
+    // Check if any of these trades are accepted or potentially active
+    const hasAcceptedTrade = activeTrades.some(trade => 
+      trade.offer.acceptedTradeId === trade.id
+    )
+    
+    const hasPendingTrade = activeTrades.some(trade => 
+      !trade.offer.acceptedTradeId || trade.offer.acceptedTradeId === trade.id
+    )
+
+    if (hasAcceptedTrade) {
       return NextResponse.json(
-        { error: "Cannot delete item that is part of pending or accepted trades." },
+        { error: "Cannot delete item that is part of an accepted trade." },
+        { status: 400 }
+      )
+    }
+
+    if (hasPendingTrade) {
+      return NextResponse.json(
+        { error: "Cannot delete item that is part of pending trades." },
         { status: 400 }
       )
     }

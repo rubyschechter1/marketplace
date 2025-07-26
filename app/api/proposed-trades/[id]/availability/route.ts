@@ -56,7 +56,6 @@ export async function GET(
     const acceptedTrades = await prisma.proposedTrades.findMany({
       where: {
         offeredItemId: currentTrade.offeredItemId,
-        status: 'accepted',
         id: {
           not: tradeId // Exclude the current trade
         }
@@ -64,18 +63,24 @@ export async function GET(
       include: {
         offer: {
           include: {
-            item: true
+            item: true,
+            acceptedTrade: true
           }
         }
       }
     })
+    
+    // Filter to only trades that are accepted
+    const actuallyAcceptedTrades = acceptedTrades.filter(trade => 
+      trade.offer.acceptedTradeId === trade.id
+    )
 
-    const isItemAvailable = acceptedTrades.length === 0
+    const isItemAvailable = actuallyAcceptedTrades.length === 0
 
     return NextResponse.json({
       isAvailable: isItemAvailable,
       itemName: itemName,
-      acceptedInTrades: acceptedTrades.map(trade => ({
+      acceptedInTrades: actuallyAcceptedTrades.map(trade => ({
         offerId: trade.offerId,
         offerTitle: trade.offer.title,
         offerItem: trade.offer.item?.name

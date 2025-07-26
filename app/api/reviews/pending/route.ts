@@ -16,10 +16,9 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get all accepted trades where the user is involved
-    const acceptedTrades = await prisma.proposedTrades.findMany({
+    // Get all trades where the user is involved that are accepted
+    const userTrades = await prisma.proposedTrades.findMany({
       where: {
-        status: 'accepted',
         OR: [
           { proposerId: session.user.id },
           {
@@ -33,7 +32,7 @@ export async function GET(request: NextRequest) {
         offer: {
           include: {
             traveler: true,
-            item: true,
+            item: true
           }
         },
         proposer: true,
@@ -47,6 +46,11 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    // Filter to only accepted trades
+    const acceptedTrades = userTrades.filter(trade => 
+      trade.offer.acceptedTradeId === trade.id
+    )
+    
     // Filter trades that:
     // 1. Don't have a review from this user yet
     // 2. Have an exchange date that has passed

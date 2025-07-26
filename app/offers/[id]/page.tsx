@@ -11,6 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useLocation } from "@/contexts/LocationContext"
 import BrownHatLoader from "@/components/BrownHatLoader"
 import { getDisplayName } from "@/lib/formatName"
+import { getTradeStatus, isTradeStatus } from "@/lib/trade-status"
 
 export default function OfferPage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session, status } = useSession()
@@ -582,7 +583,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
             
             <div className="space-y-3">
               {offer.proposedTrades?.map((trade: any) => {
-                const isAccepted = trade.status === 'accepted'
+                const isAccepted = isTradeStatus(trade, 'accepted')
                 return (
                   <div key={trade.id} className="flex justify-center items-start gap-3" style={{ marginLeft: '-50px' }}>
                     <ProfileThumbnail 

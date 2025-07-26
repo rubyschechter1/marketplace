@@ -18,6 +18,7 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [showTermsModal, setShowTermsModal] = useState(false)
+  const [showTermsContent, setShowTermsContent] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -192,13 +193,16 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
           </div>
           <label htmlFor="acceptedTerms" className="text-sm text-gray leading-relaxed cursor-pointer">
             I acknowledge that I have read and agree to the{' '}
-            <a 
-              href="/terms" 
-              target="_blank" 
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                setShowTermsContent(true)
+              }}
               className="text-black underline hover:text-gray"
             >
               Terms of Service
-            </a>
+            </button>
             , including the safety disclaimers for in-person meetings and the limitation of liability.
           </label>
         </div>
@@ -245,6 +249,149 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
                 className="px-4 py-2 text-sm font-medium text-black bg-tan border border-black rounded-sm hover:bg-brown/10 transition-colors"
               >
                 OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Terms of Service Content Modal */}
+      {showTermsContent && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-tan border border-black rounded-sm max-w-2xl w-full max-h-[80vh] flex flex-col">
+            <div className="p-6 border-b border-black flex justify-between items-center">
+              <h2 className="text-xl font-bold">Terms of Service</h2>
+              <button
+                onClick={() => setShowTermsContent(false)}
+                className="text-2xl leading-none hover:text-gray"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1">
+              <div className="space-y-6 text-sm leading-relaxed">
+                <div>
+                  <p className="text-xs text-gray mb-4">Last updated: {new Date().toLocaleDateString()}</p>
+                  <p className="mb-4">
+                    Welcome to Brown Straw Hat ("we," "our," or "us"). By creating an account and using our platform, 
+                    you agree to be bound by these Terms of Service ("Terms").
+                  </p>
+                </div>
+
+                <section>
+                  <h3 className="font-bold text-body mb-3">1. Platform Purpose</h3>
+                  <p className="mb-3">
+                    Brown Straw Hat is a barter marketplace that connects travelers who wish to exchange items 
+                    without monetary transactions. Our platform facilitates connections only - we do not participate 
+                    in, oversee, or guarantee any exchanges.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="font-bold text-body mb-3">2. In-Person Meeting Disclaimer</h3>
+                  <div className="bg-white border border-black rounded-md p-4 mb-3">
+                    <p className="font-bold mb-2">⚠️ IMPORTANT SAFETY NOTICE</p>
+                    <p className="mb-2">
+                      You acknowledge that using our platform may involve meeting strangers in person. 
+                      <strong> We strongly recommend meeting only in public, well-lit locations during daylight hours.</strong>
+                    </p>
+                  </div>
+                  
+                  <p className="mb-3">
+                    <strong>Safety Guidelines:</strong>
+                  </p>
+                  <ul className="list-disc pl-6 space-y-1 mb-3">
+                    <li>Always meet in public places (cafes, shopping centers, police stations)</li>
+                    <li>Inform a trusted friend or family member of your meeting plans</li>
+                    <li>Consider bringing a friend to exchanges</li>
+                    <li>Trust your instincts - if something feels wrong, leave immediately</li>
+                    <li>Verify identity through our platform messaging before meeting</li>
+                    <li>Never share personal information like home address or financial details</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className="font-bold text-body mb-3">3. Limitation of Liability</h3>
+                  <p className="mb-3">
+                    <strong>TO THE MAXIMUM EXTENT PERMITTED BY LAW:</strong>
+                  </p>
+                  <ul className="list-disc pl-6 space-y-1 mb-3">
+                    <li>We are not responsible for any harm, injury, theft, or damages resulting from platform use</li>
+                    <li>We do not verify user identities beyond email verification</li>
+                    <li>We are not liable for the quality, safety, or legality of traded items</li>
+                    <li>We cannot guarantee the behavior or intentions of other users</li>
+                    <li>You use this platform entirely at your own risk</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className="font-bold text-body mb-3">4. User Responsibilities</h3>
+                  <p className="mb-3">By using our platform, you agree to:</p>
+                  <ul className="list-disc pl-6 space-y-1 mb-3">
+                    <li>Provide accurate information in your profile</li>
+                    <li>Not trade illegal, dangerous, or prohibited items</li>
+                    <li>Treat other users with respect</li>
+                    <li>Take full responsibility for your safety during meetings</li>
+                    <li>Report suspicious or inappropriate behavior</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className="font-bold text-body mb-3">5. Privacy & Data</h3>
+                  <p className="mb-3">
+                    We collect minimal personal information necessary for platform operation. 
+                    Your location data is used only to show nearby offers and is not stored permanently. 
+                    See our <button onClick={() => {/* TODO: Add privacy policy modal */}} className="underline">Privacy Policy</button> for details.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="font-bold text-body mb-3">6. Prohibited Items</h3>
+                  <p className="mb-3">The following items cannot be traded:</p>
+                  <ul className="list-disc pl-6 space-y-1 mb-3">
+                    <li>Weapons or ammunition</li>
+                    <li>Drugs or controlled substances</li>
+                    <li>Stolen goods</li>
+                    <li>Counterfeit items</li>
+                    <li>Live animals</li>
+                    <li>Human remains or body parts</li>
+                    <li>Hazardous materials</li>
+                    <li>Any item illegal in your jurisdiction</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className="font-bold text-body mb-3">7. Account Termination</h3>
+                  <p className="mb-3">
+                    We reserve the right to suspend or terminate accounts that violate these terms, 
+                    engage in fraudulent behavior, or pose a risk to other users.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="font-bold text-body mb-3">8. Changes to Terms</h3>
+                  <p className="mb-3">
+                    We may update these terms at any time. Continued use of the platform after changes 
+                    constitutes acceptance of the new terms.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="font-bold text-body mb-3">9. Contact</h3>
+                  <p>
+                    For questions about these terms, please contact us through the platform's support feature.
+                  </p>
+                </section>
+              </div>
+            </div>
+            
+            <div className="p-4 border-t border-black">
+              <button
+                onClick={() => setShowTermsContent(false)}
+                className="w-full px-4 py-2 bg-tan text-black border border-black rounded-sm hover:bg-brown/10 transition-colors"
+              >
+                Close
               </button>
             </div>
           </div>

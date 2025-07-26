@@ -201,9 +201,9 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemId: 
 
         {/* Item Image and Action Buttons */}
         <div className="px-6 py-0">
-          <div className="mb-6 flex items-start space-x-6">
+          <div className="mb-6">
             {/* Image */}
-            <div className="flex-shrink-0 -ml-4.5">
+            <div className="flex justify-center mb-4">
               {hasImage ? (
                 <div className="w-48 h-48 rounded-sm overflow-hidden border border-brown/10">
                   <Image
@@ -246,7 +246,7 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemId: 
 
             {/* Action Buttons - only show for current owner */}
             {isCurrentOwner && (
-              <div className="flex flex-col space-y-3 w-48">
+              <div className="flex flex-col space-y-3 max-w-48 mx-auto">
                 <button
                   onClick={handleOfferItem}
                   className="w-full bg-tan text-black border border-black py-3 px-4 rounded-sm transition-all text-center font-medium shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"

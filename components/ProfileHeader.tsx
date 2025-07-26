@@ -219,7 +219,7 @@ export default function ProfileHeader({ user, isOwnProfile, reputationScore }: P
               <button
                 onClick={uploadCroppedImage}
                 disabled={uploading || !completedCrop}
-                className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
+                className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black transition-all shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] disabled:opacity-50 disabled:hover:shadow-[3px_3px_0px_#000000] disabled:hover:translate-x-0 disabled:hover:translate-y-0"
               >
                 {uploading ? "Uploading..." : "Upload photo"}
               </button>
@@ -232,7 +232,7 @@ export default function ProfileHeader({ user, isOwnProfile, reputationScore }: P
                   setError("")
                 }}
                 disabled={uploading}
-                className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors disabled:opacity-50"
+                className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black transition-all shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] disabled:opacity-50 disabled:hover:shadow-[3px_3px_0px_#000000] disabled:hover:translate-x-0 disabled:hover:translate-y-0"
               >
                 Cancel
               </button>

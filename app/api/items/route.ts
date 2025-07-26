@@ -50,9 +50,9 @@ export async function POST(req: Request) {
         category,
         condition,
         imageUrl,
-        travelers: {
-          connect: { id: session.user.id }
-        }
+        originalOwnerId: session.user.id,
+        currentOwnerId: session.user.id,
+        acquisitionMethod: "created"
       }
     })
 

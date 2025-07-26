@@ -7,7 +7,7 @@ const prisma = new PrismaClient()
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ itemInstanceId: string }> }
+  context: { params: Promise<{ itemId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -16,24 +16,14 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { itemInstanceId } = await context.params
+    const { itemId } = await context.params
 
-    console.log("🔍 Fetching history for item instance:", itemInstanceId)
+    console.log("🔍 Fetching history for item:", itemId)
 
-    // Fetch the item instance with catalog info and full history
-    const itemInstance = await prisma.itemInstances.findUnique({
-      where: { id: itemInstanceId },
+    // Fetch the item with full history
+    const item = await prisma.items.findUnique({
+      where: { id: itemId },
       include: {
-        catalogItem: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            imageUrl: true,
-            category: true,
-            condition: true
-          }
-        },
         currentOwner: {
           select: {
             id: true,
@@ -80,18 +70,18 @@ export async function GET(
       }
     })
 
-    if (!itemInstance) {
+    if (!item) {
       return NextResponse.json(
-        { error: "Item instance not found" },
+        { error: "Item not found" },
         { status: 404 }
       )
     }
 
-    console.log(`📜 Found item instance with ${itemInstance.history.length} history entries`)
+    console.log(`📜 Found item with ${item.history.length} history entries`)
 
     // Filter out entries where privacy should be maintained
     // Only show location and date information, not user details unless it's current user
-    const publicHistory = itemInstance.history.map(entry => ({
+    const publicHistory = item.history.map(entry => ({
       id: entry.id,
       transferDate: entry.transferDate,
       city: entry.city,
@@ -104,15 +94,20 @@ export async function GET(
     }))
 
     return NextResponse.json({
-      itemInstance: {
-        id: itemInstance.id,
-        serialNumber: itemInstance.serialNumber,
-        acquisitionMethod: itemInstance.acquisitionMethod,
-        createdAt: itemInstance.createdAt,
-        currentOwnerId: itemInstance.currentOwnerId,
-        catalogItem: itemInstance.catalogItem,
-        currentOwner: itemInstance.currentOwner?.id === session.user.id ? itemInstance.currentOwner : null,
-        originalOwner: itemInstance.originalOwner?.id === session.user.id ? itemInstance.originalOwner : null,
+      item: {
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        imageUrl: item.imageUrl,
+        category: item.category,
+        condition: item.condition,
+        serialNumber: item.serialNumber,
+        acquisitionMethod: item.acquisitionMethod,
+        createdAt: item.createdAt,
+        instanceCreatedAt: item.instanceCreatedAt,
+        currentOwnerId: item.currentOwnerId,
+        currentOwner: item.currentOwner?.id === session.user.id ? item.currentOwner : null,
+        originalOwner: item.originalOwner?.id === session.user.id ? item.originalOwner : null,
         history: publicHistory
       }
     })

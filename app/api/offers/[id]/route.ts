@@ -24,11 +24,6 @@ export async function GET(
       where: { id },
       include: {
         item: true,
-        itemInstance: {
-          include: {
-            catalogItem: true
-          }
-        },
         traveler: {
           select: {
             id: true,
@@ -49,11 +44,6 @@ export async function GET(
               },
             },
             offeredItem: true,
-            offeredItemInstance: {
-              include: {
-                catalogItem: true
-              }
-            },
           },
           orderBy: {
             createdAt: 'desc',
@@ -183,13 +173,13 @@ export async function DELETE(
       data: { status: 'deleted' }
     })
 
-    // If this offer was for an inventory item, restore its availability
-    if (offer.itemInstanceId) {
-      await prisma.itemInstances.update({
-        where: { id: offer.itemInstanceId },
+    // If this offer has an item, restore its availability
+    if (offer.itemId) {
+      await prisma.items.update({
+        where: { id: offer.itemId },
         data: { isAvailable: true }
       })
-      console.log(`📦 Restored availability for item instance: ${offer.itemInstanceId}`)
+      console.log(`📦 Restored availability for item: ${offer.itemId}`)
     }
 
     return NextResponse.json({ success: true })

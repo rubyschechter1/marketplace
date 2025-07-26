@@ -14,7 +14,7 @@ export async function GET(req: Request) {
 
     const items = await prisma.items.findMany({
       where: {
-        createdBy: session.user.id
+        originalOwnerId: session.user.id
       },
       include: {
         _count: {

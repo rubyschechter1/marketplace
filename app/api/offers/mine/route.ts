@@ -26,11 +26,6 @@ export async function GET(req: Request) {
       },
       include: {
         item: true,
-        itemInstance: {
-          include: {
-            catalogItem: true
-          }
-        },
         traveler: {
           select: {
             id: true,

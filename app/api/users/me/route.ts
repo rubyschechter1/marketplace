@@ -18,7 +18,6 @@ export async function GET(req: Request) {
         _count: {
           select: {
             offers: true,
-            items: true,
             messagesSent: true,
             messagesReceived: {
               where: { isRead: false }

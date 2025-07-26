@@ -36,12 +36,12 @@ export default function NewOfferPage() {
 
   // Handle URL parameters for pre-populating form data
   useEffect(() => {
-    const itemInstanceId = searchParams.get('itemInstanceId')
+    const itemId = searchParams.get('itemId')
     const itemName = searchParams.get('itemName')
     const itemDescription = searchParams.get('itemDescription')
     const itemPhoto = searchParams.get('itemPhoto')
     
-    if (itemInstanceId && itemName) {
+    if (itemId && itemName) {
       // Pre-populate from inventory item via URL params
       setUseInventory(true)
       setFormData({
@@ -54,12 +54,10 @@ export default function NewOfferPage() {
       
       // Create a mock selected inventory item for form validation
       setSelectedInventoryItem({
-        id: itemInstanceId,
-        catalogItem: {
-          name: itemName,
-          description: itemDescription,
-          imageUrl: itemPhoto
-        }
+        id: itemId,
+        name: itemName,
+        description: itemDescription,
+        imageUrl: itemPhoto
       })
     }
   }, [searchParams])
@@ -81,10 +79,10 @@ export default function NewOfferPage() {
     setUseInventory(true)
     setFormData({
       ...formData,
-      offeringTitle: item.catalogItem.name,
+      offeringTitle: item.name,
       offeringDescription: "", // Allow user to add custom description
-      photoUrl: item.catalogItem.imageUrl || "",
-      photoPreview: item.catalogItem.imageUrl || ""
+      photoUrl: item.imageUrl || "",
+      photoPreview: item.imageUrl || ""
     })
     setShowInventoryModal(false)
   }
@@ -206,11 +204,10 @@ export default function NewOfferPage() {
       })
 
       let itemId = null
-      let itemInstanceId = null
 
       if (useInventory && selectedInventoryItem) {
         // Using inventory item
-        itemInstanceId = selectedInventoryItem.id
+        itemId = selectedInventoryItem.id
       } else {
         // Create new item
         const itemResponse = await fetch("/api/items", {
@@ -233,19 +230,13 @@ export default function NewOfferPage() {
 
       // Create offer with location
       const offerData: any = {
+        itemId,
         title: formData.offeringTitle,
         description: formData.offeringDescription,
         lookingFor: formData.seekingItems.filter(i => i),
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
         locationName: "Current Location"
-      }
-
-      if (itemId) {
-        offerData.itemId = itemId
-      }
-      if (itemInstanceId) {
-        offerData.itemInstanceId = itemInstanceId
       }
 
       const offerResponse = await fetch("/api/offers", {
@@ -356,10 +347,10 @@ export default function NewOfferPage() {
                             padding: '6px'
                           }}
                         >
-                          {item.catalogItem.imageUrl ? (
+                          {item.imageUrl ? (
                             <img 
-                              src={item.catalogItem.imageUrl}
-                              alt={item.catalogItem.name}
+                              src={item.imageUrl}
+                              alt={item.name}
                               className="w-full aspect-square object-cover rounded-sm"
                             />
                           ) : (
@@ -376,7 +367,7 @@ export default function NewOfferPage() {
                         </div>
                         {/* Item name outside the card */}
                         <div className="text-xs text-center mt-1 text-black">
-                          {item.catalogItem.name}
+                          {item.name}
                         </div>
                       </div>
                     ))}

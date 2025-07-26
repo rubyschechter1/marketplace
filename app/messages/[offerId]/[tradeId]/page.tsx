@@ -42,13 +42,6 @@ interface TradeData {
     name: string
     imageUrl?: string
   }
-  offeredItemInstance?: {
-    id: string
-    catalogItem: {
-      name: string
-      imageUrl?: string
-    }
-  }
   offer: {
     id: string
     title: string
@@ -60,15 +53,9 @@ interface TradeData {
       lastName: string
     }
     item?: {
+      id: string
       name: string
       imageUrl?: string
-    }
-    itemInstance?: {
-      id: string
-      catalogItem: {
-        name: string
-        imageUrl?: string
-      }
     }
   }
 }
@@ -251,8 +238,8 @@ export default function MessagePage({
       const isProposer = session.user.id === tradeData.proposer.id
       
       // If this is an accepted trade with inventory items, the transfer is automatic
-      if ((isOfferOwner && tradeData.offer.itemInstance) || 
-          (isProposer && tradeData.offeredItemInstance)) {
+      if ((isOfferOwner && tradeData.offer.item) || 
+          (isProposer && tradeData.offeredItem)) {
         return true // Hide "Give Item" button - transfer was automatic
       }
     }
@@ -489,15 +476,15 @@ export default function MessagePage({
       let isInventoryItem = false
       
       // If current user is the offer owner and it's their inventory item
-      if (session?.user?.id === tradeData.offer.traveler.id && tradeData.offer.itemInstance) {
-        itemToGive = tradeData.offer.itemInstance
-        itemName = tradeData.offer.itemInstance.catalogItem.name
+      if (session?.user?.id === tradeData.offer.traveler.id && tradeData.offer.item) {
+        itemToGive = tradeData.offer.item
+        itemName = tradeData.offer.item.name
         isInventoryItem = true
       }
       // If current user is the proposer and it's their inventory item
-      else if (session?.user?.id === tradeData.proposer.id && tradeData.offeredItemInstance) {
-        itemToGive = tradeData.offeredItemInstance
-        itemName = tradeData.offeredItemInstance.catalogItem.name
+      else if (session?.user?.id === tradeData.proposer.id && tradeData.offeredItem) {
+        itemToGive = tradeData.offeredItem
+        itemName = tradeData.offeredItem.name
         isInventoryItem = true
       }
       // If current user is the offer owner and it's a new item offer
@@ -530,7 +517,7 @@ export default function MessagePage({
       }
 
       if (isInventoryItem && itemToGive) {
-        requestBody.itemInstanceId = itemToGive.id
+        requestBody.itemId = itemToGive.id
       } else {
         requestBody.itemName = itemName
         requestBody.itemDescription = itemDescription
@@ -564,7 +551,7 @@ export default function MessagePage({
     }
   }
 
-  const handleGiveInventoryItem = async (itemInstance: any) => {
+  const handleGiveInventoryItem = async (item: any) => {
     if (!otherUser) return
     
     setGivingItem(true)
@@ -586,7 +573,7 @@ export default function MessagePage({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipientId: otherUser.id,
-          itemInstanceId: itemInstance.id,
+          itemId: item.id,
           offerId: offerId,
           tradeId: tradeId,
           // Include current location data for real-time transfer location
@@ -629,7 +616,7 @@ export default function MessagePage({
     : tradeData.proposer
 
   const itemName = tradeData.offer.item?.name || 
-                   tradeData.offer.itemInstance?.catalogItem?.name || 
+                   tradeData.offer.item?.name || 
                    tradeData.offer.title
 
   return (
@@ -679,7 +666,7 @@ export default function MessagePage({
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm">
-                <span className="font-normal">{session?.user?.id === tradeData.proposer.id ? 'You' : formatDisplayName(tradeData.proposer.firstName, tradeData.proposer.lastName)}</span> {session?.user?.id === tradeData.proposer.id ? 'offer' : 'offers'} <span className="italic">{tradeData.offeredItem?.name || tradeData.offeredItemInstance?.catalogItem?.name}</span>
+                <span className="font-normal">{session?.user?.id === tradeData.proposer.id ? 'You' : formatDisplayName(tradeData.proposer.firstName, tradeData.proposer.lastName)}</span> {session?.user?.id === tradeData.proposer.id ? 'offer' : 'offers'} <span className="italic">{tradeData.offeredItem?.name}</span>
               </p>
             </div>
             {/* Accept trade button (only for offer owner and if offer not deleted) - moved inline */}

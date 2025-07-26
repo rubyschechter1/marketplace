@@ -31,20 +31,10 @@ export async function GET(
       include: {
         proposer: true,
         offeredItem: true,
-        offeredItemInstance: {
-          include: {
-            catalogItem: true
-          }
-        },
         offer: {
           include: {
             traveler: true,
-            item: true,
-            itemInstance: {
-              include: {
-                catalogItem: true
-              }
-            }
+            item: true
           }
         },
         reviews: {
@@ -130,20 +120,10 @@ export async function PUT(
       include: {
         proposer: true,
         offeredItem: true,
-        offeredItemInstance: {
-          include: {
-            catalogItem: true
-          }
-        },
         offer: {
           include: {
             traveler: true,
-            item: true,
-            itemInstance: {
-              include: {
-                catalogItem: true
-              }
-            }
+            item: true
           }
         }
       }
@@ -243,10 +223,10 @@ export async function PUT(
         const proposer = proposedTrade.proposer!
 
         // Transfer offered item from proposer to offer owner
-        if (proposedTrade.offeredItemInstance) {
-          // Update ownership of the offered item instance
-          await tx.itemInstances.update({
-            where: { id: proposedTrade.offeredItemInstance.id },
+        if (proposedTrade.offeredItem) {
+          // Update ownership of the offered item
+          await tx.items.update({
+            where: { id: proposedTrade.offeredItem.id },
             data: {
               currentOwnerId: offerOwner.id,
               isAvailable: true // Available again in new owner's inventory
@@ -256,7 +236,7 @@ export async function PUT(
           // Create history entry for the transfer
           await tx.itemHistory.create({
             data: {
-              itemInstanceId: proposedTrade.offeredItemInstance.id,
+              itemId: proposedTrade.offeredItem.id,
               fromOwnerId: proposer.id,
               toOwnerId: offerOwner.id,
               tradeId: proposedTrade.id,
@@ -268,10 +248,10 @@ export async function PUT(
         }
 
         // Transfer requested item from offer owner to proposer
-        if (proposedTrade.offer.itemInstance) {
-          // Update ownership of the requested item instance
-          await tx.itemInstances.update({
-            where: { id: proposedTrade.offer.itemInstance.id },
+        if (proposedTrade.offer.item) {
+          // Update ownership of the requested item
+          await tx.items.update({
+            where: { id: proposedTrade.offer.item.id },
             data: {
               currentOwnerId: proposer.id,
               isAvailable: true // Available again in new owner's inventory
@@ -281,7 +261,7 @@ export async function PUT(
           // Create history entry for the transfer
           await tx.itemHistory.create({
             data: {
-              itemInstanceId: proposedTrade.offer.itemInstance.id,
+              itemId: proposedTrade.offer.item.id,
               fromOwnerId: offerOwner.id,
               toOwnerId: proposer.id,
               tradeId: proposedTrade.id,
@@ -291,7 +271,7 @@ export async function PUT(
             }
           })
 
-          // Mark the offer as completed since the inventory item has been traded
+          // Mark the offer as completed since the item has been traded
           await tx.offers.update({
             where: { id: proposedTrade.offerId },
             data: { status: 'completed' }
@@ -391,20 +371,10 @@ export async function PUT(
       include: {
         proposer: true,
         offeredItem: true,
-        offeredItemInstance: {
-          include: {
-            catalogItem: true
-          }
-        },
         offer: {
           include: {
             traveler: true,
-            item: true,
-            itemInstance: {
-              include: {
-                catalogItem: true
-              }
-            }
+            item: true
           }
         }
       }

@@ -15,22 +15,12 @@ export async function GET(req: NextRequest) {
 
     console.log("🎒 Fetching inventory for user:", session.user.id)
 
-    // Fetch user's item instances with catalog items and history
-    const itemInstances = await prisma.itemInstances.findMany({
+    // Fetch user's items where they are the current owner
+    const items = await prisma.items.findMany({
       where: {
         currentOwnerId: session.user.id
       },
       include: {
-        catalogItem: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            category: true,
-            condition: true,
-            imageUrl: true
-          }
-        },
         history: {
           select: {
             id: true,
@@ -45,15 +35,15 @@ export async function GET(req: NextRequest) {
         }
       },
       orderBy: {
-        createdAt: 'desc'
+        instanceCreatedAt: 'desc'
       }
     })
 
-    console.log(`📦 Found ${itemInstances.length} items in inventory`)
+    console.log(`📦 Found ${items.length} items in inventory`)
 
     return NextResponse.json({
-      items: itemInstances,
-      count: itemInstances.length
+      items: items,
+      count: items.length
     })
 
   } catch (error) {

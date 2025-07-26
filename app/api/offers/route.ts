@@ -58,11 +58,6 @@ export async function GET(req: Request) {
       where: whereClause,
       include: {
         item: true,
-        itemInstance: {
-          include: {
-            catalogItem: true
-          }
-        },
         traveler: {
           select: {
             id: true,
@@ -111,7 +106,7 @@ export async function POST(req: Request) {
     }
 
     const data = await req.json()
-    const { type = "offer", itemId, itemInstanceId, title, description, askDescription, lookingFor, latitude, longitude, locationName } = data
+    const { type = "offer", itemId, title, description, askDescription, lookingFor, latitude, longitude, locationName } = data
 
     // Validate content for currency references and inappropriate content
     if (title) {
@@ -169,61 +164,35 @@ export async function POST(req: Request) {
         )
       }
 
-      // Must have either itemId (new item) or itemInstanceId (inventory item)
-      if (!itemId && !itemInstanceId) {
+      // Must have itemId
+      if (!itemId) {
         return NextResponse.json(
-          { error: "Must provide either itemId or itemInstanceId" },
+          { error: "Must provide itemId" },
           { status: 400 }
         )
       }
 
-      if (itemId && itemInstanceId) {
+      // Verify item belongs to user and is available
+      const item = await prisma.items.findFirst({
+        where: {
+          id: itemId,
+          currentOwnerId: session.user.id,
+          isAvailable: true
+        }
+      })
+
+      if (!item) {
         return NextResponse.json(
-          { error: "Cannot provide both itemId and itemInstanceId" },
-          { status: 400 }
+          { error: "Item not found, unauthorized, or not available" },
+          { status: 404 }
         )
       }
 
-      // Verify item belongs to user (for new items)
-      if (itemId) {
-        const item = await prisma.items.findFirst({
-          where: {
-            id: itemId,
-            createdBy: session.user.id
-          }
-        })
-
-        if (!item) {
-          return NextResponse.json(
-            { error: "Item not found or unauthorized" },
-            { status: 404 }
-          )
-        }
-      }
-
-      // Verify item instance belongs to user and is available (for inventory items)
-      if (itemInstanceId) {
-        const itemInstance = await prisma.itemInstances.findFirst({
-          where: {
-            id: itemInstanceId,
-            currentOwnerId: session.user.id,
-            isAvailable: true
-          }
-        })
-
-        if (!itemInstance) {
-          return NextResponse.json(
-            { error: "Item instance not found, unauthorized, or not available" },
-            { status: 404 }
-          )
-        }
-
-        // Mark item instance as not available (being offered)
-        await prisma.itemInstances.update({
-          where: { id: itemInstanceId },
-          data: { isAvailable: false }
-        })
-      }
+      // Mark item as not available (being offered)
+      await prisma.items.update({
+        where: { id: itemId },
+        data: { isAvailable: false }
+      })
     } else if (type === "ask") {
       if (!title || !askDescription || latitude == null || longitude == null) {
         return NextResponse.json(
@@ -260,15 +229,8 @@ export async function POST(req: Request) {
 
     // Add type-specific fields
     if (type === "offer") {
-      if (itemId) {
-        createData.item = {
-          connect: { id: itemId }
-        }
-      }
-      if (itemInstanceId) {
-        createData.itemInstance = {
-          connect: { id: itemInstanceId }
-        }
+      createData.item = {
+        connect: { id: itemId }
       }
     } else if (type === "ask") {
       createData.askDescription = askDescription
@@ -278,11 +240,6 @@ export async function POST(req: Request) {
       data: createData,
       include: {
         item: true,
-        itemInstance: {
-          include: {
-            catalogItem: true
-          }
-        },
         traveler: {
           select: {
             id: true,

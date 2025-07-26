@@ -8,19 +8,17 @@ import Link from "next/link"
 import Button from "@/components/ui/Button"
 import BrownHatLoader from "@/components/BrownHatLoader"
 
-interface ItemInstance {
+interface Item {
   id: string
+  name: string
+  description: string | null
+  category: string | null
+  condition: string | null
+  imageUrl: string | null
   serialNumber: string | null
   acquisitionMethod: string
   createdAt: string
-  catalogItem: {
-    id: string
-    name: string
-    description: string | null
-    category: string | null
-    condition: string | null
-    imageUrl: string | null
-  }
+  instanceCreatedAt: string
   history: Array<{
     id: string
     transferDate: string
@@ -32,7 +30,7 @@ interface ItemInstance {
 
 export default function InventoryPage() {
   const { data: session } = useSession()
-  const [items, setItems] = useState<ItemInstance[]>([])
+  const [items, setItems] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
@@ -56,8 +54,8 @@ export default function InventoryPage() {
     }
   }
 
-  const getLocationString = (item: ItemInstance) => {
-    console.log("🗺️ Checking location for item:", item.catalogItem.name, "History:", item.history)
+  const getLocationString = (item: Item) => {
+    console.log("🗺️ Checking location for item:", item.name, "History:", item.history)
     
     // Check if there's any history
     if (!item.history || item.history.length === 0) {
@@ -84,8 +82,8 @@ export default function InventoryPage() {
     return "Unknown location"
   }
 
-  const getItemAge = (item: ItemInstance) => {
-    const created = new Date(item.createdAt)
+  const getItemAge = (item: Item) => {
+    const created = new Date(item.instanceCreatedAt)
     const now = new Date()
     const diffTime = Math.abs(now.getTime() - created.getTime())
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
@@ -160,16 +158,16 @@ export default function InventoryPage() {
                   padding: '12px 12px 30px 12px'
                 }}
               >
-                {item.catalogItem.imageUrl ? (
+                {item.imageUrl ? (
                   <img 
-                    src={item.catalogItem.imageUrl}
-                    alt={item.catalogItem.name}
+                    src={item.imageUrl}
+                    alt={item.name}
                     className="w-full aspect-square object-cover rounded-sm"
                   />
                 ) : (
                   <div className="w-full aspect-square bg-gray/20 rounded-sm flex items-center justify-center hover:bg-gray/30 transition-colors">
                     <span className="text-gray text-sm text-center px-2">
-                      {item.catalogItem.name}
+                      {item.name}
                     </span>
                   </div>
                 )}

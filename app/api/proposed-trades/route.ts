@@ -61,18 +61,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { offerId, offeredItemId, offeredItemInstanceId } = body
+    const { offerId, offeredItemId } = body
 
-    if (!offerId || (!offeredItemId && !offeredItemInstanceId)) {
+    if (!offerId || !offeredItemId) {
       return NextResponse.json(
-        { error: "Missing required fields: offerId and either offeredItemId or offeredItemInstanceId" },
-        { status: 400 }
-      )
-    }
-
-    if (offeredItemId && offeredItemInstanceId) {
-      return NextResponse.json(
-        { error: "Cannot provide both offeredItemId and offeredItemInstanceId" },
+        { error: "Missing required fields: offerId and offeredItemId" },
         { status: 400 }
       )
     }
@@ -100,44 +93,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verify the offered item/instance exists and belongs to the current user
-    let offeredItem = null
-    let offeredItemInstance = null
+    // Verify the offered item exists and belongs to the current user
+    const offeredItem = await prisma.items.findUnique({
+      where: { id: offeredItemId }
+    })
 
-    if (offeredItemId) {
-      offeredItem = await prisma.items.findUnique({
-        where: { id: offeredItemId }
-      })
-
-      if (!offeredItem || offeredItem.createdBy !== session.user.id) {
-        return NextResponse.json(
-          { error: "Invalid offered item" },
-          { status: 400 }
-        )
-      }
+    if (!offeredItem || offeredItem.currentOwnerId !== session.user.id || !offeredItem.isAvailable) {
+      return NextResponse.json(
+        { error: "Invalid offered item or item not available" },
+        { status: 400 }
+      )
     }
 
-    if (offeredItemInstanceId) {
-      offeredItemInstance = await prisma.itemInstances.findUnique({
-        where: { id: offeredItemInstanceId },
-        include: {
-          catalogItem: true
-        }
-      })
-
-      if (!offeredItemInstance || offeredItemInstance.currentOwnerId !== session.user.id || !offeredItemInstance.isAvailable) {
-        return NextResponse.json(
-          { error: "Invalid offered item instance or item not available" },
-          { status: 400 }
-        )
-      }
-
-      // Mark the item instance as not available during the trade proposal
-      await prisma.itemInstances.update({
-        where: { id: offeredItemInstanceId },
-        data: { isAvailable: false }
-      })
-    }
+    // Mark the item as not available during the trade proposal
+    await prisma.items.update({
+      where: { id: offeredItemId },
+      data: { isAvailable: false }
+    })
 
     // Check if the user has already proposed a trade for this offer
     const existingTrade = await prisma.proposedTrades.findFirst({
@@ -164,16 +136,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (offeredItemId) {
-      createData.offeredItem = {
-        connect: { id: offeredItemId }
-      }
-    }
-
-    if (offeredItemInstanceId) {
-      createData.offeredItemInstance = {
-        connect: { id: offeredItemInstanceId }
-      }
+    createData.offeredItem = {
+      connect: { id: offeredItemId }
     }
 
     const proposedTrade = await prisma.proposedTrades.create({
@@ -181,20 +145,10 @@ export async function POST(request: NextRequest) {
       include: {
         proposer: true,
         offeredItem: true,
-        offeredItemInstance: {
-          include: {
-            catalogItem: true
-          }
-        },
         offer: {
           include: {
             traveler: true,
-            item: true,
-            itemInstance: {
-              include: {
-                catalogItem: true
-              }
-            }
+            item: true
           }
         }
       }
@@ -203,12 +157,8 @@ export async function POST(request: NextRequest) {
     // Create an initial message for this trade proposal
     try {
       if (proposedTrade.offer.traveler) {
-        const offeredItemName = proposedTrade.offeredItem?.name || 
-                               proposedTrade.offeredItemInstance?.catalogItem?.name || 
-                               "item"
-        const requestedItemName = proposedTrade.offer.item?.name || 
-                                 proposedTrade.offer.itemInstance?.catalogItem?.name || 
-                                 proposedTrade.offer.title
+        const offeredItemName = proposedTrade.offeredItem?.name || "item"
+        const requestedItemName = proposedTrade.offer.item?.name || proposedTrade.offer.title
 
         await prisma.messages.create({
           data: {
@@ -229,9 +179,7 @@ export async function POST(request: NextRequest) {
     if (process.env.RESEND_API_KEY && proposedTrade.offer.traveler?.email) {
       try {
         const proposalLink = `${process.env.NEXTAUTH_URL}/offers/${offerId}`;
-        const offeredItemName = proposedTrade.offeredItem?.name || 
-                               proposedTrade.offeredItemInstance?.catalogItem?.name || 
-                               "item"
+        const offeredItemName = proposedTrade.offeredItem?.name || "item"
         
         await resend.emails.send({
           from: FROM_EMAIL,

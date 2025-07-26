@@ -73,11 +73,6 @@ export async function GET(req: Request) {
         offer: {
           include: {
             item: true,
-            itemInstance: {
-              include: {
-                catalogItem: true
-              }
-            },
             traveler: {
               select: {
                 id: true,
@@ -89,12 +84,7 @@ export async function GET(req: Request) {
         },
         proposedTrade: {
           include: {
-            offeredItem: true,
-            offeredItemInstance: {
-              include: {
-                catalogItem: true
-              }
-            }
+            offeredItem: true
           }
         }
       }

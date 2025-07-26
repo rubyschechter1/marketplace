@@ -42,12 +42,6 @@ interface Conversation {
       name: string
       imageUrl?: string | null
     }
-    itemInstance?: {
-      catalogItem: {
-        name: string
-        imageUrl?: string | null
-      }
-    }
   }
   proposedTrade?: {
     id: string
@@ -55,13 +49,6 @@ interface Conversation {
       id: string
       name: string
       imageUrl?: string | null
-    }
-    offeredItemInstance?: {
-      catalogItem: {
-        id: string
-        name: string
-        imageUrl?: string | null
-      }
     }
   }
 }
@@ -171,7 +158,6 @@ export default function MessagesPage() {
               // Determine the context for clearer labeling
               const isAsk = message.offer?.type === 'ask'
               const itemName = message.offer?.item?.name || 
-                               message.offer?.itemInstance?.catalogItem?.name || 
                                message.offer?.title
               const isMyOffer = message.offer?.traveler?.id === session?.user?.id
               
@@ -199,18 +185,12 @@ export default function MessagesPage() {
                 >
                   {/* Show offer item image for regular offers, or proposed item image for asks */}
                   {(message.offer?.item?.imageUrl || 
-                    message.offer?.itemInstance?.catalogItem?.imageUrl || 
-                    message.proposedTrade?.offeredItem?.imageUrl ||
-                    message.proposedTrade?.offeredItemInstance?.catalogItem?.imageUrl) ? (
+                    message.proposedTrade?.offeredItem?.imageUrl) ? (
                     <img
                       src={message.offer?.item?.imageUrl || 
-                           message.offer?.itemInstance?.catalogItem?.imageUrl ||
-                           message.proposedTrade?.offeredItem?.imageUrl ||
-                           message.proposedTrade?.offeredItemInstance?.catalogItem?.imageUrl || ''}
+                           message.proposedTrade?.offeredItem?.imageUrl || ''}
                       alt={message.offer?.item?.name || 
-                           message.offer?.itemInstance?.catalogItem?.name ||
-                           message.proposedTrade?.offeredItem?.name ||
-                           message.proposedTrade?.offeredItemInstance?.catalogItem?.name || 'Item'}
+                           message.proposedTrade?.offeredItem?.name || 'Item'}
                       className="w-16 h-16 object-cover rounded-md flex-shrink-0"
                     />
                   ) : (

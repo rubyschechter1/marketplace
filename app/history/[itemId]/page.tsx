@@ -30,48 +30,46 @@ interface HistoryEntry {
   } | null
 }
 
-interface ItemInstance {
+interface Item {
   id: string
+  name: string
+  description: string | null
+  category: string | null
+  condition: string | null
+  imageUrl: string | null
   serialNumber: string | null
   acquisitionMethod: string
   isAvailable: boolean
   createdAt: string
+  instanceCreatedAt: string
   currentOwnerId: string
-  catalogItem: {
-    id: string
-    name: string
-    description: string | null
-    category: string | null
-    condition: string | null
-    imageUrl: string | null
-  }
   history: HistoryEntry[]
 }
 
-export default function ItemHistoryPage({ params }: { params: Promise<{ itemInstanceId: string }> }) {
+export default function ItemHistoryPage({ params }: { params: Promise<{ itemId: string }> }) {
   const { data: session } = useSession()
   const router = useRouter()
-  const [itemInstance, setItemInstance] = useState<ItemInstance | null>(null)
+  const [item, setItem] = useState<Item | null>(null)
   const [loading, setLoading] = useState(true)
-  const [itemInstanceId, setItemInstanceId] = useState("")
+  const [itemId, setItemId] = useState("")
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   useEffect(() => {
-    params.then(p => setItemInstanceId(p.itemInstanceId))
+    params.then(p => setItemId(p.itemId))
   }, [params])
 
   useEffect(() => {
-    if (!itemInstanceId) return
+    if (!itemId) return
     
     const fetchItemHistory = async () => {
       try {
-        const response = await fetch(`/api/history/${itemInstanceId}`)
+        const response = await fetch(`/api/history/${itemId}`)
         if (!response.ok) {
           throw new Error('Failed to fetch item history')
         }
         const data = await response.json()
-        setItemInstance(data.itemInstance)
+        setItem(data.item)
       } catch (error) {
         console.error('Error fetching item history:', error)
         router.push('/inventory')
@@ -81,7 +79,7 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemInst
     }
 
     fetchItemHistory()
-  }, [itemInstanceId, router])
+  }, [itemId, router])
 
   if (loading) {
     return (
@@ -93,7 +91,7 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemInst
     )
   }
 
-  if (!itemInstance) {
+  if (!item) {
     return (
       <AuthLayout>
         <div className="max-w-md mx-auto p-6">
@@ -135,8 +133,8 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemInst
 
       const { url } = await response.json()
 
-      // Update the catalog item with the new image
-      const updateResponse = await fetch(`/api/items/${itemInstance.catalogItem.id}`, {
+      // Update the item with the new image
+      const updateResponse = await fetch(`/api/items/${item.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -149,12 +147,9 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemInst
       }
 
       // Update local state
-      setItemInstance(prev => prev ? {
+      setItem(prev => prev ? {
         ...prev,
-        catalogItem: {
-          ...prev.catalogItem,
-          imageUrl: url
-        }
+        imageUrl: url
       } : null)
 
     } catch (error) {
@@ -167,7 +162,7 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemInst
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(`/api/inventory/${itemInstanceId}`, {
+      const response = await fetch(`/api/inventory/${itemId}`, {
         method: 'DELETE',
       })
 
@@ -183,11 +178,11 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemInst
   }
 
   const handleOfferItem = () => {
-    router.push(`/offers/new?itemInstanceId=${itemInstanceId}`)
+    router.push(`/offers/new?itemId=${itemId}`)
   }
 
-  const isCurrentOwner = session?.user?.id === itemInstance?.currentOwnerId
-  const hasImage = itemInstance?.catalogItem.imageUrl
+  const isCurrentOwner = session?.user?.id === item?.currentOwnerId
+  const hasImage = item?.imageUrl
 
   return (
     <AuthLayout>
@@ -199,7 +194,7 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemInst
               <ChevronLeft size={24} />
             </Link>
             <h1 className="text-2xl font-bold text-black">
-              {itemInstance?.catalogItem.name}'s Journey
+              {item?.name}'s Journey
             </h1>
           </div>
         </div>
@@ -212,8 +207,8 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemInst
               {hasImage ? (
                 <div className="w-48 h-48 rounded-sm overflow-hidden border border-brown/10">
                   <Image
-                    src={itemInstance.catalogItem.imageUrl!}
-                    alt={itemInstance.catalogItem.name}
+                    src={item.imageUrl!}
+                    alt={item.name}
                     width={192}
                     height={192}
                     className="w-full h-full object-cover"
@@ -274,14 +269,14 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemInst
           <div>
             <h3 className="text-lg font-medium text-black mb-4">Trade History</h3>
             
-            {itemInstance.history.length === 0 ? (
+            {item.history.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray">No trades yet</p>
                 <p className="text-sm text-gray/70 mt-1">This item has stayed with its original owner</p>
               </div>
             ) : (
               <div className="space-y-4">
-                {itemInstance.history
+                {item.history
                   .sort((a, b) => new Date(b.transferDate).getTime() - new Date(a.transferDate).getTime())
                   .map((entry, index) => {
                     const date = new Date(entry.transferDate).toLocaleDateString()
@@ -341,7 +336,7 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemInst
             <div className="bg-white rounded-sm max-w-sm w-full p-6">
               <h3 className="text-lg font-medium text-black mb-2">Delete Item</h3>
               <p className="text-sm text-gray mb-6">
-                Are you sure you want to delete "{itemInstance?.catalogItem.name}"? This action cannot be undone.
+                Are you sure you want to delete "{item?.name}"? This action cannot be undone.
               </p>
               <div className="flex space-x-3">
                 <button

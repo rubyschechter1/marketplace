@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { recipientId, itemInstanceId, itemName, itemDescription, itemImageUrl, offerId, tradeId, currentLocation } = body
+    const { recipientId, itemId, itemName, itemDescription, itemImageUrl, offerId, tradeId, currentLocation } = body
 
     if (!recipientId) {
       return NextResponse.json(
@@ -50,36 +50,32 @@ export async function POST(request: NextRequest) {
     }
 
     let transferredItem = null
-    let catalogItem = null
 
-    if (itemInstanceId) {
+    if (itemId) {
       // Transfer existing inventory item
-      const itemInstance = await prisma.itemInstances.findUnique({
-        where: { id: itemInstanceId },
-        include: {
-          catalogItem: true
-        }
+      const item = await prisma.items.findUnique({
+        where: { id: itemId }
       })
 
-      if (!itemInstance) {
+      if (!item) {
         return NextResponse.json(
           { error: "Item not found" },
           { status: 400 }
         )
       }
 
-      if (itemInstance.currentOwnerId !== session.user.id) {
+      if (item.currentOwnerId !== session.user.id) {
         return NextResponse.json(
           { error: "You don't own this item" },
           { status: 400 }
         )
       }
 
-      if (!itemInstance.isAvailable) {
+      if (!item.isAvailable) {
         // Check if this item is part of an active offer
         const activeOffer = await prisma.offers.findFirst({
           where: {
-            itemInstanceId: itemInstanceId,
+            itemId: itemId,
             status: 'active'
           }
         })
@@ -91,37 +87,34 @@ export async function POST(request: NextRequest) {
           )
         } else {
           // Item is unavailable but not in an active offer - make it available
-          console.log(`📦 Making item ${itemInstanceId} available for transfer`)
-          await prisma.itemInstances.update({
-            where: { id: itemInstanceId },
+          console.log(`📦 Making item ${itemId} available for transfer`)
+          await prisma.items.update({
+            where: { id: itemId },
             data: { isAvailable: true }
           })
         }
       }
 
-      // Check if recipient already has this catalog item
-      const existingInstance = await prisma.itemInstances.findFirst({
+      // Check if recipient already has an item with same name
+      const existingItem = await prisma.items.findFirst({
         where: {
-          catalogItemId: itemInstance.catalogItemId,
+          name: item.name,
           currentOwnerId: recipientId
         }
       })
 
-      if (existingInstance) {
+      if (existingItem) {
         return NextResponse.json(
           { error: "Recipient already has this item in their inventory" },
           { status: 400 }
         )
       }
 
-      // Transfer the item instance
-      transferredItem = await prisma.itemInstances.update({
-        where: { id: itemInstanceId },
+      // Transfer the item
+      transferredItem = await prisma.items.update({
+        where: { id: itemId },
         data: {
           currentOwnerId: recipientId
-        },
-        include: {
-          catalogItem: true
         }
       })
 
@@ -136,7 +129,7 @@ export async function POST(request: NextRequest) {
       
       await prisma.itemHistory.create({
         data: {
-          itemInstanceId: itemInstanceId,
+          itemId: itemId,
           fromOwnerId: session.user.id,
           toOwnerId: recipientId,
           city: locationData.city,
@@ -144,8 +137,6 @@ export async function POST(request: NextRequest) {
           transferMethod: "gifted"
         }
       })
-
-      catalogItem = transferredItem.catalogItem
     } else if (itemName) {
       // Validate item name for currency content and inappropriate content
       const nameValidation = validateNoCurrency(itemName, "Item name", "offer")
@@ -167,49 +158,29 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Create new item and give it directly to recipient
-      // First, check if an item with this name already exists
-      let existingCatalogItem = await prisma.items.findFirst({
+      // Check if recipient already has an item with this name
+      const existingItem = await prisma.items.findFirst({
         where: {
-          name: itemName
+          name: itemName,
+          currentOwnerId: recipientId
         }
       })
 
-      if (existingCatalogItem) {
-        // Check if recipient already has this catalog item
-        const existingInstance = await prisma.itemInstances.findFirst({
-          where: {
-            catalogItemId: existingCatalogItem.id,
-            currentOwnerId: recipientId
-          }
-        })
-
-        if (existingInstance) {
-          return NextResponse.json(
-            { error: "Recipient already has this item in their inventory" },
-            { status: 400 }
-          )
-        }
-
-        catalogItem = existingCatalogItem
-      } else {
-        // Create new catalog item if it doesn't exist
-        catalogItem = await prisma.items.create({
-          data: {
-            name: itemName,
-            description: itemDescription || null,
-            imageUrl: itemImageUrl || null,
-            createdBy: session.user.id
-          }
-        })
+      if (existingItem) {
+        return NextResponse.json(
+          { error: "Recipient already has this item in their inventory" },
+          { status: 400 }
+        )
       }
 
-      // Create item instance for recipient
-      transferredItem = await prisma.itemInstances.create({
+      // Create new item directly for recipient
+      transferredItem = await prisma.items.create({
         data: {
-          catalogItemId: catalogItem.id,
-          currentOwnerId: recipientId,
+          name: itemName,
+          description: itemDescription || null,
+          imageUrl: itemImageUrl || null,
           originalOwnerId: session.user.id,
+          currentOwnerId: recipientId,
           acquisitionMethod: "gifted"
         }
       })
@@ -225,7 +196,7 @@ export async function POST(request: NextRequest) {
       
       await prisma.itemHistory.create({
         data: {
-          itemInstanceId: transferredItem.id,
+          itemId: transferredItem.id,
           fromOwnerId: session.user.id,
           toOwnerId: recipientId,
           city: locationData.city,
@@ -235,7 +206,7 @@ export async function POST(request: NextRequest) {
       })
     } else {
       return NextResponse.json(
-        { error: "Either itemInstanceId or itemName is required" },
+        { error: "Either itemId or itemName is required" },
         { status: 400 }
       )
     }
@@ -247,9 +218,9 @@ export async function POST(request: NextRequest) {
       success: true,
       transferredItem: {
         id: transferredItem.id,
-        name: catalogItem.name,
-        description: catalogItem.description,
-        imageUrl: catalogItem.imageUrl
+        name: transferredItem.name,
+        description: transferredItem.description,
+        imageUrl: transferredItem.imageUrl
       },
       recipient: {
         id: recipient.id,

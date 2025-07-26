@@ -18,15 +18,12 @@ export async function DELETE(
 
     const { id } = await context.params
 
-    // Find the item instance
-    const itemInstance = await prisma.itemInstances.findUnique({
-      where: { id },
-      include: {
-        catalogItem: true
-      }
+    // Find the item
+    const item = await prisma.items.findUnique({
+      where: { id }
     })
 
-    if (!itemInstance) {
+    if (!item) {
       return NextResponse.json(
         { error: "Item not found" },
         { status: 404 }
@@ -34,7 +31,7 @@ export async function DELETE(
     }
 
     // Check if the user owns this item
-    if (itemInstance.currentOwnerId !== session.user.id) {
+    if (item.currentOwnerId !== session.user.id) {
       return NextResponse.json(
         { error: "You don't own this item" },
         { status: 403 }
@@ -44,7 +41,7 @@ export async function DELETE(
     // Check if the item is currently being offered
     const activeOffer = await prisma.offers.findFirst({
       where: {
-        itemInstanceId: id,
+        itemId: id,
         status: 'active'
       }
     })
@@ -60,10 +57,10 @@ export async function DELETE(
     const pendingTrades = await prisma.proposedTrades.findMany({
       where: {
         OR: [
-          { offeredItemInstanceId: id },
+          { offeredItemId: id },
           { 
             offer: {
-              itemInstanceId: id
+              itemId: id
             }
           }
         ],
@@ -80,14 +77,14 @@ export async function DELETE(
       )
     }
 
-    // Delete the item instance (this will cascade delete related history entries)
-    await prisma.itemInstances.delete({
+    // Delete the item (this will cascade delete related history entries)
+    await prisma.items.delete({
       where: { id }
     })
 
     return NextResponse.json({ 
       success: true, 
-      message: `${itemInstance.catalogItem.name} has been deleted from your inventory.` 
+      message: `${item.name} has been deleted from your inventory.` 
     })
 
   } catch (error) {

@@ -26,11 +26,6 @@ export async function GET(
       where: { id: tradeId },
       include: {
         offeredItem: true,
-        offeredItemInstance: {
-          include: {
-            catalogItem: true
-          }
-        },
         offer: {
           include: {
             traveler: true
@@ -54,51 +49,26 @@ export async function GET(
       )
     }
 
-    // Get the item name from either regular item or inventory item
-    const itemName = currentTrade.offeredItem?.name || 
-                    currentTrade.offeredItemInstance?.catalogItem?.name ||
-                    "Unknown item"
+    // Get the item name
+    const itemName = currentTrade.offeredItem?.name || "Unknown item"
 
     // Check if the offered item is already accepted in another trade
-    let acceptedTrades: any[] = []
-    
-    if (currentTrade.offeredItemId) {
-      // Check for regular catalog item trades
-      acceptedTrades = await prisma.proposedTrades.findMany({
-        where: {
-          offeredItemId: currentTrade.offeredItemId,
-          status: 'accepted',
-          id: {
-            not: tradeId // Exclude the current trade
-          }
-        },
-        include: {
-          offer: {
-            include: {
-              item: true
-            }
+    const acceptedTrades = await prisma.proposedTrades.findMany({
+      where: {
+        offeredItemId: currentTrade.offeredItemId,
+        status: 'accepted',
+        id: {
+          not: tradeId // Exclude the current trade
+        }
+      },
+      include: {
+        offer: {
+          include: {
+            item: true
           }
         }
-      })
-    } else if (currentTrade.offeredItemInstanceId) {
-      // Check for inventory item trades
-      acceptedTrades = await prisma.proposedTrades.findMany({
-        where: {
-          offeredItemInstanceId: currentTrade.offeredItemInstanceId,
-          status: 'accepted',
-          id: {
-            not: tradeId // Exclude the current trade
-          }
-        },
-        include: {
-          offer: {
-            include: {
-              item: true
-            }
-          }
-        }
-      })
-    }
+      }
+    })
 
     const isItemAvailable = acceptedTrades.length === 0
 

@@ -19,7 +19,14 @@ export async function GET(
     const item = await prisma.items.findUnique({
       where: { id },
       include: {
-        travelers: {
+        currentOwner: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true
+          }
+        },
+        originalOwner: {
           select: {
             id: true,
             firstName: true,
@@ -64,15 +71,11 @@ export async function PUT(
       return NextResponse.json({ error: "Image URL is required" }, { status: 400 })
     }
 
-    // Check if the item exists and user has permission to update it
+    // Check if the item exists and user owns it
     const item = await prisma.items.findUnique({
       where: { id },
-      include: {
-        instances: {
-          where: {
-            currentOwnerId: session.user.id
-          }
-        }
+      select: {
+        currentOwnerId: true
       }
     })
 
@@ -80,12 +83,12 @@ export async function PUT(
       return NextResponse.json({ error: "Item not found" }, { status: 404 })
     }
 
-    // Only allow updating if the user owns an instance of this item
-    if (item.instances.length === 0) {
+    // Only allow updating if the user owns this item
+    if (item.currentOwnerId !== session.user.id) {
       return NextResponse.json({ error: "You don't own this item" }, { status: 403 })
     }
 
-    // Update the catalog item with the new image
+    // Update the item with the new image
     const updatedItem = await prisma.items.update({
       where: { id },
       data: { imageUrl }

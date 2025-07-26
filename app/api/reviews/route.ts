@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
       // Create system message showing both reviews are now visible (Airbnb-style)
       await prisma.messages.create({
         data: {
-          content: `📝 Both parties have reviewed each other! Reviews are now visible.`,
+          content: `Both parties have reviewed each other! Reviews are now visible.`,
           offerId: proposedTrade.offerId,
           proposedTradeId: proposedTradeId,
           // No senderId for system messages
@@ -205,12 +205,14 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
       where: { id: proposedTradeId },
       include: {
         proposer: true,
+        offeredItem: true,
         offeredItemInstance: {
           include: { catalogItem: true }
         },
         offer: {
           include: {
             traveler: true,
+            item: true,
             itemInstance: {
               include: { catalogItem: true }
             }
@@ -229,8 +231,9 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
       return
     }
 
-    // Transfer offered item from proposer to offer owner
+    // Handle offered item transfer (from proposer to offer owner)
     if (tradeDetails.offeredItemInstance) {
+      // Transfer existing inventory item
       await prisma.itemInstances.update({
         where: { id: tradeDetails.offeredItemInstance.id },
         data: {
@@ -251,10 +254,35 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
           transferMethod: "traded"
         }
       })
+    } else if (tradeDetails.offeredItem) {
+      // Create new item instance for the offer owner
+      const newItemInstance = await prisma.itemInstances.create({
+        data: {
+          catalogItemId: tradeDetails.offeredItem.id,
+          currentOwnerId: offerOwner.id,
+          originalOwnerId: proposer.id,
+          acquisitionMethod: 'traded',
+          isAvailable: true
+        }
+      })
+
+      // Create history entry
+      await prisma.itemHistory.create({
+        data: {
+          itemInstanceId: newItemInstance.id,
+          fromOwnerId: proposer.id,
+          toOwnerId: offerOwner.id,
+          tradeId: proposedTradeId,
+          city: offerOwner.lastCity,
+          country: offerOwner.lastCountry,
+          transferMethod: "traded"
+        }
+      })
     }
 
-    // Transfer requested item from offer owner to proposer
+    // Handle requested item transfer (from offer owner to proposer)
     if (tradeDetails.offer.itemInstance) {
+      // Transfer existing inventory item
       await prisma.itemInstances.update({
         where: { id: tradeDetails.offer.itemInstance.id },
         data: {
@@ -275,18 +303,42 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
           transferMethod: "traded"
         }
       })
+    } else if (tradeDetails.offer.item) {
+      // Create new item instance for the proposer
+      const newItemInstance = await prisma.itemInstances.create({
+        data: {
+          catalogItemId: tradeDetails.offer.item.id,
+          currentOwnerId: proposer.id,
+          originalOwnerId: offerOwner.id,
+          acquisitionMethod: 'traded',
+          isAvailable: true
+        }
+      })
 
-      // Mark the offer as completed
-      await prisma.offers.update({
-        where: { id: tradeDetails.offerId },
-        data: { status: 'completed' }
+      // Create history entry
+      await prisma.itemHistory.create({
+        data: {
+          itemInstanceId: newItemInstance.id,
+          fromOwnerId: offerOwner.id,
+          toOwnerId: proposer.id,
+          tradeId: proposedTradeId,
+          city: proposer.lastCity,
+          country: proposer.lastCountry,
+          transferMethod: "traded"
+        }
       })
     }
+
+    // Mark the offer as completed
+    await prisma.offers.update({
+      where: { id: tradeDetails.offerId },
+      data: { status: 'completed' }
+    })
 
     // Create a system message announcing the completed trade
     await prisma.messages.create({
       data: {
-        content: `🎉 Trade completed! Both parties have reviewed each other. Items have been transferred to your inventories.`,
+        content: `Trade completed! Both parties have reviewed each other. Items have been transferred to your inventories.`,
         offerId: tradeDetails.offerId,
         proposedTradeId: proposedTradeId,
         // No senderId for system messages
@@ -300,7 +352,7 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
     // Create error message
     await prisma.messages.create({
       data: {
-        content: `❌ Error completing trade automatically. Please contact support.`,
+        content: `Error completing trade automatically. Please contact support.`,
         offerId: proposedTrade.offerId,
         proposedTradeId: proposedTradeId,
       }

@@ -54,14 +54,16 @@ export async function GET(
               select: {
                 id: true,
                 firstName: true,
-                lastName: true
+                lastName: true,
+                avatarUrl: true
               }
             },
             toOwner: {
               select: {
                 id: true,
                 firstName: true,
-                lastName: true
+                lastName: true,
+                avatarUrl: true
               }
             },
             trade: {
@@ -107,6 +109,7 @@ export async function GET(
         serialNumber: itemInstance.serialNumber,
         acquisitionMethod: itemInstance.acquisitionMethod,
         createdAt: itemInstance.createdAt,
+        currentOwnerId: itemInstance.currentOwnerId,
         catalogItem: itemInstance.catalogItem,
         currentOwner: itemInstance.currentOwner?.id === session.user.id ? itemInstance.currentOwner : null,
         originalOwner: itemInstance.originalOwner?.id === session.user.id ? itemInstance.originalOwner : null,

@@ -687,18 +687,24 @@ export default function MessagePage({
               <div className="ml-2 flex-shrink-0">
                 {/* Show accept/cancel button based on trade status */}
                 {tradeData.status === 'accepted' ? (
-                  <button 
-                    onClick={handleAcceptTrade}
-                    disabled={accepting}
-                    className="bg-tan text-black border border-black px-3 py-1 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] text-xs"
-                  >
-                    {accepting ? (
-                      <div className="flex items-center">
-                        <BrownHatLoader size="small" />
-                        <span className="ml-1">...</span>
-                      </div>
-                    ) : 'Cancel trade'}
-                  </button>
+                  existingReview ? (
+                    <div className="bg-gray/10 text-gray border border-gray/20 px-3 py-1 rounded-sm text-xs cursor-not-allowed">
+                      Item traded
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={handleAcceptTrade}
+                      disabled={accepting}
+                      className="bg-tan text-black border border-black px-3 py-1 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] text-xs"
+                    >
+                      {accepting ? (
+                        <div className="flex items-center">
+                          <BrownHatLoader size="small" />
+                          <span className="ml-1">...</span>
+                        </div>
+                      ) : 'Cancel trade'}
+                    </button>
+                  )
                 ) : tradeData.status === 'unavailable' ? (
                   <div className="bg-gray/10 text-gray border border-gray/20 px-2 py-1 rounded-sm text-xs">
                     Unavailable
@@ -906,20 +912,33 @@ export default function MessagePage({
               {!itemAlreadyGiven ? (
                 <div className="flex flex-col">
                   {tradeData.status === 'accepted' ? (
-                    <button
-                      onClick={() => setShowTradeReviewModal(true)}
-                      disabled={givingItem}
-                      className="bg-tan text-black border border-black px-2.5 py-1 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-xs font-medium shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
-                    >
-                      <Image 
-                        src="/images/brownhat_final.png" 
-                        alt="Send item" 
-                        width={16} 
-                        height={16} 
-                        className="mr-2" 
-                      />
-                      Send item
-                    </button>
+                    existingReview ? (
+                      <div className="bg-gray/20 text-gray border border-gray/30 px-2.5 py-1 rounded-sm flex items-center text-xs font-medium cursor-not-allowed">
+                        <Image 
+                          src="/images/brownhat_final.png" 
+                          alt="Item sent" 
+                          width={16} 
+                          height={16} 
+                          className="mr-2 opacity-50" 
+                        />
+                        Item sent
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setShowTradeReviewModal(true)}
+                        disabled={givingItem}
+                        className="bg-tan text-black border border-black px-2.5 py-1 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-xs font-medium shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
+                      >
+                        <Image 
+                          src="/images/brownhat_final.png" 
+                          alt="Send item" 
+                          width={16} 
+                          height={16} 
+                          className="mr-2" 
+                        />
+                        Send item
+                      </button>
+                    )
                   ) : (
                     <div className="bg-gray/20 text-gray border border-gray/30 px-2.5 py-1 rounded-sm flex items-center text-xs font-medium cursor-not-allowed">
                       <Image 

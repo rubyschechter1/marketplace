@@ -4,10 +4,11 @@ import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import AuthLayout from "@/components/AuthLayout"
 import Link from "next/link"
-import { ChevronLeft, MapPin, Calendar } from "lucide-react"
+import { ChevronLeft, MapPin, Calendar, Camera, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import BrownHatLoader from "@/components/BrownHatLoader"
 import { getDisplayName } from "@/lib/formatName"
+import Image from "next/image"
 
 interface HistoryEntry {
   id: string
@@ -19,11 +20,13 @@ interface HistoryEntry {
     id: string
     firstName: string
     lastName: string
+    avatarUrl: string | null
   } | null
   toOwner: {
     id: string
     firstName: string
     lastName: string
+    avatarUrl: string | null
   } | null
 }
 
@@ -33,6 +36,7 @@ interface ItemInstance {
   acquisitionMethod: string
   isAvailable: boolean
   createdAt: string
+  currentOwnerId: string
   catalogItem: {
     id: string
     name: string
@@ -50,10 +54,8 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemInst
   const [itemInstance, setItemInstance] = useState<ItemInstance | null>(null)
   const [loading, setLoading] = useState(true)
   const [itemInstanceId, setItemInstanceId] = useState("")
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [showErrorModal, setShowErrorModal] = useState(false)
-  const [errorMessage, setErrorMessage] = useState("")
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   useEffect(() => {
     params.then(p => setItemInstanceId(p.itemInstanceId))
@@ -81,34 +83,6 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemInst
     fetchItemHistory()
   }, [itemInstanceId, router])
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'numeric',
-      day: 'numeric'
-    })
-  }
-
-  const getLocationString = (entry: HistoryEntry) => {
-    if (entry.city && entry.country) {
-      return `${entry.city}, ${entry.country}`
-    }
-    return "Unknown location"
-  }
-
-  const getTransferDescription = (entry: HistoryEntry) => {
-    switch (entry.transferMethod) {
-      case 'gifted':
-        return 'Item was gifted'
-      case 'traded':
-        return 'Item was traded'
-      case 'found':
-        return 'Item was found'
-      default:
-        return 'Item changed hands'
-    }
-  }
-
   if (loading) {
     return (
       <AuthLayout>
@@ -129,185 +103,258 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemInst
     )
   }
 
-  // Get the most recent history entry to show in header - only if current user is the recipient
-  const mostRecentEntry = itemInstance.history.length > 0 ? itemInstance.history[itemInstance.history.length - 1] : null
-  const shouldShowReceivedText = mostRecentEntry && session?.user?.id && mostRecentEntry.toOwner?.id === session.user.id
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file')
+      return
+    }
+
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Please select an image smaller than 5MB')
+      return
+    }
+
+    setUploadingPhoto(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error('Upload failed')
+      }
+
+      const { url } = await response.json()
+
+      // Update the catalog item with the new image
+      const updateResponse = await fetch(`/api/items/${itemInstance.catalogItem.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imageUrl: url }),
+      })
+
+      if (!updateResponse.ok) {
+        throw new Error('Failed to update item image')
+      }
+
+      // Update local state
+      setItemInstance(prev => prev ? {
+        ...prev,
+        catalogItem: {
+          ...prev.catalogItem,
+          imageUrl: url
+        }
+      } : null)
+
+    } catch (error) {
+      console.error('Error uploading photo:', error)
+      alert('Failed to upload photo. Please try again.')
+    } finally {
+      setUploadingPhoto(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    try {
+      const response = await fetch(`/api/inventory/${itemInstanceId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete item')
+      }
+
+      router.push('/inventory')
+    } catch (error) {
+      console.error('Error deleting item:', error)
+      alert('Failed to delete item. Please try again.')
+    }
+  }
+
+  const handleOfferItem = () => {
+    router.push(`/offers/new?itemInstanceId=${itemInstanceId}`)
+  }
+
+  const isCurrentOwner = session?.user?.id === itemInstance?.currentOwnerId
+  const hasImage = itemInstance?.catalogItem.imageUrl
 
   return (
     <AuthLayout>
-      <div className="max-w-md mx-auto bg-tan min-h-screen" style={{ padding: '16px 24px 24px 24px' }}>
+      <div className="max-w-md mx-auto bg-tan min-h-screen">
         {/* Header */}
-        <div className="flex items-center mb-6">
-          <button 
-            onClick={() => router.back()}
-            className="mr-4"
-          >
-            <ChevronLeft size={24} />
-          </button>
-          <div className="flex-1 flex justify-center -ml-8">
-            <h1 className="text-2xl font-normal text-black">
-              {itemInstance.catalogItem.name}'s Journey
+        <div className="bg-tan p-6">
+          <div className="flex items-center justify-center relative mb-1">
+            <Link href="/inventory" className="absolute left-0 p-2 -ml-6.75 text-brown hover:bg-brown/10 rounded-lg transition-colors">
+              <ChevronLeft size={24} />
+            </Link>
+            <h1 className="text-2xl font-bold text-black">
+              {itemInstance?.catalogItem.name}'s Journey
             </h1>
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="space-y-6" style={{ paddingTop: '10px' }}>
-
-          {/* Image and Content */}
-          <div className="flex items-start gap-6">
-            <div className="flex-shrink-0">
-              {itemInstance.catalogItem.imageUrl ? (
-                <img
-                  src={itemInstance.catalogItem.imageUrl}
-                  alt={itemInstance.catalogItem.name}
-                  className="w-48 h-48 rounded-sm object-cover"
-                />
+        {/* Item Image and Action Buttons */}
+        <div className="px-6 py-0">
+          <div className="mb-6 flex items-start space-x-6">
+            {/* Image */}
+            <div className="flex-shrink-0 -ml-4.5">
+              {hasImage ? (
+                <div className="w-48 h-48 rounded-sm overflow-hidden border border-brown/10">
+                  <Image
+                    src={itemInstance.catalogItem.imageUrl!}
+                    alt={itemInstance.catalogItem.name}
+                    width={192}
+                    height={192}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : isCurrentOwner ? (
+                <div className="relative">
+                  <label htmlFor="photo-upload" className={`block w-48 h-48 border-2 border-dashed border-brown/30 rounded-sm flex flex-col items-center justify-center cursor-pointer hover:border-brown/50 transition-colors ${uploadingPhoto ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    {uploadingPhoto ? (
+                      <BrownHatLoader size="small" />
+                    ) : (
+                      <>
+                        <Camera size={32} className="text-brown/50 mb-2" />
+                        <span className="text-sm text-brown/70">No image</span>
+                      </>
+                    )}
+                  </label>
+                  <input
+                    id="photo-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                    disabled={uploadingPhoto}
+                  />
+                  <p className="text-sm text-brown/70 mt-2 text-center">Click to upload a photo</p>
+                </div>
               ) : (
-                <div className="w-48 h-48 bg-gray/20 rounded-sm flex items-center justify-center">
-                  <span className="text-gray text-xs">No image</span>
+                <div className="w-48 h-48 border-2 border-dashed border-brown/30 rounded-sm flex flex-col items-center justify-center">
+                  <Camera size={32} className="text-brown/30 mb-2" />
+                  <span className="text-sm text-brown/50">No image</span>
                 </div>
               )}
             </div>
-            
-            <div className="flex-1 flex flex-col justify-between h-48">
-              {/* Header Text - only show if current user received the item */}
-              {shouldShowReceivedText && (
-                <div className="text-lg font-normal text-black">
-                  You received this item in {getLocationString(mostRecentEntry)} on {formatDate(mostRecentEntry.transferDate)}
-                </div>
-              )}
-              
-              {/* Offer Button */}
-              <div className="w-full">
-                <button 
-                  onClick={() => {
-                    const params = new URLSearchParams({
-                      itemInstanceId: itemInstance.id,
-                      itemName: itemInstance.catalogItem.name,
-                      ...(itemInstance.catalogItem.description && { itemDescription: itemInstance.catalogItem.description }),
-                      ...(itemInstance.catalogItem.imageUrl && { itemPhoto: itemInstance.catalogItem.imageUrl })
-                    })
-                    router.push(`/offers/new?${params.toString()}`)
-                  }}
-                  className="w-full h-10 bg-tan text-black border border-black py-1 px-4 rounded-sm transition-all text-center text-button shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] flex items-center justify-center"
-                >
-                  Offer item
-                </button>
-              </div>
-            </div>
-          </div>
 
-          {/* Journey Timeline */}
-          <div className="bg-tan border border-black rounded-sm p-6" style={{ marginRight: '-2px', marginBottom: '3px' }}>
-            {itemInstance.history.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-gray">No history available for this item</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {itemInstance.history.map((entry, index) => {
-                  const isLast = index === itemInstance.history.length - 1
-                  return (
-                    <div key={entry.id} className="relative flex items-center">
-                      {/* Timeline dot */}
-                      <div className="w-3 h-3 bg-black rounded-full flex-shrink-0 z-10"></div>
-                      
-                      {/* Dotted line connecting to next item */}
-                      {!isLast && (
-                        <div className="absolute left-1.5 top-6 w-px h-4 border-l-2 border-dotted border-black"></div>
-                      )}
-                      
-                      {/* Content */}
-                      <div className="ml-4">
-                        <div className="text-base font-normal text-black">
-                          Traded in {getLocationString(entry)} on {formatDate(entry.transferDate)}
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
+            {/* Action Buttons - only show for current owner */}
+            {isCurrentOwner && (
+              <div className="flex flex-col space-y-3 w-48">
+                <button
+                  onClick={handleOfferItem}
+                  className="w-full bg-tan text-black border border-black py-3 px-4 rounded-sm transition-all text-center font-medium shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
+                >
+                  Offer Item
+                </button>
+                
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="w-full bg-tan text-black border border-black py-3 px-4 rounded-sm transition-all text-center font-medium"
+                >
+                  Delete Item
+                </button>
               </div>
             )}
           </div>
 
-          {/* Delete Button */}
+
+          {/* Timeline */}
           <div>
-            <button 
-              onClick={() => setShowDeleteConfirm(true)}
-              className="w-full h-10 bg-tan text-black border border-black py-1 px-4 rounded-sm transition-all text-center text-button shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] flex items-center justify-center"
-            >
-              Delete from inventory
-            </button>
+            <h3 className="text-lg font-medium text-black mb-4">Trade History</h3>
+            
+            {itemInstance.history.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray">No trades yet</p>
+                <p className="text-sm text-gray/70 mt-1">This item has stayed with its original owner</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {itemInstance.history
+                  .sort((a, b) => new Date(b.transferDate).getTime() - new Date(a.transferDate).getTime())
+                  .map((entry, index) => {
+                    const date = new Date(entry.transferDate).toLocaleDateString()
+                    const location = entry.city && entry.country 
+                      ? `${entry.city}, ${entry.country}`
+                      : entry.city || entry.country || 'Unknown location'
+                    
+                    return (
+                      <div key={entry.id} className="flex items-start space-x-3 p-4 bg-tan rounded-sm border border-brown/10">
+                        {/* Profile Image */}
+                        <div className="flex-shrink-0">
+                          {entry.toOwner?.avatarUrl ? (
+                            <div className="w-8 h-8 rounded-full overflow-hidden border border-brown/20">
+                              <Image
+                                src={entry.toOwner.avatarUrl}
+                                alt={entry.toOwner ? getDisplayName(entry.toOwner, session?.user?.id) : 'User'}
+                                width={32}
+                                height={32}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-brown/10 border border-brown/20 flex items-center justify-center">
+                              <span className="text-xs font-medium text-brown">
+                                {entry.toOwner ? entry.toOwner.firstName.charAt(0).toUpperCase() : '?'}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Timeline Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start space-x-2 text-sm">
+                            <div className="flex flex-col space-y-1">
+                              <div className="flex items-center space-x-2">
+                                <MapPin size={14} className="text-brown/50 flex-shrink-0" />
+                                <span className="text-gray">Traded in {location}</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Calendar size={14} className="text-brown/50 flex-shrink-0" />
+                                <span className="text-gray/70">{date}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Delete Confirmation Modal */}
-        {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-tan border-2 border-black rounded-sm p-6 max-w-sm w-full">
-              <h3 className="text-lg font-normal mb-4 text-center">
-                Delete Item?
-              </h3>
-              <p className="text-sm text-gray mb-6 text-center">
-                Are you sure you want to delete <span className="font-medium text-black">{itemInstance.catalogItem.name}</span> from your inventory? This action cannot be undone.
+        {showDeleteModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-sm max-w-sm w-full p-6">
+              <h3 className="text-lg font-medium text-black mb-2">Delete Item</h3>
+              <p className="text-sm text-gray mb-6">
+                Are you sure you want to delete "{itemInstance?.catalogItem.name}"? This action cannot be undone.
               </p>
-              <div className="flex gap-3">
+              <div className="flex space-x-3">
                 <button
-                  onClick={() => setShowDeleteConfirm(false)}
-                  disabled={isDeleting}
-                  className="flex-1 px-4 py-2 bg-tan text-black border border-black rounded-sm text-sm hover:bg-gray/10 transition-colors disabled:opacity-50"
+                  onClick={() => setShowDeleteModal(false)}
+                  className="flex-1 px-4 py-2 text-sm font-medium text-gray bg-gray/10 rounded-sm hover:bg-gray/20 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={async () => {
-                    setIsDeleting(true)
-                    try {
-                      const response = await fetch(`/api/inventory/${itemInstance.id}`, {
-                        method: 'DELETE'
-                      })
-                      if (response.ok) {
-                        router.push('/inventory')
-                      } else {
-                        setErrorMessage('Failed to delete item. Please try again.')
-                        setShowErrorModal(true)
-                      }
-                    } catch (error) {
-                      console.error('Error deleting item:', error)
-                      setErrorMessage('Failed to delete item. Please try again.')
-                      setShowErrorModal(true)
-                    } finally {
-                      setIsDeleting(false)
-                      setShowDeleteConfirm(false)
-                    }
-                  }}
-                  disabled={isDeleting}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white border border-red-600 rounded-sm text-sm hover:bg-red-700 transition-colors disabled:opacity-50"
+                  onClick={handleDelete}
+                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-sm hover:bg-red-700 transition-colors"
                 >
-                  {isDeleting ? 'Deleting...' : 'Delete'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Error Modal */}
-        {showErrorModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-tan border-2 border-black rounded-sm p-6 max-w-sm w-full">
-              <h3 className="text-lg font-normal mb-4 text-center">
-                Error
-              </h3>
-              <p className="text-sm text-gray mb-6 text-center">
-                {errorMessage}
-              </p>
-              <div className="flex justify-center">
-                <button
-                  onClick={() => setShowErrorModal(false)}
-                  className="px-4 py-2 bg-tan text-black border border-black rounded-sm text-sm shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-                >
-                  OK
+                  Delete
                 </button>
               </div>
             </div>

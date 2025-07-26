@@ -1032,8 +1032,16 @@ export default function MessagePage({
               >
                 {sending ? (
                   <>
-                    <BrownHatLoader size="small" />
-                    <span className="ml-2">Sending...</span>
+                    <div className="w-4 h-4 mr-2" style={{ transform: 'translateY(3px)' }}>
+                      <Image
+                        src="/images/brownhat.png"
+                        alt="Sending..."
+                        width={16}
+                        height={16}
+                        className="animate-tilt object-contain"
+                      />
+                    </div>
+                    <span>Sending...</span>
                   </>
                 ) : (
                   <>

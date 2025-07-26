@@ -59,6 +59,7 @@ export default function MessagesPage() {
   const { refreshUser } = useUser()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
 
   console.log('MessagesPage render - loading:', loading, 'status:', status, 'conversations:', conversations.length)
 
@@ -121,6 +122,27 @@ export default function MessagesPage() {
     }
   }
 
+  const handleRefresh = async () => {
+    if (refreshing) return // Prevent multiple simultaneous refreshes
+    
+    setRefreshing(true)
+    try {
+      const response = await fetch('/api/messages/conversations')
+      if (response.ok) {
+        const data = await response.json()
+        setConversations(data.conversations || [])
+        refreshUser() // Update unread count
+      }
+    } catch (error) {
+      console.error('Error refreshing conversations:', error)
+    } finally {
+      // Add a small delay to show the refresh indicator
+      setTimeout(() => {
+        setRefreshing(false)
+      }, 500)
+    }
+  }
+
   if (loading || status === "loading") {
     return (
       <AuthLayout>
@@ -141,15 +163,82 @@ export default function MessagesPage() {
       <main className="p-4 max-w-md mx-auto">
         <h1 className="text-2xl font-bold mb-6 text-center">Messages</h1>
 
+        {/* Pull to refresh indicator */}
+        {refreshing && (
+          <div className="flex justify-center mb-4">
+            <BrownHatLoader size="small" text="Refreshing..." />
+          </div>
+        )}
+
         {conversations.length === 0 ? (
-          <div className="text-center py-12">
+          <div 
+            className="text-center py-12"
+            onTouchStart={(e) => {
+              const touch = e.touches[0]
+              let startY = touch.clientY
+              let scrollTop = 0
+              
+              const handleTouchMove = (moveEvent: TouchEvent) => {
+                const moveTouch = moveEvent.touches[0]
+                const deltaY = moveTouch.clientY - startY
+                
+                // Check if we're at the top and pulling down
+                if (scrollTop <= 0 && deltaY > 80 && !refreshing) {
+                  handleRefresh()
+                  document.removeEventListener('touchmove', handleTouchMove)
+                  document.removeEventListener('touchend', handleTouchEnd)
+                }
+              }
+              
+              const handleTouchEnd = () => {
+                document.removeEventListener('touchmove', handleTouchMove)
+                document.removeEventListener('touchend', handleTouchEnd)
+              }
+              
+              // Get scroll position
+              scrollTop = window.pageYOffset || document.documentElement.scrollTop
+              
+              document.addEventListener('touchmove', handleTouchMove)
+              document.addEventListener('touchend', handleTouchEnd)
+            }}
+          >
             <p className="text-gray-500 mb-4">No conversations yet</p>
             <p className="text-sm text-gray-400">
               Start a conversation by browsing offers
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div 
+            className="space-y-3"
+            onTouchStart={(e) => {
+              const touch = e.touches[0]
+              let startY = touch.clientY
+              let scrollTop = 0
+              
+              const handleTouchMove = (moveEvent: TouchEvent) => {
+                const moveTouch = moveEvent.touches[0]
+                const deltaY = moveTouch.clientY - startY
+                
+                // Check if we're at the top and pulling down
+                if (scrollTop <= 0 && deltaY > 80 && !refreshing) {
+                  handleRefresh()
+                  document.removeEventListener('touchmove', handleTouchMove)
+                  document.removeEventListener('touchend', handleTouchEnd)
+                }
+              }
+              
+              const handleTouchEnd = () => {
+                document.removeEventListener('touchmove', handleTouchMove)
+                document.removeEventListener('touchend', handleTouchEnd)
+              }
+              
+              // Get scroll position
+              scrollTop = window.pageYOffset || document.documentElement.scrollTop
+              
+              document.addEventListener('touchmove', handleTouchMove)
+              document.addEventListener('touchend', handleTouchEnd)
+            }}
+          >
             {conversations.map((message) => {
               const otherUser = message.senderId === session?.user?.id 
                 ? message.recipient 

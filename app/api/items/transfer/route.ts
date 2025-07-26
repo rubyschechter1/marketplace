@@ -251,6 +251,17 @@ export async function POST(request: NextRequest) {
           content: `ITEM_GIVEN:${session.user.id}:${session.user.name || 'Someone'}:${catalogItem.name}`
         }
       })
+
+      // Create review prompt message for the recipient
+      await prisma.messages.create({
+        data: {
+          offerId: offerId,
+          proposedTradeId: tradeId,
+          senderId: null, // System message
+          recipientId: recipientId,
+          content: `How did your exchange with ${currentUser.firstName} go? Please rate your experience.`
+        }
+      })
     }
 
     return NextResponse.json({

@@ -104,3 +104,55 @@ export async function GET(
     )
   }
 }
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ offerId: string; proposedTradeId: string }> }
+) {
+  const { offerId, proposedTradeId } = await params;
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const body = await req.json()
+    const { messageId } = body
+
+    if (!messageId) {
+      return NextResponse.json({ error: "Message ID required" }, { status: 400 })
+    }
+
+    // Find the message and verify ownership
+    const message = await prisma.messages.findUnique({
+      where: { id: messageId }
+    })
+
+    if (!message) {
+      return NextResponse.json({ error: "Message not found" }, { status: 404 })
+    }
+
+    // Verify the message belongs to the correct conversation
+    if (message.offerId !== offerId || message.proposedTradeId !== proposedTradeId) {
+      return NextResponse.json({ error: "Message not found in this conversation" }, { status: 404 })
+    }
+
+    // Only allow users to delete their own messages
+    if (message.senderId !== session.user.id) {
+      return NextResponse.json({ error: "Can only delete your own messages" }, { status: 403 })
+    }
+
+    // Delete the message
+    await prisma.messages.delete({
+      where: { id: messageId }
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error("Error deleting message:", error)
+    return NextResponse.json(
+      { error: "Failed to delete message" },
+      { status: 500 }
+    )
+  }
+}

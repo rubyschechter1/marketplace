@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import AuthLayout from "@/components/AuthLayout"
 import ProfileThumbnail from "@/components/ProfileThumbnail"
-import { ChevronLeft, Send, X } from "lucide-react"
+import { ChevronLeft, Send, X, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { useUser } from "@/contexts/UserContext"
 import { useLocation } from "@/contexts/LocationContext"
@@ -85,6 +85,10 @@ export default function MessagePage({
   const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set())
   const [givingItem, setGivingItem] = useState(false)
   const [showTradeReviewModal, setShowTradeReviewModal] = useState(false)
+  
+  // Swipe-to-delete state
+  const [swipedMessageId, setSwipedMessageId] = useState<string | null>(null)
+  const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null)
   const [showAcceptConfirmModal, setShowAcceptConfirmModal] = useState(false)
   const [pendingTradeAction, setPendingTradeAction] = useState<'accept' | 'cancel' | null>(null)
   const [showErrorModal, setShowErrorModal] = useState(false)
@@ -325,6 +329,43 @@ export default function MessagePage({
     // Cleanup interval on unmount
     return () => clearInterval(interval)
   }, [offerId, tradeId, messages, session?.user?.id, refreshUser])
+
+  const handleDeleteMessage = async (messageId: string) => {
+    try {
+      setDeletingMessageId(messageId)
+      const response = await fetch(`/api/messages/${offerId}/${tradeId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ messageId })
+      })
+      
+      if (response.ok) {
+        // Remove message from local state
+        setMessages(prev => prev.filter(msg => msg.id !== messageId))
+        setSwipedMessageId(null)
+      } else {
+        console.error('Failed to delete message')
+      }
+    } catch (error) {
+      console.error('Error deleting message:', error)
+    } finally {
+      setDeletingMessageId(null)
+    }
+  }
+
+  const handleSwipeStart = (messageId: string, clientX: number) => {
+    // Only allow swiping on user's own messages
+    const message = messages.find(msg => msg.id === messageId)
+    if (message?.senderId === session?.user?.id) {
+      setSwipedMessageId(messageId)
+    }
+  }
+
+  const handleSwipeEnd = () => {
+    // Keep the swipe state to show delete button
+  }
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !tradeData) return
@@ -824,26 +865,85 @@ export default function MessagePage({
             
             // Regular messages
             const isNewMessage = newMessageIds.has(message.id)
+            const isSwipedMessage = swipedMessageId === message.id
+            const isDeletingMessage = deletingMessageId === message.id
+            
             return (
               <div 
                 key={message.id} 
-                className={`flex items-start mb-4 ${
+                className={`mb-4 relative overflow-hidden ${
                   isNewMessage ? 'animate-slide-in-bottom' : ''
                 }`}
               >
-                <ProfileThumbnail 
-                  user={message.sender} 
-                  size="sm" 
-                  className="mr-3"
-                  fromPage={`/messages/${offerId}/${tradeId}`}
-                />
-                <div className="flex-1">
-                  <div className="bg-tan border border-black rounded-sm p-3">
-                    <p className="text-body">{message.content}</p>
+                {/* Delete button background - revealed when swiped */}
+                {isOwnMessage && (
+                  <div className="absolute top-0 right-0 bottom-0 flex items-center justify-end pr-4 bg-red-500 w-full">
+                    <button
+                      onClick={() => handleDeleteMessage(message.id)}
+                      disabled={isDeletingMessage}
+                      className="text-white flex items-center gap-2 px-4 py-2 rounded-sm hover:bg-red-600 transition-colors disabled:opacity-50"
+                    >
+                      {isDeletingMessage ? (
+                        <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                      ) : (
+                        <Trash2 size={16} />
+                      )}
+                      Delete
+                    </button>
                   </div>
-                  <p className="text-xs text-gray mt-1 text-right">
-                    {new Date(message.createdAt).toLocaleDateString()}
-                  </p>
+                )}
+
+                {/* Message content - swipeable */}
+                <div 
+                  className={`flex items-start bg-tan transition-transform duration-200 ${
+                    isSwipedMessage ? '-translate-x-24' : 'translate-x-0'
+                  }`}
+                  onTouchStart={(e) => {
+                    if (isOwnMessage) {
+                      const touch = e.touches[0]
+                      let startX = touch.clientX
+                      
+                      const handleTouchMove = (moveEvent: TouchEvent) => {
+                        const moveTouch = moveEvent.touches[0]
+                        const deltaX = startX - moveTouch.clientX
+                        
+                        if (deltaX > 50) { // Swipe left threshold
+                          setSwipedMessageId(message.id)
+                          document.removeEventListener('touchmove', handleTouchMove)
+                          document.removeEventListener('touchend', handleTouchEnd)
+                        }
+                      }
+                      
+                      const handleTouchEnd = () => {
+                        document.removeEventListener('touchmove', handleTouchMove)
+                        document.removeEventListener('touchend', handleTouchEnd)
+                      }
+                      
+                      document.addEventListener('touchmove', handleTouchMove)
+                      document.addEventListener('touchend', handleTouchEnd)
+                    }
+                  }}
+                  onClick={() => {
+                    // Close swipe if clicking elsewhere
+                    if (swipedMessageId && swipedMessageId !== message.id) {
+                      setSwipedMessageId(null)
+                    }
+                  }}
+                >
+                  <ProfileThumbnail 
+                    user={message.sender} 
+                    size="sm" 
+                    className="mr-3 ml-4"
+                    fromPage={`/messages/${offerId}/${tradeId}`}
+                  />
+                  <div className="flex-1 mr-4">
+                    <div className="bg-tan border border-black rounded-sm p-3">
+                      <p className="text-body">{message.content}</p>
+                    </div>
+                    <p className="text-xs text-gray mt-1 text-right">
+                      {new Date(message.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
               </div>
             )

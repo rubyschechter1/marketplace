@@ -205,7 +205,7 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemId: 
             {/* Image */}
             <div className="flex-shrink-0">
               {hasImage ? (
-                <div className="w-48 h-48 rounded-sm overflow-hidden border border-brown/10">
+                <div className="w-48 h-48 rounded-sm overflow-hidden">
                   <Image
                     src={item.imageUrl!}
                     alt={item.name}
@@ -289,7 +289,7 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemId: 
                         {/* Profile Image */}
                         <div className="flex-shrink-0">
                           {entry.toOwner?.avatarUrl ? (
-                            <div className="w-8 h-8 rounded-full overflow-hidden border border-brown/20">
+                            <div className="w-8 h-8 rounded-full overflow-hidden">
                               <Image
                                 src={entry.toOwner.avatarUrl}
                                 alt={entry.toOwner ? getDisplayName(entry.toOwner, session?.user?.id) : 'User'}
@@ -299,7 +299,7 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemId: 
                               />
                             </div>
                           ) : (
-                            <div className="w-8 h-8 rounded-full bg-brown/10 border border-brown/20 flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-full bg-brown/10 flex items-center justify-center">
                               <span className="text-xs font-medium text-brown">
                                 {entry.toOwner ? entry.toOwner.firstName.charAt(0).toUpperCase() : '?'}
                               </span>

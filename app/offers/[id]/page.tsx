@@ -605,7 +605,10 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
               session?.user?.id
             )}
                             </span>{' '}
-                            {session?.user?.id === trade.proposer?.id ? 'offer' : 'offers'} <span className="italic">{trade.offeredItem?.name}</span>
+                            {isAccepted 
+                              ? (session?.user?.id === trade.proposer?.id ? 'offered' : 'offered')
+                              : (session?.user?.id === trade.proposer?.id ? 'offer' : 'offers')
+                            } <span className="italic">{trade.offeredItem?.name}</span>
                           </div>
                         </div>
                       {/* Show item image for asks */}

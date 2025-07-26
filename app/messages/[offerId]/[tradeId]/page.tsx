@@ -110,7 +110,7 @@ export default function MessagePage({
     if (content.startsWith('TRADE_ACCEPTED:')) {
       const [, actorId, actorName] = content.split(':')
       const displayName = session?.user?.id === actorId ? 'You' : actorName
-      return `${displayName} accepted the trade! The "send item" button has now been activated. Once both parties click "send item", your new item will be found in your inventory!`
+      return `${displayName} accepted the trade! The [SEND_ITEM_BUTTON] button has now been activated.\nOnce both parties click "send item" and review the trade, your new item will be found in your inventory!`
     }
     
     if (content.startsWith('TRADE_CANCELED:')) {
@@ -716,7 +716,31 @@ export default function MessagePage({
               return (
                 <div key={message.id} className="mb-4">
                   <div className="bg-gray/10 rounded-sm p-3">
-                    <p className="text-center text-gray text-sm">{formatSystemMessage(message.content)}</p>
+                    <div className="text-center text-gray text-sm">
+                      {formatSystemMessage(message.content).includes('[SEND_ITEM_BUTTON]') ? (
+                        <div>
+                          {formatSystemMessage(message.content).split('[SEND_ITEM_BUTTON]').map((part, index, array) => (
+                            <span key={index}>
+                              {part}
+                              {index < array.length - 1 && (
+                                <>
+                                  <Image 
+                                    src="/images/brownhat_final.png" 
+                                    alt="Send item" 
+                                    width={16} 
+                                    height={16} 
+                                    className="inline mx-1" 
+                                  />
+                                  <span className="font-medium">Send item</span>
+                                </>
+                              )}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p>{formatSystemMessage(message.content)}</p>
+                      )}
+                    </div>
                     
                     {/* Show Update review button only for the most recent review submission message */}
                     {isLatestReviewMessage && tradeData.status === 'accepted' && (

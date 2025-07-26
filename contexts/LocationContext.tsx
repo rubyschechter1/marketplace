@@ -194,8 +194,23 @@ export function LocationProvider({ children }: { children: ReactNode }) {
       setLocation(newLocationData)
       cacheLocationData(newLocationData)
 
-      // Update user's last known location
-      // This could be done via an API call to update the user's profile
+      // Update user's last known location in database
+      try {
+        await fetch('/api/users/location', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            latitude: latitude,
+            longitude: longitude,
+            city: geocoded.city,
+            country: geocoded.country
+          })
+        })
+        console.log("📍 User location updated in database")
+      } catch (error) {
+        console.error("❌ Failed to update user location in database:", error)
+        // Don't throw - location still works for the session even if DB update fails
+      }
     } catch (error: any) {
       console.error("🗺️ Location error:", error)
       let errorMessage = "Failed to get location"

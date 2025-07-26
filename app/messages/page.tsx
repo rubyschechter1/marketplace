@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import AuthLayout from "@/components/AuthLayout"
 import { useUser } from "@/contexts/UserContext"
 import BrownHatLoader from "@/components/BrownHatLoader"
+import { formatDisplayName } from "@/lib/formatName"
 import ConversationSkeleton from "@/components/ConversationSkeleton"
 
 interface Conversation {
@@ -180,13 +181,13 @@ export default function MessagesPage() {
                 if (isMyOffer) {
                   contextTitle = `Your ask: ${itemName}`
                 } else {
-                  contextTitle = `${message.offer?.traveler?.firstName} is asking for: ${itemName}`
+                  contextTitle = `${formatDisplayName(message.offer?.traveler?.firstName || '', message.offer?.traveler?.lastName)} is asking for: ${itemName}`
                 }
               } else {
                 if (isMyOffer) {
                   contextTitle = `Your offer: ${itemName}`
                 } else {
-                  contextTitle = `${message.offer?.traveler?.firstName} is offering: ${itemName}`
+                  contextTitle = `${formatDisplayName(message.offer?.traveler?.firstName || '', message.offer?.traveler?.lastName)} is offering: ${itemName}`
                 }
               }
               
@@ -234,7 +235,7 @@ export default function MessagesPage() {
                     </div>
                     <p className="text-sm italic text-gray">
                       {message.senderId ? (
-                        message.senderId === session?.user?.id ? 'You: ' : `${message.sender?.firstName || 'Unknown'}: `
+                        message.senderId === session?.user?.id ? 'You: ' : `${formatDisplayName(message.sender?.firstName || 'Unknown', message.sender?.lastName)}: `
                       ) : ''}{message.content}
                     </p>
                   </div>

@@ -7,7 +7,7 @@ import Link from "next/link"
 import { ArrowLeft, MapPin, Calendar } from "lucide-react"
 import { useRouter } from "next/navigation"
 import BrownHatLoader from "@/components/BrownHatLoader"
-import Image from "next/image"
+import { getDisplayName } from "@/lib/formatName"
 
 interface HistoryEntry {
   id: string
@@ -15,19 +15,15 @@ interface HistoryEntry {
   city: string | null
   country: string | null
   transferMethod: string
-  fromOwner?: {
+  fromOwner: {
     id: string
     firstName: string
     lastName: string
   } | null
-  toOwner?: {
+  toOwner: {
     id: string
     firstName: string
     lastName: string
-  } | null
-  trade?: {
-    id: string
-    status: string
   } | null
 }
 
@@ -35,50 +31,34 @@ interface ItemInstance {
   id: string
   serialNumber: string | null
   acquisitionMethod: string
+  isAvailable: boolean
   createdAt: string
   catalogItem: {
     id: string
     name: string
     description: string | null
-    imageUrl: string | null
     category: string | null
     condition: string | null
+    imageUrl: string | null
   }
-  currentOwner?: {
-    id: string
-    firstName: string
-    lastName: string
-  } | null
-  originalOwner?: {
-    id: string
-    firstName: string
-    lastName: string
-  } | null
   history: HistoryEntry[]
 }
 
 export default function ItemHistoryPage({ params }: { params: Promise<{ itemInstanceId: string }> }) {
-  const { data: session, status } = useSession()
+  const { data: session } = useSession()
   const router = useRouter()
   const [itemInstance, setItemInstance] = useState<ItemInstance | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
-  const [itemInstanceId, setItemInstanceId] = useState<string>("")
+  const [itemInstanceId, setItemInstanceId] = useState("")
 
   useEffect(() => {
     params.then(p => setItemInstanceId(p.itemInstanceId))
   }, [params])
 
   useEffect(() => {
-    if (status === "loading") return
-    if (status === "unauthenticated") {
-      router.push('/')
-      return
-    }
-
-    async function fetchItemHistory() {
-      if (!itemInstanceId) return
-      
+    if (!itemInstanceId) return
+    
+    const fetchItemHistory = async () => {
       try {
         const response = await fetch(`/api/history/${itemInstanceId}`)
         if (!response.ok) {
@@ -88,21 +68,20 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemInst
         setItemInstance(data.itemInstance)
       } catch (error) {
         console.error('Error fetching item history:', error)
-        setError('Failed to load item history')
+        router.push('/inventory')
       } finally {
         setLoading(false)
       }
     }
 
     fetchItemHistory()
-  }, [itemInstanceId, status, router])
+  }, [itemInstanceId, router])
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric'
     })
   }
 
@@ -115,41 +94,32 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemInst
 
   const getTransferDescription = (entry: HistoryEntry) => {
     switch (entry.transferMethod) {
-      case 'created':
-        return 'Item created'
+      case 'gifted':
+        return 'Item was gifted'
       case 'traded':
-        return 'Traded'
-      case 'imported':
-        return 'Added to system'
+        return 'Item was traded'
+      case 'found':
+        return 'Item was found'
       default:
-        return 'Transferred'
+        return 'Item changed hands'
     }
   }
 
   if (loading) {
     return (
       <AuthLayout>
-        <div className="max-w-md mx-auto p-6 h-screen flex items-center justify-center">
+        <div className="flex items-center justify-center min-h-screen pb-16">
           <BrownHatLoader size="large" text="Loading item history..." />
         </div>
       </AuthLayout>
     )
   }
 
-  if (error || !itemInstance) {
+  if (!itemInstance) {
     return (
       <AuthLayout>
         <div className="max-w-md mx-auto p-6">
-          <div className="text-center">
-            <h1 className="text-header font-normal mb-4">Item History</h1>
-            <p className="text-body text-gray mb-6">{error || "Item not found"}</p>
-            <Link 
-              href="/"
-              className="bg-tan text-black border border-black px-4 py-2 rounded-sm hover:bg-black hover:text-tan transition-colors"
-            >
-              Go Home
-            </Link>
-          </div>
+          <p className="text-center text-gray">Item not found</p>
         </div>
       </AuthLayout>
     )
@@ -166,104 +136,94 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemInst
           >
             <ArrowLeft size={24} />
           </button>
-          <h1 className="text-header font-normal">Item History</h1>
+          <div className="flex-1 flex justify-center -ml-8">
+            <h1 className="text-header font-normal">{itemInstance.catalogItem.name}'s Journey</h1>
+          </div>
         </div>
 
         {/* Item Details */}
-        <div className="mb-8">
-          <div className="flex items-start gap-4 mb-4">
+        <div className="mb-10">
+          <div className="flex items-start gap-6">
             {itemInstance.catalogItem.imageUrl ? (
-              <Image
+              <img
                 src={itemInstance.catalogItem.imageUrl}
                 alt={itemInstance.catalogItem.name}
-                width={80}
-                height={80}
-                className="rounded-sm object-cover"
+                className="w-36 h-36 rounded-sm object-cover flex-shrink-0"
               />
             ) : (
-              <div className="w-20 h-20 bg-gray-200 rounded-sm flex items-center justify-center">
-                <span className="text-gray-400 text-xs">No image</span>
+              <div className="w-36 h-36 bg-gray/20 rounded-sm flex items-center justify-center flex-shrink-0">
+                <span className="text-gray text-xs">No image</span>
               </div>
             )}
-            <div className="flex-1">
-              <h2 className="text-lg font-normal mb-2">{itemInstance.catalogItem.name}</h2>
-              {itemInstance.catalogItem.description && (
-                <p className="text-body text-gray mb-2">{itemInstance.catalogItem.description}</p>
-              )}
-              <div className="text-sm text-gray">
-                {itemInstance.catalogItem.category && (
-                  <span className="bg-tan px-2 py-1 rounded-sm border border-black mr-2">
-                    {itemInstance.catalogItem.category}
-                  </span>
+            
+            <div className="flex-1 flex justify-between items-start">
+              <div className="flex-1">
+                {itemInstance.catalogItem.description && (
+                  <p className="text-body text-gray mb-4 leading-relaxed">{itemInstance.catalogItem.description}</p>
                 )}
-                {itemInstance.catalogItem.condition && (
-                  <span className="bg-tan px-2 py-1 rounded-sm border border-black">
-                    {itemInstance.catalogItem.condition}
-                  </span>
-                )}
+                
+                <div className="text-sm text-gray">
+                  {itemInstance.catalogItem.category && (
+                    <span className="bg-tan px-3 py-1.5 rounded-sm border border-black mr-2 text-xs">
+                      {itemInstance.catalogItem.category}
+                    </span>
+                  )}
+                  {itemInstance.catalogItem.condition && (
+                    <span className="bg-tan px-3 py-1.5 rounded-sm border border-black text-xs">
+                      {itemInstance.catalogItem.condition}
+                    </span>
+                  )}
+                </div>
               </div>
+              
+              <button 
+                onClick={() => {
+                  const params = new URLSearchParams({
+                    itemInstanceId: itemInstance.id,
+                    itemName: itemInstance.catalogItem.name,
+                    ...(itemInstance.catalogItem.description && { itemDescription: itemInstance.catalogItem.description }),
+                    ...(itemInstance.catalogItem.imageUrl && { itemPhoto: itemInstance.catalogItem.imageUrl })
+                  })
+                  router.push(`/offers/new?${params.toString()}`)
+                }}
+                className="bg-tan text-black border border-black py-2.5 px-8 rounded-sm transition-all shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] font-medium text-sm ml-4"
+              >
+                Offer item
+              </button>
             </div>
           </div>
         </div>
 
-        {/* History Timeline */}
-        <div>
-          <h3 className="text-body font-normal mb-4">Journey</h3>
-          
+        {/* Journey Timeline */}
+        <div className="border border-black rounded-sm bg-tan p-6">
           {itemInstance.history.length === 0 ? (
-            <div className="text-center py-8 border border-black rounded-sm bg-tan">
+            <div className="text-center py-8">
               <p className="text-gray">No history available for this item</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {itemInstance.history.map((entry, index) => (
-                <div
-                  key={entry.id}
-                  className="border border-black rounded-sm p-4 bg-white hover:shadow-[2px_2px_0px_#000000] transition-shadow"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      <div className="font-normal text-body mb-1">
-                        {getTransferDescription(entry)}
-                      </div>
-                      <div className="flex items-center text-sm text-gray mb-2">
-                        <Calendar size={12} className="mr-1" />
-                        {formatDate(entry.transferDate)}
-                      </div>
-                      <div className="flex items-center text-sm text-gray">
-                        <MapPin size={12} className="mr-1" />
-                        {getLocationString(entry)}
-                      </div>
-                    </div>
+            <div className="relative">
+              {itemInstance.history.map((entry, index) => {
+                const isLast = index === itemInstance.history.length - 1
+                return (
+                  <div key={entry.id} className="relative flex items-center">
+                    {/* Timeline dot */}
+                    <div className="w-3 h-3 bg-black rounded-full flex-shrink-0 z-10"></div>
                     
-                    {/* Show step number */}
-                    <div className="bg-tan border border-black rounded-full w-8 h-8 flex items-center justify-center text-sm font-normal">
-                      {itemInstance.history.length - index}
+                    {/* Dotted line connecting to next item */}
+                    {!isLast && (
+                      <div className="absolute left-1.5 top-6 w-px h-6 border-l-2 border-dotted border-black"></div>
+                    )}
+                    
+                    {/* Content */}
+                    <div className="ml-4 py-2">
+                      <div className="text-body font-normal">
+                        Traded in {getLocationString(entry)} on {formatDate(entry.transferDate)}
+                      </div>
                     </div>
                   </div>
-                  
-                  {/* Show owner information if available and relevant to current user */}
-                  {(entry.fromOwner || entry.toOwner) && (
-                    <div className="text-sm text-gray mt-3 pt-3 border-t border-gray/20">
-                      {entry.fromOwner && (
-                        <div>From: {session?.user?.id === entry.fromOwner.id ? 'You' : `${entry.fromOwner.firstName} ${entry.fromOwner.lastName}`}</div>
-                      )}
-                      {entry.toOwner && (
-                        <div>To: {session?.user?.id === entry.toOwner.id ? 'You' : `${entry.toOwner.firstName} ${entry.toOwner.lastName}`}</div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
+                )
+              })}
             </div>
-          )}
-        </div>
-        
-        {/* Footer info */}
-        <div className="mt-8 text-center text-sm text-gray">
-          <p>This item has traveled through {itemInstance.history.length} {itemInstance.history.length === 1 ? 'location' : 'locations'}</p>
-          {itemInstance.serialNumber && (
-            <p className="mt-1">Serial: {itemInstance.serialNumber}</p>
           )}
         </div>
       </div>

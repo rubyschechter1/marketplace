@@ -22,6 +22,12 @@ interface Offer {
     name: string
     imageUrl?: string
   }
+  itemInstance?: {
+    catalogItem: {
+      name: string
+      imageUrl?: string
+    }
+  }
   traveler: {
     id: string
     firstName: string
@@ -108,8 +114,9 @@ export default function SearchPage() {
         (offer.askDescription && offer.askDescription.toLowerCase().includes(searchLower))
     }
     
-    // For regular offers, search in item name and title
+    // For regular offers, search in item name (both regular and inventory items) and title
     return (offer.item?.name.toLowerCase().includes(searchLower) || false) ||
+      (offer.itemInstance?.catalogItem?.name.toLowerCase().includes(searchLower) || false) ||
       offer.title.toLowerCase().includes(searchLower)
   })
 

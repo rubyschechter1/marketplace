@@ -1,6 +1,7 @@
 import Link from "next/link"
 import ProfileThumbnail from "./ProfileThumbnail"
 import { MapPin } from "lucide-react"
+import { getDisplayName } from "@/lib/formatName"
 
 interface OfferCardProps {
   offer: {
@@ -10,6 +11,12 @@ interface OfferCardProps {
     item?: {
       name: string
       imageUrl?: string | null
+    }
+    itemInstance?: {
+      catalogItem: {
+        name: string
+        imageUrl?: string | null
+      }
     }
     askDescription?: string | null
     traveler: {
@@ -55,7 +62,7 @@ export default function OfferCard({ offer, currentUserId, fromPage }: OfferCardP
             {offer.type === 'ask' ? (
               <>
                 <p className="text-body mb-2">
-                  {isOwnOffer ? 'You are' : `${offer.traveler.firstName} is`} asking for{' '}
+                  {isOwnOffer ? 'You are' : `${getDisplayName(offer.traveler, currentUserId)} is`} asking for{' '}
                   <span className="italic">{offer.title || 'item'}</span>
                 </p>
                 {offer.askDescription && (
@@ -64,8 +71,8 @@ export default function OfferCard({ offer, currentUserId, fromPage }: OfferCardP
               </>
             ) : (
               <p className="text-body mb-2">
-                {isOwnOffer ? 'You are' : `${offer.traveler.firstName} is`} offering{' '}
-                <span className="italic">{offer.item?.name || 'item'}</span>
+                {isOwnOffer ? 'You are' : `${getDisplayName(offer.traveler, currentUserId)} is`} offering{' '}
+                <span className="italic">{offer.item?.name || offer.itemInstance?.catalogItem?.name || 'item'}</span>
               </p>
             )}
 
@@ -101,13 +108,18 @@ export default function OfferCard({ offer, currentUserId, fromPage }: OfferCardP
           </div>
 
           {/* Item image - only for offers */}
-          {offer.type !== 'ask' && offer.item?.imageUrl && (
-            <img 
-              src={offer.item.imageUrl}
-              alt={offer.item.name}
-              className="w-16 h-16 object-cover rounded-sm"
-            />
-          )}
+          {offer.type !== 'ask' && (() => {
+            const imageUrl = offer.item?.imageUrl || offer.itemInstance?.catalogItem?.imageUrl
+            const itemName = offer.item?.name || offer.itemInstance?.catalogItem?.name || 'item'
+            
+            return imageUrl ? (
+              <img 
+                src={imageUrl}
+                alt={itemName}
+                className="w-16 h-16 object-cover rounded-sm"
+              />
+            ) : null
+          })()}
         </div>
 
         {/* Location display - positioned at bottom right */}

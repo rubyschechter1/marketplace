@@ -127,19 +127,25 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
                           padding: '12px 12px 30px 12px'
                         }}
                       >
-                        {offer.item?.imageUrl ? (
-                          <img 
-                            src={offer.item.imageUrl}
-                            alt={offer.item.name}
-                            className="w-full aspect-square object-cover rounded-sm"
-                          />
-                        ) : (
-                          <div className="w-full aspect-square bg-gray/20 rounded-sm flex items-center justify-center hover:bg-gray/30 transition-colors">
-                            <span className="text-gray text-sm text-center px-2">
-                              {offer.item?.name || offer.title}
-                            </span>
-                          </div>
-                        )}
+{(() => {
+                          // Check for image from either new item or inventory item
+                          const imageUrl = offer.item?.imageUrl || offer.itemInstance?.catalogItem?.imageUrl
+                          const itemName = offer.item?.name || offer.itemInstance?.catalogItem?.name || offer.title
+                          
+                          return imageUrl ? (
+                            <img 
+                              src={imageUrl}
+                              alt={itemName}
+                              className="w-full aspect-square object-cover rounded-sm"
+                            />
+                          ) : (
+                            <div className="w-full aspect-square bg-gray/20 rounded-sm flex items-center justify-center hover:bg-gray/30 transition-colors">
+                              <span className="text-gray text-sm text-center px-2">
+                                {itemName}
+                              </span>
+                            </div>
+                          )
+                        })()}
                         {/* Offer count in bottom area */}
                         <div className="absolute bottom-1 left-1 bg-tan text-black text-xs px-2 py-1 rounded-sm">
                           {offer._count?.proposedTrades || 0} offer{(offer._count?.proposedTrades || 0) !== 1 ? 's' : ''}

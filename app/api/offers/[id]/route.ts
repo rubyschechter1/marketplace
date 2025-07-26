@@ -183,6 +183,15 @@ export async function DELETE(
       data: { status: 'deleted' }
     })
 
+    // If this offer was for an inventory item, restore its availability
+    if (offer.itemInstanceId) {
+      await prisma.itemInstances.update({
+        where: { id: offer.itemInstanceId },
+        data: { isAvailable: true }
+      })
+      console.log(`📦 Restored availability for item instance: ${offer.itemInstanceId}`)
+    }
+
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Error deleting offer:", error)

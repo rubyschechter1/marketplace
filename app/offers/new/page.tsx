@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Plus, ArrowLeft, Package } from "lucide-react"
 import Button from "@/components/ui/Button"
@@ -12,11 +12,13 @@ import { validateNoCurrency } from "@/lib/currencyFilter"
 
 export default function NewOfferPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
   const [useInventory, setUseInventory] = useState(false)
   const [inventoryItems, setInventoryItems] = useState<any[]>([])
   const [selectedInventoryItem, setSelectedInventoryItem] = useState<any>(null)
+  const [showInventoryModal, setShowInventoryModal] = useState(false)
   
   const [formData, setFormData] = useState({
     offeringTitle: "",
@@ -32,6 +34,36 @@ export default function NewOfferPage() {
     }
   }, [useInventory])
 
+  // Handle URL parameters for pre-populating form data
+  useEffect(() => {
+    const itemInstanceId = searchParams.get('itemInstanceId')
+    const itemName = searchParams.get('itemName')
+    const itemDescription = searchParams.get('itemDescription')
+    const itemPhoto = searchParams.get('itemPhoto')
+    
+    if (itemInstanceId && itemName) {
+      // Pre-populate from inventory item via URL params
+      setUseInventory(true)
+      setFormData({
+        offeringTitle: itemName,
+        offeringDescription: itemDescription || "",
+        seekingItems: [""],
+        photoUrl: itemPhoto || "",
+        photoPreview: itemPhoto || ""
+      })
+      
+      // Create a mock selected inventory item for form validation
+      setSelectedInventoryItem({
+        id: itemInstanceId,
+        catalogItem: {
+          name: itemName,
+          description: itemDescription,
+          imageUrl: itemPhoto
+        }
+      })
+    }
+  }, [searchParams])
+
   const fetchInventory = async () => {
     try {
       const response = await fetch('/api/inventory')
@@ -46,6 +78,7 @@ export default function NewOfferPage() {
 
   const handleInventoryItemSelect = (item: any) => {
     setSelectedInventoryItem(item)
+    setUseInventory(true)
     setFormData({
       ...formData,
       offeringTitle: item.catalogItem.name,
@@ -53,6 +86,7 @@ export default function NewOfferPage() {
       photoUrl: item.catalogItem.imageUrl || "",
       photoPreview: item.catalogItem.imageUrl || ""
     })
+    setShowInventoryModal(false)
   }
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -268,11 +302,14 @@ export default function NewOfferPage() {
               }`}
             >
               <Plus size={16} className="inline mr-2" />
-              New Item
+              New item
             </button>
             <button
               type="button"
-              onClick={() => setUseInventory(true)}
+              onClick={() => {
+                setShowInventoryModal(true)
+                fetchInventory()
+              }}
               className={`flex-1 py-3 px-6 text-button rounded-sm border transition-all font-normal shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] ${
                 useInventory 
                   ? 'bg-tan text-black border-black' 
@@ -280,53 +317,73 @@ export default function NewOfferPage() {
               }`}
             >
               <Image src="/images/backpack_icon.png" alt="Inventory" width={20} height={20} className="inline mr-2 -translate-y-px" />
-              From Inventory
+              From inventory
             </button>
           </div>
         </div>
 
-        {useInventory && (
-          <div className="mb-6">
-            <h3 className="text-body mb-3">Select from your inventory</h3>
-            {inventoryItems.length === 0 ? (
-              <div className="text-center py-8 border border-black rounded-sm bg-tan">
-                <p className="text-gray">No items in your inventory yet</p>
-              </div>
-            ) : (
-              <div className="space-y-3 max-h-64 overflow-y-auto">
-                {inventoryItems.map((item) => (
-                  <div
-                    key={item.id}
-                    onClick={() => handleInventoryItemSelect(item)}
-                    className={`p-3 border rounded-sm cursor-pointer transition-colors ${
-                      selectedInventoryItem?.id === item.id
-                        ? 'border-black bg-tan text-black shadow-[2px_2px_0px_#000000]' 
-                        : 'border-black bg-tan hover:bg-black hover:text-tan'
-                    }`}
+        {/* Inventory Modal */}
+        {showInventoryModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-tan border-2 border-black rounded-sm max-w-md w-full max-h-[80vh] overflow-hidden">
+              {/* Modal Header */}
+              <div className="p-4 border-b border-black">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-header font-normal">Select from your inventory</h3>
+                  <button
+                    onClick={() => setShowInventoryModal(false)}
+                    className="text-black hover:text-gray text-xl font-bold"
                   >
-                    <div className="flex items-center space-x-3">
-                      {item.catalogItem.imageUrl ? (
-                        <Image
-                          src={item.catalogItem.imageUrl}
-                          alt={item.catalogItem.name}
-                          width={40}
-                          height={40}
-                          className="rounded-sm object-cover"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 bg-gray-200 rounded-sm"></div>
-                      )}
-                      <div>
-                        <h4 className="font-normal">{item.catalogItem.name}</h4>
-                        {item.catalogItem.description && (
-                          <p className="text-sm opacity-75">{item.catalogItem.description}</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                    ×
+                  </button>
+                </div>
               </div>
-            )}
+              
+              {/* Modal Content */}
+              <div className="p-4 overflow-y-auto max-h-96">
+                {inventoryItems.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray">No items in your inventory yet</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 gap-3">
+                    {inventoryItems.map((item) => (
+                      <div key={item.id} className="cursor-pointer">
+                        <div
+                          onClick={() => handleInventoryItemSelect(item)}
+                          className="block border border-black rounded-sm transition-all shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
+                          style={{ 
+                            padding: '6px'
+                          }}
+                        >
+                          {item.catalogItem.imageUrl ? (
+                            <img 
+                              src={item.catalogItem.imageUrl}
+                              alt={item.catalogItem.name}
+                              className="w-full aspect-square object-cover rounded-sm"
+                            />
+                          ) : (
+                            <div className="w-full aspect-square bg-tan rounded-sm flex items-center justify-center hover:bg-tan/80 transition-colors p-4">
+                              <Image
+                                src="/images/brownhat_final.png"
+                                alt="Default item image"
+                                width={32}
+                                height={32}
+                                className="opacity-50"
+                              />
+                            </div>
+                          )}
+                        </div>
+                        {/* Item name outside the card */}
+                        <div className="text-xs text-center mt-1 text-black">
+                          {item.catalogItem.name}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
@@ -351,7 +408,7 @@ export default function NewOfferPage() {
               <button
                 type="button"
                 onClick={() => setFormData({...formData, photoUrl: "", photoPreview: ""})}
-                className="absolute top-2 right-2 bg-white border border-black rounded-sm p-1 hover:bg-tan"
+                className="absolute top-2 right-2 bg-tan border border-black rounded-sm p-1 hover:bg-black hover:text-tan"
               >
                 <span className="text-lg leading-none">×</span>
               </button>
@@ -377,7 +434,7 @@ export default function NewOfferPage() {
                 setFormData({...formData, offeringTitle: e.target.value})
               }}
               className={`w-full p-4 border border-black rounded-sm text-body focus:outline-none focus:ring-1 focus:ring-black ${
-                useInventory ? 'bg-gray-100 cursor-not-allowed' : 'bg-tan placeholder-gray'
+                useInventory ? 'bg-tan cursor-not-allowed' : 'bg-tan placeholder-gray'
               }`}
               readOnly={useInventory}
               required

@@ -8,10 +8,12 @@ import ProfileThumbnail from "@/components/ProfileThumbnail"
 import { ChevronLeft, Send } from "lucide-react"
 import Link from "next/link"
 import { useUser } from "@/contexts/UserContext"
+import { useLocation } from "@/contexts/LocationContext"
 import BrownHatLoader from "@/components/BrownHatLoader"
 import ReviewForm from "@/components/ReviewForm"
 import Image from "next/image"
 import { validateNoCurrency } from "@/lib/currencyFilter"
+import { formatDisplayName } from "@/lib/formatName"
 
 interface Message {
   id: string
@@ -81,6 +83,7 @@ export default function MessagePage({
   const { data: session, status } = useSession()
   const router = useRouter()
   const { refreshUser } = useUser()
+  const { location, refreshLocation } = useLocation()
   const [offerId, setOfferId] = useState<string>("")
   const [tradeId, setTradeId] = useState<string>("")
   const [fromPage, setFromPage] = useState<string>("")
@@ -96,6 +99,7 @@ export default function MessagePage({
   const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set())
   const [givingItem, setGivingItem] = useState(false)
   const [messageError, setMessageError] = useState("")
+  const [itemAlreadyGiven, setItemAlreadyGiven] = useState(false)
   const hasRefreshedUser = useRef(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
@@ -204,6 +208,38 @@ export default function MessagePage({
         setLoading(false)
       }
   }
+
+  // Check if item has already been given based on system messages or automatic trade transfers
+  const checkIfItemAlreadyGiven = () => {
+    if (!session?.user?.id || !tradeData) return false
+    
+    // Check if trade involves inventory items and has been accepted
+    // In this case, items are automatically transferred, so manual "Give Item" is not needed
+    if (tradeData.status === 'accepted') {
+      const isOfferOwner = session.user.id === tradeData.offer.traveler.id
+      const isProposer = session.user.id === tradeData.proposer.id
+      
+      // If this is an accepted trade with inventory items, the transfer is automatic
+      if ((isOfferOwner && tradeData.offer.itemInstance) || 
+          (isProposer && tradeData.offeredItemInstance)) {
+        return true // Hide "Give Item" button - transfer was automatic
+      }
+    }
+    
+    // Check for manual transfer system messages (legacy behavior)
+    if (!messages.length) return false
+    const userName = session.user.name?.split(' ')[0] || 'Someone'
+    return messages.some(message => 
+      !message.senderId && // System message
+      message.content.includes(`${userName} has given you`) &&
+      message.content.includes('You can now see this item in your inventory')
+    )
+  }
+
+  // Update itemAlreadyGiven state when messages change or trade status updates
+  useEffect(() => {
+    setItemAlreadyGiven(checkIfItemAlreadyGiven())
+  }, [messages, session?.user?.id, tradeData])
 
   useEffect(() => {
     if (status === "loading") return
@@ -366,6 +402,17 @@ export default function MessagePage({
     
     setGivingItem(true)
     try {
+      // Capture current location before transferring the item
+      console.log('🗺️ Refreshing location for item transfer...')
+      await refreshLocation()
+      
+      // Get the fresh location data after refresh
+      const currentLocation = {
+        latitude: location.latitude,
+        longitude: location.longitude,
+        city: location.city,
+        country: location.country
+      }
       // Determine what item should be given based on trade context
       let itemToGive = null
       let itemName = ""
@@ -409,7 +456,9 @@ export default function MessagePage({
       const requestBody: any = {
         recipientId: otherUser.id,
         offerId: offerId,
-        tradeId: tradeId
+        tradeId: tradeId,
+        // Include current location data for real-time transfer location
+        currentLocation: currentLocation
       }
 
       if (isInventoryItem && itemToGive) {
@@ -433,6 +482,8 @@ export default function MessagePage({
           const data = await messagesResponse.json()
           setMessages(data.messages || [])
         }
+        // Item has been given, update state
+        setItemAlreadyGiven(true)
       } else {
         const error = await response.json()
         alert(error.error || 'Failed to give item')
@@ -450,6 +501,18 @@ export default function MessagePage({
     
     setGivingItem(true)
     try {
+      // Capture current location before transferring the item
+      console.log('🗺️ Refreshing location for inventory item transfer...')
+      await refreshLocation()
+      
+      // Get the fresh location data after refresh
+      const currentLocation = {
+        latitude: location.latitude,
+        longitude: location.longitude,
+        city: location.city,
+        country: location.country
+      }
+
       const response = await fetch('/api/items/transfer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -457,7 +520,9 @@ export default function MessagePage({
           recipientId: otherUser.id,
           itemInstanceId: itemInstance.id,
           offerId: offerId,
-          tradeId: tradeId
+          tradeId: tradeId,
+          // Include current location data for real-time transfer location
+          currentLocation: currentLocation
         })
       })
 
@@ -546,7 +611,7 @@ export default function MessagePage({
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm">
-                <span className="font-normal">{session?.user?.id === tradeData.proposer.id ? 'You' : tradeData.proposer.firstName}</span> {session?.user?.id === tradeData.proposer.id ? 'offer' : 'offers'} <span className="italic">{tradeData.offeredItem?.name || tradeData.offeredItemInstance?.catalogItem?.name}</span>
+                <span className="font-normal">{session?.user?.id === tradeData.proposer.id ? 'You' : formatDisplayName(tradeData.proposer.firstName, tradeData.proposer.lastName)}</span> {session?.user?.id === tradeData.proposer.id ? 'offer' : 'offers'} <span className="italic">{tradeData.offeredItem?.name || tradeData.offeredItemInstance?.catalogItem?.name}</span>
               </p>
             </div>
             {/* Accept trade button (only for offer owner and if offer not deleted) - moved inline */}
@@ -637,7 +702,7 @@ export default function MessagePage({
                           <div className="mt-3">
                             <ReviewForm
                               proposedTradeId={tradeId}
-                              revieweeName={otherUser.firstName}
+                              revieweeName={formatDisplayName(otherUser.firstName, otherUser.lastName)}
                               existingReview={existingReview || undefined}
                               onSubmit={() => {
                                 // Hide the review form after submission
@@ -734,7 +799,7 @@ export default function MessagePage({
                     handleSendMessage()
                   }
                 }}
-                placeholder={`Write a message to ${otherUser.firstName}`}
+                placeholder={`Write a message to ${formatDisplayName(otherUser.firstName, otherUser.lastName)}`}
                 className="w-full p-3 border border-black rounded-sm resize-none h-20 text-body bg-tan placeholder-gray focus:outline-none focus:ring-1 focus:ring-black"
               />
               {messageError && (
@@ -742,50 +807,63 @@ export default function MessagePage({
               )}
             </div>
             <div className="flex justify-between mt-3">
-              <button
-                onClick={() => {
-                  // Check if there's a specific item to give based on trade context
-                  let hasSpecificItem = false
-                  let specificItemName = ""
-                  
-                  if (session?.user?.id === tradeData.offer.traveler.id && tradeData.offer.itemInstance) {
-                    hasSpecificItem = true
-                    specificItemName = tradeData.offer.itemInstance.catalogItem.name
-                  } else if (session?.user?.id === tradeData.proposer.id && tradeData.offeredItemInstance) {
-                    hasSpecificItem = true
-                    specificItemName = tradeData.offeredItemInstance.catalogItem.name
-                  }
-                  
-                  // Always use smart give item - it will automatically detect the correct item
-                  const confirmed = confirm(
-                    `⚠️ Important: Only click "Give Item" if you have already physically given the item to ${otherUser.firstName} in person.\n\n` +
-                    `This will:\n` +
-                    `• Transfer the item from your inventory to ${otherUser.firstName}'s inventory\n` +
-                    `• Add it to their item collection\n` +
-                    `• Create a permanent record in the item's history\n\n` +
-                    `Have you already physically given the item to ${otherUser.firstName}?`
-                  )
-                  
-                  if (confirmed) {
-                    handleSmartGiveItem()
-                  }
-                }}
-                disabled={givingItem}
-                className="bg-tan text-black border-2 border-black px-2.5 py-1 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-xs font-medium shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
-              >
-                <Image 
-                  src="/images/brownhat_final.png" 
-                  alt="Give Item" 
-                  width={16} 
-                  height={16} 
-                  className="mr-2" 
-                />
-                Give item
-              </button>
+              {!itemAlreadyGiven ? (
+                <button
+                  onClick={() => {
+                    // Check if there's a specific item to give based on trade context
+                    let hasSpecificItem = false
+                    let specificItemName = ""
+                    
+                    if (session?.user?.id === tradeData.offer.traveler.id && tradeData.offer.itemInstance) {
+                      hasSpecificItem = true
+                      specificItemName = tradeData.offer.itemInstance.catalogItem.name
+                    } else if (session?.user?.id === tradeData.proposer.id && tradeData.offeredItemInstance) {
+                      hasSpecificItem = true
+                      specificItemName = tradeData.offeredItemInstance.catalogItem.name
+                    }
+                    
+                    // Always use smart give item - it will automatically detect the correct item
+                    const confirmed = confirm(
+                      `⚠️ Important: Only click "Give Item" if you have already physically given the item to ${formatDisplayName(otherUser.firstName, otherUser.lastName)} in person.\n\n` +
+                      `This will:\n` +
+                      `• Transfer the item from your inventory to ${formatDisplayName(otherUser.firstName, otherUser.lastName)}'s inventory\n` +
+                      `• Add it to their item collection\n` +
+                      `• Create a permanent record in the item's history\n\n` +
+                      `Have you already physically given the item to ${formatDisplayName(otherUser.firstName, otherUser.lastName)}?`
+                    )
+                    
+                    if (confirmed) {
+                      handleSmartGiveItem()
+                    }
+                  }}
+                  disabled={givingItem}
+                  className="bg-tan text-black border border-black px-2.5 py-1 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-xs font-medium shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
+                >
+                  <Image 
+                    src="/images/brownhat_final.png" 
+                    alt="Give Item" 
+                    width={16} 
+                    height={16} 
+                    className="mr-2" 
+                  />
+                  Give item
+                </button>
+              ) : (
+                <div className="bg-gray/20 text-gray border border-gray/30 px-2.5 py-1 rounded-sm flex items-center text-xs font-medium cursor-not-allowed">
+                  <Image 
+                    src="/images/brownhat_final.png" 
+                    alt="Item Given" 
+                    width={16} 
+                    height={16} 
+                    className="mr-2 opacity-50" 
+                  />
+                  Item given
+                </div>
+              )}
               <button
                 onClick={handleSendMessage}
                 disabled={!newMessage.trim() || sending}
-                className="bg-tan text-black border-2 border-black px-2.5 py-1 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-xs font-medium shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
+                className="bg-tan text-black border border-black px-2.5 py-1 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-xs font-medium shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
               >
                 {sending ? (
                   <>

@@ -6,6 +6,7 @@ import AuthLayout from "@/components/AuthLayout"
 import Image from "next/image"
 import Link from "next/link"
 import Button from "@/components/ui/Button"
+import BrownHatLoader from "@/components/BrownHatLoader"
 
 interface ItemInstance {
   id: string
@@ -56,10 +57,30 @@ export default function InventoryPage() {
   }
 
   const getLocationString = (item: ItemInstance) => {
+    console.log("🗺️ Checking location for item:", item.catalogItem.name, "History:", item.history)
+    
+    // Check if there's any history
+    if (!item.history || item.history.length === 0) {
+      console.log("❌ No history found for item")
+      return "Unknown location"
+    }
+    
     const latestHistory = item.history[0] // Most recent first
+    console.log("📍 Latest history entry:", latestHistory)
+    
     if (latestHistory?.city && latestHistory?.country) {
       return `${latestHistory.city}, ${latestHistory.country}`
     }
+    
+    // Fallback to any history entry with location data
+    for (const historyEntry of item.history) {
+      if (historyEntry?.city && historyEntry?.country) {
+        console.log("📍 Using fallback history entry:", historyEntry)
+        return `${historyEntry.city}, ${historyEntry.country}`
+      }
+    }
+    
+    console.log("❌ No location data found in any history entry")
     return "Unknown location"
   }
 
@@ -78,10 +99,8 @@ export default function InventoryPage() {
   if (loading) {
     return (
       <AuthLayout>
-        <div className="p-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-gray">Loading inventory...</div>
-          </div>
+        <div className="flex items-center justify-center min-h-screen pb-16">
+          <BrownHatLoader size="large" text="Loading inventory..." />
         </div>
       </AuthLayout>
     )
@@ -131,51 +150,34 @@ export default function InventoryPage() {
             </div>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-8">
             {items.map((item) => (
-              <div
+              <Link 
                 key={item.id}
-                className="border border-black rounded-sm p-4 bg-white hover:shadow-[2px_2px_0px_#000000] transition-shadow"
+                href={`/history/${item.id}`}
+                className="block relative border border-black rounded-sm transition-all shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
+                style={{ 
+                  padding: '12px 12px 30px 12px'
+                }}
               >
-                <div className="flex items-center space-x-4">
-                  {item.catalogItem.imageUrl ? (
-                    <Image
-                      src={item.catalogItem.imageUrl}
-                      alt={item.catalogItem.name}
-                      width={60}
-                      height={60}
-                      className="rounded-sm object-cover"
-                    />
-                  ) : (
-                    <div className="w-15 h-15 bg-gray-200 rounded-sm flex items-center justify-center">
-                      <span className="text-gray-400 text-xs">No image</span>
-                    </div>
-                  )}
-                  
-                  <div className="flex-1">
-                    <h3 className="font-normal text-lg">{item.catalogItem.name}</h3>
-                    <p className="text-gray text-sm mb-2">
-                      Acquired {getItemAge(item)} ago
-                    </p>
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs bg-tan px-2 py-1 rounded-sm border border-black">
-                        {getLocationString(item)}
-                      </span>
-                      {item.history.length > 1 && (
-                        <span className="text-xs text-gray">
-                          {item.history.length} locations
-                        </span>
-                      )}
-                    </div>
-                    <Link
-                      href={`/history/${item.id}`}
-                      className="inline-flex items-center text-xs bg-tan text-black border border-black px-3 py-1 rounded-sm hover:bg-black hover:text-tan transition-colors shadow-[2px_2px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[1px] hover:translate-y-[1px]"
-                    >
-                      View History
-                    </Link>
+                {item.catalogItem.imageUrl ? (
+                  <img 
+                    src={item.catalogItem.imageUrl}
+                    alt={item.catalogItem.name}
+                    className="w-full aspect-square object-cover rounded-sm"
+                  />
+                ) : (
+                  <div className="w-full aspect-square bg-gray/20 rounded-sm flex items-center justify-center hover:bg-gray/30 transition-colors">
+                    <span className="text-gray text-sm text-center px-2">
+                      {item.catalogItem.name}
+                    </span>
                   </div>
+                )}
+                {/* Item age in bottom area */}
+                <div className="absolute bottom-1 left-1 bg-tan text-black text-xs px-2 py-1 rounded-sm">
+                  Acquired {getItemAge(item)} ago in {getLocationString(item)}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

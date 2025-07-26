@@ -11,6 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useLocation } from "@/contexts/LocationContext"
 import BrownHatLoader from "@/components/BrownHatLoader"
 import { validateNoCurrency } from "@/lib/currencyFilter"
+import { getDisplayName } from "@/lib/formatName"
 
 export default function OfferPage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session, status } = useSession()
@@ -257,7 +258,10 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
   }
 
   const isOwner = session?.user?.id === offer.traveler?.id
-  const displayName = isOwner ? "You" : `${offer.traveler?.firstName} ${offer.traveler?.lastName}`
+  const displayName = getDisplayName(
+    { id: offer.traveler?.id || '', firstName: offer.traveler?.firstName || '', lastName: offer.traveler?.lastName },
+    session?.user?.id
+  )
   const isDeleted = offer.status === 'deleted'
 
   return (
@@ -579,7 +583,10 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                           )}
                           <div className={`text-body ${isAccepted ? 'text-tan' : ''}`}>
                             <span className="font-normal">
-                              {session?.user?.id === trade.proposer?.id ? 'You' : `${trade.proposer?.firstName} ${trade.proposer?.lastName}`}
+                              {getDisplayName(
+              { id: trade.proposer?.id || '', firstName: trade.proposer?.firstName || '', lastName: trade.proposer?.lastName },
+              session?.user?.id
+            )}
                             </span>{' '}
                             {session?.user?.id === trade.proposer?.id ? 'offer' : 'offers'} <span className="italic">{trade.offeredItem?.name || trade.offeredItemInstance?.catalogItem?.name}</span>
                           </div>

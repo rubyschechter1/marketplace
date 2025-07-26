@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { Star } from "lucide-react"
 import ProfileThumbnail from "./ProfileThumbnail"
+import { getDisplayName } from "@/lib/formatName"
 
 interface Review {
   id: string
@@ -94,7 +95,10 @@ export default function UserReviews({ userId }: UserReviewsProps) {
             <div className="flex-1">
               <div className="flex items-center justify-between mb-1">
                 <p className="font-medium">
-                  {session?.user?.id === review.reviewer.id ? 'You' : `${review.reviewer.firstName} ${review.reviewer.lastName}`}
+                  {getDisplayName(
+                    { id: review.reviewer.id, firstName: review.reviewer.firstName, lastName: review.reviewer.lastName },
+                    session?.user?.id
+                  )}
                 </p>
                 <div className="flex gap-0.5">
                   {[1, 2, 3, 4, 5].map((star) => (

@@ -110,7 +110,7 @@ export default function MessagePage({
     if (content.startsWith('TRADE_ACCEPTED:')) {
       const [, actorId, actorName] = content.split(':')
       const displayName = session?.user?.id === actorId ? 'You' : actorName
-      return `${displayName} accepted the trade!`
+      return `${displayName} accepted the trade! The "send item" button has now been activated. Once both parties click "send item", your new item will be found in your inventory!`
     }
     
     if (content.startsWith('TRADE_CANCELED:')) {

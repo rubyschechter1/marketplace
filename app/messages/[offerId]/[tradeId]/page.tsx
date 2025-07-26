@@ -13,7 +13,7 @@ import BrownHatLoader from "@/components/BrownHatLoader"
 import ReviewForm from "@/components/ReviewForm"
 import Image from "next/image"
 import { validateNoCurrency } from "@/lib/currencyFilter"
-import { formatDisplayName } from "@/lib/formatName"
+import { formatDisplayName, getDisplayName } from "@/lib/formatName"
 
 interface Message {
   id: string
@@ -103,6 +103,32 @@ export default function MessagePage({
   const hasRefreshedUser = useRef(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
+
+  // Format personalized system messages
+  const formatSystemMessage = (content: string): string => {
+    if (content.startsWith('TRADE_ACCEPTED:')) {
+      const [, actorId, actorName] = content.split(':')
+      const displayName = session?.user?.id === actorId ? 'You' : actorName
+      return `${displayName} accepted the trade!`
+    }
+    
+    if (content.startsWith('TRADE_CANCELED:')) {
+      const [, actorId, actorName] = content.split(':')
+      const displayName = session?.user?.id === actorId ? 'You' : actorName
+      return `${displayName} canceled the trade`
+    }
+    
+    if (content.startsWith('ITEM_GIVEN:')) {
+      const [, actorId, actorName, itemName] = content.split(':')
+      if (session?.user?.id === actorId) {
+        return `You gave ${itemName}! The recipient can find their new item in their inventory.`
+      } else {
+        return `${actorName} has given you ${itemName}! You can find your new item in your inventory.`
+      }
+    }
+    
+    return content // Return original content for other system messages
+  }
 
   useEffect(() => {
     params.then(p => {
@@ -685,7 +711,7 @@ export default function MessagePage({
               return (
                 <div key={message.id} className="mb-4">
                   <div className="bg-gray/10 rounded-sm p-3">
-                    <p className="text-center text-gray text-sm">{message.content}</p>
+                    <p className="text-center text-gray text-sm">{formatSystemMessage(message.content)}</p>
                     
                     {/* Show Update review button only for the most recent review submission message */}
                     {isLatestReviewMessage && tradeData.status === 'accepted' && (

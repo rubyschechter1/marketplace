@@ -144,37 +144,18 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemInst
         {/* Item Details */}
         <div className="mb-10">
           <div className="flex items-start gap-6">
-            {itemInstance.catalogItem.imageUrl ? (
-              <img
-                src={itemInstance.catalogItem.imageUrl}
-                alt={itemInstance.catalogItem.name}
-                className="w-36 h-36 rounded-sm object-cover flex-shrink-0"
-              />
-            ) : (
-              <div className="w-36 h-36 bg-gray/20 rounded-sm flex items-center justify-center flex-shrink-0">
-                <span className="text-gray text-xs">No image</span>
-              </div>
-            )}
-            
-            <div className="flex-1 flex justify-between items-start">
-              <div className="flex-1">
-                {itemInstance.catalogItem.description && (
-                  <p className="text-body text-gray mb-4 leading-relaxed">{itemInstance.catalogItem.description}</p>
-                )}
-                
-                <div className="text-sm text-gray">
-                  {itemInstance.catalogItem.category && (
-                    <span className="bg-tan px-3 py-1.5 rounded-sm border border-black mr-2 text-xs">
-                      {itemInstance.catalogItem.category}
-                    </span>
-                  )}
-                  {itemInstance.catalogItem.condition && (
-                    <span className="bg-tan px-3 py-1.5 rounded-sm border border-black text-xs">
-                      {itemInstance.catalogItem.condition}
-                    </span>
-                  )}
+            <div className="flex flex-col items-center">
+              {itemInstance.catalogItem.imageUrl ? (
+                <img
+                  src={itemInstance.catalogItem.imageUrl}
+                  alt={itemInstance.catalogItem.name}
+                  className="w-36 h-36 rounded-sm object-cover flex-shrink-0"
+                />
+              ) : (
+                <div className="w-36 h-36 bg-gray/20 rounded-sm flex items-center justify-center flex-shrink-0">
+                  <span className="text-gray text-xs">No image</span>
                 </div>
-              </div>
+              )}
               
               <button 
                 onClick={() => {
@@ -186,45 +167,64 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemInst
                   })
                   router.push(`/offers/new?${params.toString()}`)
                 }}
-                className="bg-tan text-black border border-black py-2.5 px-8 rounded-sm transition-all shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] font-medium text-sm ml-4"
+                className="bg-tan text-black border border-black py-2.5 px-8 rounded-sm transition-all shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] font-medium text-sm mt-4"
               >
                 Offer item
               </button>
             </div>
-          </div>
-        </div>
-
-        {/* Journey Timeline */}
-        <div className="border border-black rounded-sm bg-tan p-6">
-          {itemInstance.history.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray">No history available for this item</p>
-            </div>
-          ) : (
-            <div className="relative">
-              {itemInstance.history.map((entry, index) => {
-                const isLast = index === itemInstance.history.length - 1
-                return (
-                  <div key={entry.id} className="relative flex items-center">
-                    {/* Timeline dot */}
-                    <div className="w-3 h-3 bg-black rounded-full flex-shrink-0 z-10"></div>
-                    
-                    {/* Dotted line connecting to next item */}
-                    {!isLast && (
-                      <div className="absolute left-1.5 top-6 w-px h-6 border-l-2 border-dotted border-black"></div>
-                    )}
-                    
-                    {/* Content */}
-                    <div className="ml-4 py-2">
-                      <div className="text-body font-normal">
-                        Traded in {getLocationString(entry)} on {formatDate(entry.transferDate)}
-                      </div>
-                    </div>
+            
+            <div className="flex-1">
+              {itemInstance.catalogItem.description && (
+                <p className="text-body text-gray mb-4 leading-relaxed">{itemInstance.catalogItem.description}</p>
+              )}
+              
+              <div className="text-sm text-gray mb-4">
+                {itemInstance.catalogItem.category && (
+                  <span className="bg-tan px-3 py-1.5 rounded-sm border border-black mr-2 text-xs">
+                    {itemInstance.catalogItem.category}
+                  </span>
+                )}
+                {itemInstance.catalogItem.condition && (
+                  <span className="bg-tan px-3 py-1.5 rounded-sm border border-black text-xs">
+                    {itemInstance.catalogItem.condition}
+                  </span>
+                )}
+              </div>
+              
+              {/* Journey Timeline - moved here to the right of the image */}
+              <div className="pt-0 px-6 pb-6">
+                {itemInstance.history.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray">No history available for this item</p>
                   </div>
-                )
-              })}
+                ) : (
+                  <div className="relative">
+                    {itemInstance.history.map((entry, index) => {
+                      const isLast = index === itemInstance.history.length - 1
+                      return (
+                        <div key={entry.id} className="relative flex items-center">
+                          {/* Timeline dot */}
+                          <div className="w-3 h-3 bg-black rounded-full flex-shrink-0 z-10"></div>
+                          
+                          {/* Dotted line connecting to next item */}
+                          {!isLast && (
+                            <div className="absolute left-1.5 top-6 w-px h-6 border-l-2 border-dotted border-black"></div>
+                          )}
+                          
+                          {/* Content */}
+                          <div className="ml-4 py-2">
+                            <div className="text-body font-normal">
+                              Traded in {getLocationString(entry)} on {formatDate(entry.transferDate)}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </AuthLayout>

@@ -205,9 +205,9 @@ export async function PUT(
       // Create system message for this trade's conversation
       let systemMessageContent = ''
       if (status === 'accepted') {
-        systemMessageContent = 'Trade accepted'
+        systemMessageContent = `TRADE_ACCEPTED:${session.user.id}:${session.user.name || 'Someone'}`
       } else if (status === 'pending' && proposedTrade.status === 'accepted') {
-        systemMessageContent = 'Trade unaccepted'
+        systemMessageContent = `TRADE_CANCELED:${session.user.id}:${session.user.name || 'Someone'}`
       } else if (status === 'rejected') {
         systemMessageContent = 'Trade rejected'
       } else if (status === 'withdrawn') {

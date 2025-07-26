@@ -99,6 +99,8 @@ export default function MessagePage({
   const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set())
   const [givingItem, setGivingItem] = useState(false)
   const [showTradeReviewModal, setShowTradeReviewModal] = useState(false)
+  const [showAcceptConfirmModal, setShowAcceptConfirmModal] = useState(false)
+  const [pendingTradeAction, setPendingTradeAction] = useState<'accept' | 'cancel' | null>(null)
   const [messageError, setMessageError] = useState("")
   const [itemAlreadyGiven, setItemAlreadyGiven] = useState(false)
   const hasRefreshedUser = useRef(false)
@@ -386,19 +388,56 @@ export default function MessagePage({
     if (!tradeData) return
 
     const isAccepted = tradeData.status === 'accepted'
-    const newStatus = isAccepted ? 'pending' : 'accepted'
-    const confirmMessage = isAccepted 
-      ? 'Are you sure you want to cancel this trade?' 
-      : 'Are you sure you want to accept this trade?'
+    if (isAccepted) {
+      // For cancel action, use browser confirm as before
+      if (!confirm('Are you sure you want to cancel this trade?')) return
+      
+      const newStatus = 'pending'
+      setAccepting(true)
+      try {
+        const response = await fetch(`/api/proposed-trades/${tradeId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus })
+        })
 
-    if (!confirm(confirmMessage)) return
+        if (response.ok) {
+          const updatedTrade = await response.json()
+          setTradeData({ ...tradeData, status: updatedTrade.status })
+          
+          // Refresh messages to show the system message
+          const messagesResponse = await fetch(`/api/messages/${offerId}/${tradeId}`)
+          if (messagesResponse.ok) {
+            const data = await messagesResponse.json()
+            setMessages(data.messages || [])
+          }
+        } else {
+          const error = await response.json()
+          alert(error.error || 'Failed to update trade')
+        }
+      } catch (error) {
+        console.error('Error updating trade:', error)
+        alert('Failed to update trade')
+      } finally {
+        setAccepting(false)
+      }
+    } else {
+      // For accept action, show custom modal
+      setShowAcceptConfirmModal(true)
+    }
+  }
 
+  const confirmAcceptTrade = async () => {
+    if (!tradeData) return
+    
+    setShowAcceptConfirmModal(false)
     setAccepting(true)
+    
     try {
       const response = await fetch(`/api/proposed-trades/${tradeId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ status: 'accepted' })
       })
 
       if (response.ok) {
@@ -965,6 +1004,56 @@ export default function MessagePage({
                 <p className="text-xs text-gray mt-3 text-center">
                   After both parties submit a review, a trade of items will be made. Check the inventory tab for your new item!
                 </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Custom Accept Confirmation Modal */}
+        {showAcceptConfirmModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-tan border-2 border-black rounded-sm p-6 max-w-sm w-full">
+              <h3 className="text-lg font-normal mb-4 text-center">
+                Accept Trade?
+              </h3>
+              <p className="text-sm text-gray mb-6 text-center">
+                Are you sure you want to accept this trade?
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowAcceptConfirmModal(false)}
+                  className="flex-1 px-4 py-2 bg-tan text-black border border-black rounded-sm text-sm hover:bg-gray/10 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmAcceptTrade}
+                  className="flex-1 px-4 py-2 bg-tan text-black border border-black rounded-sm text-sm shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                >
+                  Accept
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Error Modal */}
+        {showErrorModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-tan border-2 border-black rounded-sm p-6 max-w-sm w-full">
+              <h3 className="text-lg font-normal mb-4 text-center">
+                Error
+              </h3>
+              <p className="text-sm text-gray mb-6 text-center">
+                {errorMessage}
+              </p>
+              <div className="flex justify-center">
+                <button
+                  onClick={() => setShowErrorModal(false)}
+                  className="px-4 py-2 bg-tan text-black border border-black rounded-sm text-sm shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                >
+                  OK
+                </button>
               </div>
             </div>
           </div>

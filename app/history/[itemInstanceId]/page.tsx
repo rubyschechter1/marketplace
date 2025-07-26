@@ -50,6 +50,10 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemInst
   const [itemInstance, setItemInstance] = useState<ItemInstance | null>(null)
   const [loading, setLoading] = useState(true)
   const [itemInstanceId, setItemInstanceId] = useState("")
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showErrorModal, setShowErrorModal] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     params.then(p => setItemInstanceId(p.itemInstanceId))
@@ -230,32 +234,85 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemInst
           {/* Delete Button */}
           <div>
             <button 
-              onClick={() => {
-                const confirmed = confirm(`Are you sure you want to delete ${itemInstance.catalogItem.name} from your inventory? This action cannot be undone.`)
-                if (confirmed) {
-                  // Make API call to delete the item
-                  fetch(`/api/inventory/${itemInstance.id}`, {
-                    method: 'DELETE'
-                  })
-                  .then(response => {
-                    if (response.ok) {
-                      router.push('/inventory')
-                    } else {
-                      alert('Failed to delete item. Please try again.')
-                    }
-                  })
-                  .catch(error => {
-                    console.error('Error deleting item:', error)
-                    alert('Failed to delete item. Please try again.')
-                  })
-                }
-              }}
+              onClick={() => setShowDeleteConfirm(true)}
               className="w-full h-10 bg-tan text-black border border-black py-1 px-4 rounded-sm transition-all text-center text-button shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] flex items-center justify-center"
             >
               Delete from inventory
             </button>
           </div>
         </div>
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-tan border-2 border-black rounded-sm p-6 max-w-sm w-full">
+              <h3 className="text-lg font-normal mb-4 text-center">
+                Delete Item?
+              </h3>
+              <p className="text-sm text-gray mb-6 text-center">
+                Are you sure you want to delete <span className="font-medium text-black">{itemInstance.catalogItem.name}</span> from your inventory? This action cannot be undone.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={isDeleting}
+                  className="flex-1 px-4 py-2 bg-tan text-black border border-black rounded-sm text-sm hover:bg-gray/10 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    setIsDeleting(true)
+                    try {
+                      const response = await fetch(`/api/inventory/${itemInstance.id}`, {
+                        method: 'DELETE'
+                      })
+                      if (response.ok) {
+                        router.push('/inventory')
+                      } else {
+                        setErrorMessage('Failed to delete item. Please try again.')
+                        setShowErrorModal(true)
+                      }
+                    } catch (error) {
+                      console.error('Error deleting item:', error)
+                      setErrorMessage('Failed to delete item. Please try again.')
+                      setShowErrorModal(true)
+                    } finally {
+                      setIsDeleting(false)
+                      setShowDeleteConfirm(false)
+                    }
+                  }}
+                  disabled={isDeleting}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white border border-red-600 rounded-sm text-sm hover:bg-red-700 transition-colors disabled:opacity-50"
+                >
+                  {isDeleting ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Error Modal */}
+        {showErrorModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-tan border-2 border-black rounded-sm p-6 max-w-sm w-full">
+              <h3 className="text-lg font-normal mb-4 text-center">
+                Error
+              </h3>
+              <p className="text-sm text-gray mb-6 text-center">
+                {errorMessage}
+              </p>
+              <div className="flex justify-center">
+                <button
+                  onClick={() => setShowErrorModal(false)}
+                  className="px-4 py-2 bg-tan text-black border border-black rounded-sm text-sm shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </AuthLayout>
   )

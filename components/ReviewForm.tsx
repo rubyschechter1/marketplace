@@ -91,7 +91,7 @@ export default function ReviewForm({
       <button
         onClick={handleSubmit}
         disabled={submitting || rating === 0}
-        className="mt-3 w-full bg-tan text-black border border-black p-2 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="mt-3 w-full bg-tan text-black border border-black p-2 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-black hover:text-tan"
       >
         {submitting ? "Submitting..." : buttonText || (existingReview ? "Update review" : "Submit review")}
       </button>

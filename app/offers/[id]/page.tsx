@@ -718,6 +718,58 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
           </div>
         </div>
       )}
+      
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-tan border-2 border-black rounded-sm p-6 max-w-sm w-full">
+            <h3 className="text-lg font-normal mb-4 text-center">
+              Delete {offer.type === 'ask' ? 'Ask' : 'Offer'}?
+            </h3>
+            <p className="text-sm text-gray mb-6 text-center">
+              Are you sure you want to delete this {offer.type === 'ask' ? 'ask' : 'offer'}?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2 bg-tan text-black border border-black rounded-sm text-sm hover:bg-gray/10 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteOffer}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2 bg-red-600 text-white border border-red-600 rounded-sm text-sm hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Modal */}
+      {showErrorModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-tan border-2 border-black rounded-sm p-6 max-w-sm w-full">
+            <h3 className="text-lg font-normal mb-4 text-center">
+              Error
+            </h3>
+            <p className="text-sm text-gray mb-6 text-center">
+              {errorMessage}
+            </p>
+            <div className="flex justify-center">
+              <button
+                onClick={() => setShowErrorModal(false)}
+                className="px-4 py-2 bg-tan text-black border border-black rounded-sm text-sm shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AuthLayout>
   )
 }

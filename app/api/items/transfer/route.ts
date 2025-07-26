@@ -134,7 +134,8 @@ export async function POST(request: NextRequest) {
           toOwnerId: recipientId,
           city: locationData.city,
           country: locationData.country,
-          transferMethod: "gifted"
+          transferMethod: "gifted",
+          receiverAvatarUrl: recipient.avatarUrl
         }
       })
     } else if (itemName) {
@@ -197,7 +198,8 @@ export async function POST(request: NextRequest) {
           toOwnerId: recipientId,
           city: locationData.city,
           country: locationData.country,
-          transferMethod: "gifted"
+          transferMethod: "gifted",
+          receiverAvatarUrl: recipient.avatarUrl
         }
       })
     } else {

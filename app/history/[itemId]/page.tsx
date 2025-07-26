@@ -16,18 +16,7 @@ interface HistoryEntry {
   city: string | null
   country: string | null
   transferMethod: string
-  fromOwner: {
-    id: string
-    firstName: string
-    lastName: string
-    avatarUrl: string | null
-  } | null
-  toOwner: {
-    id: string
-    firstName: string
-    lastName: string
-    avatarUrl: string | null
-  } | null
+  receiverAvatarUrl: string | null
 }
 
 interface Item {
@@ -288,11 +277,11 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemId: 
                       <div key={entry.id} className="flex items-center space-x-3 p-4 bg-tan rounded-sm border border-brown/10">
                         {/* Profile Image */}
                         <div className="flex-shrink-0">
-                          {entry.toOwner?.avatarUrl ? (
+                          {entry.receiverAvatarUrl ? (
                             <div className="w-8 h-8 rounded-full overflow-hidden">
                               <Image
-                                src={entry.toOwner.avatarUrl}
-                                alt={entry.toOwner ? getDisplayName(entry.toOwner, session?.user?.id) : 'User'}
+                                src={entry.receiverAvatarUrl}
+                                alt="Receiver"
                                 width={32}
                                 height={32}
                                 className="w-full h-full object-cover"
@@ -301,7 +290,7 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemId: 
                           ) : (
                             <div className="w-8 h-8 rounded-full bg-brown/10 flex items-center justify-center">
                               <span className="text-xs font-medium text-brown">
-                                {entry.toOwner ? entry.toOwner.firstName.charAt(0).toUpperCase() : '?'}
+                                ?
                               </span>
                             </div>
                           )}

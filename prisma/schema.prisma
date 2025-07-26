@@ -198,16 +198,17 @@ model userReputationScores {
 }
 
 model itemHistory {
-  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  itemId          String        @map("item_id") @db.Uuid
-  fromOwnerId     String?       @map("from_owner_id") @db.Uuid
-  toOwnerId       String        @map("to_owner_id") @db.Uuid
-  tradeId         String?       @map("trade_id") @db.Uuid
-  location        String?       @db.VarChar(200)
-  city            String?       @db.VarChar(100)
-  country         String?       @db.VarChar(100)
-  transferDate    DateTime      @default(now()) @map("transfer_date") @db.Timestamptz(6)
-  transferMethod  String        @map("transfer_method") @db.VarChar(50) // "created", "traded", "imported"
+  id                String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  itemId            String        @map("item_id") @db.Uuid
+  fromOwnerId       String?       @map("from_owner_id") @db.Uuid
+  toOwnerId         String        @map("to_owner_id") @db.Uuid
+  tradeId           String?       @map("trade_id") @db.Uuid
+  location          String?       @db.VarChar(200)
+  city              String?       @db.VarChar(100)
+  country           String?       @db.VarChar(100)
+  transferDate      DateTime      @default(now()) @map("transfer_date") @db.Timestamptz(6)
+  transferMethod    String        @map("transfer_method") @db.VarChar(50) // "created", "traded", "imported"
+  receiverAvatarUrl String?       @map("receiver_avatar_url") @db.VarChar(500)
   
   item            items         @relation(fields: [itemId], references: [id], onDelete: Cascade)
   fromOwner       travelers?    @relation("itemHistory_fromOwner", fields: [fromOwnerId], references: [id])

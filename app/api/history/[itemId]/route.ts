@@ -32,30 +32,6 @@ export async function GET(
           }
         },
         history: {
-          include: {
-            fromOwner: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                avatarUrl: true
-              }
-            },
-            toOwner: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                avatarUrl: true
-              }
-            },
-            trade: {
-              select: {
-                id: true,
-                status: true
-              }
-            }
-          },
           orderBy: {
             transferDate: 'desc'
           }
@@ -72,20 +48,6 @@ export async function GET(
 
     console.log(`📜 Found item with ${item.history.length} history entries`)
 
-    // Filter out entries where privacy should be maintained
-    // Only show location and date information, not user details unless it's current user
-    const publicHistory = item.history.map(entry => ({
-      id: entry.id,
-      transferDate: entry.transferDate,
-      city: entry.city,
-      country: entry.country,
-      transferMethod: entry.transferMethod,
-      // Only show user details if current user is involved
-      fromOwner: entry.fromOwner?.id === session.user.id ? entry.fromOwner : null,
-      toOwner: entry.toOwner?.id === session.user.id ? entry.toOwner : null,
-      trade: entry.trade
-    }))
-
     return NextResponse.json({
       item: {
         id: item.id,
@@ -99,8 +61,8 @@ export async function GET(
         createdAt: item.createdAt,
         instanceCreatedAt: item.instanceCreatedAt,
         currentOwnerId: item.currentOwnerId,
-        currentOwner: item.currentOwner?.id === session.user.id ? item.currentOwner : null,
-        history: publicHistory
+        currentOwner: item.currentOwner,
+        history: item.history
       }
     })
 

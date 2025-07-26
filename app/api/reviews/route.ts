@@ -243,7 +243,7 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
           }
         })
 
-        // Create history entry
+        // Create history entry with receiver's avatar
         await prisma.itemHistory.create({
           data: {
             itemId: tradeDetails.offeredItem.id,
@@ -252,7 +252,8 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
             tradeId: proposedTradeId,
             city: offerOwner.lastCity,
             country: offerOwner.lastCountry,
-            transferMethod: "traded"
+            transferMethod: "traded",
+            receiverAvatarUrl: offerOwner.avatarUrl
           }
         })
       }
@@ -276,7 +277,7 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
           }
         })
 
-        // Create history entry
+        // Create history entry with receiver's avatar
         await prisma.itemHistory.create({
           data: {
             itemId: tradeDetails.offer.item.id,
@@ -285,7 +286,8 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
             tradeId: proposedTradeId,
             city: proposer.lastCity,
             country: proposer.lastCountry,
-            transferMethod: "traded"
+            transferMethod: "traded",
+            receiverAvatarUrl: proposer.avatarUrl
           }
         })
       }

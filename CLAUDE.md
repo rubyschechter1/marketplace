@@ -121,7 +121,6 @@ This will directly modify the PRODUCTION database!
 ### Items
 - `POST /api/items` - Create new item
 - `GET /api/items/[id]` - Get specific item
-- `GET /api/items/mine` - Get user's created items
 
 ### Messages
 - `POST /api/messages` - Send a message

@@ -176,7 +176,6 @@ export async function POST(request: NextRequest) {
           name: itemName,
           description: itemDescription || null,
           imageUrl: itemImageUrl || null,
-          originalOwnerId: session.user.id,
           currentOwnerId: recipientId,
           acquisitionMethod: "gifted"
         }

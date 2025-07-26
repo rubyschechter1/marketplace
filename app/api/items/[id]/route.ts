@@ -26,13 +26,6 @@ export async function GET(
             lastName: true
           }
         },
-        originalOwner: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true
-          }
-        },
         _count: {
           select: { offers: true }
         }

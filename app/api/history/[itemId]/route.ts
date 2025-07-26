@@ -31,13 +31,6 @@ export async function GET(
             lastName: true
           }
         },
-        originalOwner: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true
-          }
-        },
         history: {
           include: {
             fromOwner: {
@@ -107,7 +100,6 @@ export async function GET(
         instanceCreatedAt: item.instanceCreatedAt,
         currentOwnerId: item.currentOwnerId,
         currentOwner: item.currentOwner?.id === session.user.id ? item.currentOwner : null,
-        originalOwner: item.originalOwner?.id === session.user.id ? item.originalOwner : null,
         history: publicHistory
       }
     })

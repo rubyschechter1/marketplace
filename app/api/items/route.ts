@@ -47,7 +47,6 @@ export async function POST(req: Request) {
         category,
         condition,
         imageUrl,
-        originalOwnerId: session.user.id,
         currentOwnerId: session.user.id,
         acquisitionMethod: "created"
       }

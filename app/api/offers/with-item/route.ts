@@ -87,12 +87,7 @@ export async function POST(req: Request) {
           name: itemName,
           description: itemDescription || "",
           imageUrl: itemImageUrl || null,
-          currentOwner: {
-            connect: { id: session.user.id }
-          },
-          createdBy: {
-            connect: { id: session.user.id }
-          },
+          currentOwnerId: session.user.id,
           acquisitionMethod: "created",
           isAvailable: false // Since it's being offered
         }

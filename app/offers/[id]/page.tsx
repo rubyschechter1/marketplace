@@ -40,6 +40,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
   const [showErrorModal, setShowErrorModal] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
   const [isDeleting, setIsDeleting] = useState(false)
+  const [itemHasHistory, setItemHasHistory] = useState<boolean>(false)
 
   useEffect(() => {
     params.then(p => setOfferId(p.id))
@@ -89,6 +90,25 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
 
     fetchOffer()
   }, [offerId, status, router, session?.user?.id, location.latitude, location.longitude])
+
+  // Check if item has history when offer is loaded
+  useEffect(() => {
+    if (offer?.item?.id) {
+      const checkItemHistory = async () => {
+        try {
+          const response = await fetch(`/api/history/${offer.item.id}`)
+          if (response.ok) {
+            const data = await response.json()
+            setItemHasHistory(data.item?.history?.length > 0)
+          }
+        } catch (error) {
+          console.error('Error checking item history:', error)
+          setItemHasHistory(false)
+        }
+      }
+      checkItemHistory()
+    }
+  }, [offer?.item?.id])
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -304,8 +324,8 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
               alt={offer.item.name}
               className="w-full h-full object-cover rounded-sm"
             />
-            {/* Item History Button */}
-            {offer.item && (
+            {/* Item History Button - only show if item has history */}
+            {offer.item && itemHasHistory && (
               <Link 
                 href={`/history/${offer.item.id}`}
                 className="absolute -bottom-10 right-0 bg-tan text-black border border-black px-3 py-1 rounded-sm text-sm hover:bg-black hover:text-tan transition-colors shadow-[2px_2px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[1px] hover:translate-y-[1px]"
@@ -317,7 +337,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
         </div>
       )}
 
-      <div className="max-w-md mx-auto" style={{ marginTop: offer.type !== 'ask' && offer.item?.imageUrl ? '30px' : '0' }}>
+      <div className="max-w-md mx-auto" style={{ marginTop: offer.type !== 'ask' && offer.item?.imageUrl ? '-10px' : '0' }}>
         {/* Content */}
         <div className="p-6">
           

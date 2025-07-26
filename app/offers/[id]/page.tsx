@@ -685,7 +685,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
               </div>
             </div>
             
-            <div className="p-4 overflow-y-auto max-h-96">
+            <div className="p-4 overflow-y-auto" style={{ maxHeight: '350px' }}>
               {loadingInventory ? (
                 <div className="text-center py-8">
                   <p className="text-body">Loading inventory...</p>

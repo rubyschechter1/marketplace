@@ -696,37 +696,38 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                   <p className="text-sm text-gray mt-2">Items you receive from trades will appear here.</p>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="grid grid-cols-3 gap-3">
                   {inventoryItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center justify-between p-3 border border-black rounded-sm bg-white hover:shadow-[2px_2px_0px_#000000] transition-shadow"
-                    >
-                      <div className="flex items-center space-x-3">
-                        {item.imageUrl ? (
-                          <img
-                            src={item.imageUrl}
-                            alt={item.name}
-                            className="w-10 h-10 object-cover rounded-sm"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 bg-gray-200 rounded-sm flex items-center justify-center">
-                            <PackageOpen size={16} className="text-gray" />
-                          </div>
-                        )}
-                        <div>
-                          <h5 className="font-normal">{item.name}</h5>
-                          {item.description && (
-                            <p className="text-sm text-gray">{item.description}</p>
-                          )}
-                        </div>
-                      </div>
+                    <div key={item.id} className="cursor-pointer">
                       <button
                         onClick={() => handleInventoryItemSelect(item)}
-                        className="bg-tan text-black border border-black px-3 py-1 rounded-sm text-sm hover:bg-black hover:text-tan transition-colors"
+                        className="block border border-black rounded-sm transition-all shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] w-full"
+                        style={{ 
+                          padding: '6px'
+                        }}
                       >
-                        Select
+                        {item.imageUrl ? (
+                          <img 
+                            src={item.imageUrl}
+                            alt={item.name}
+                            className="w-full aspect-square object-cover rounded-sm"
+                          />
+                        ) : (
+                          <div className="w-full aspect-square bg-tan rounded-sm flex items-center justify-center hover:bg-tan/80 transition-colors p-4">
+                            <Image
+                              src="/images/brownhat_final.png"
+                              alt="Default item image"
+                              width={32}
+                              height={32}
+                              className="opacity-50"
+                            />
+                          </div>
+                        )}
                       </button>
+                      {/* Item name outside the card */}
+                      <div className="text-xs text-center mt-1 text-black">
+                        {item.name}
+                      </div>
                     </div>
                   ))}
                 </div>

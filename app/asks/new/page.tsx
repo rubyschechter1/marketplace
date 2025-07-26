@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { Plus, ArrowLeft, PackageOpen } from "lucide-react"
+import { Plus, ChevronLeft, PackageOpen } from "lucide-react"
 import Button from "@/components/ui/Button"
 import AuthLayout from "@/components/AuthLayout"
 
@@ -130,7 +130,7 @@ export default function NewAskPage() {
         {/* Header */}
         <div className="flex items-center mb-8">
           <Link href="/" className="mr-4">
-            <ArrowLeft size={24} />
+            <ChevronLeft size={24} />
           </Link>
           <h1 className="text-header font-normal">Post an ask</h1>
         </div>

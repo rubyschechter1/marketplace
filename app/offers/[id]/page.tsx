@@ -306,7 +306,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
             }}
             className="inline-flex items-center text-black hover:text-gray ml-[3px]"
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft size={24} />
           </button>
           
           <h1 className="text-header font-normal flex-1 text-center mr-6">{offer.title}</h1>

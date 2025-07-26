@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { Plus, ArrowLeft, Package } from "lucide-react"
+import { Plus, ChevronLeft, Package } from "lucide-react"
 import Button from "@/components/ui/Button"
 import BrownHatLoader from "@/components/BrownHatLoader"
 import AuthLayout from "@/components/AuthLayout"
@@ -259,7 +259,7 @@ export default function NewOfferPage() {
         {/* Header */}
         <div className="flex items-center mb-8">
           <Link href="/" className="mr-4">
-            <ArrowLeft size={24} />
+            <ChevronLeft size={24} />
           </Link>
           <h1 className="text-header font-normal">Offer an item</h1>
         </div>

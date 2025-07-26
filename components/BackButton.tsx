@@ -33,7 +33,7 @@ export default function BackButton({
       onClick={handleClick}
       className={className}
     >
-      <ChevronLeft size={20} className="mr-1" />
+      <ChevronLeft size={24} className="mr-1" />
       {children}
     </button>
   )

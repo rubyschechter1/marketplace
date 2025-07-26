@@ -70,18 +70,24 @@ export async function DELETE(
       include: {
         offer: {
           select: {
-            acceptedTradeId: true
+            acceptedTradeId: true,
+            status: true
           }
         }
       }
     })
 
+    // Filter out trades where the offer is completed
+    const nonCompletedTrades = activeTrades.filter(trade => 
+      trade.offer.status !== 'completed'
+    )
+
     // Check if any of these trades are accepted or potentially active
-    const hasAcceptedTrade = activeTrades.some(trade => 
+    const hasAcceptedTrade = nonCompletedTrades.some(trade => 
       trade.offer.acceptedTradeId === trade.id
     )
     
-    const hasPendingTrade = activeTrades.some(trade => 
+    const hasPendingTrade = nonCompletedTrades.some(trade => 
       !trade.offer.acceptedTradeId || trade.offer.acceptedTradeId === trade.id
     )
 

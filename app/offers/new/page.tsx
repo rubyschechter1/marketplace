@@ -59,8 +59,36 @@ export default function NewOfferPage() {
         description: itemDescription,
         imageUrl: itemPhoto
       })
+    } else if (itemId && !itemName) {
+      // Fetch item data from API if only itemId is provided
+      fetchItemData(itemId)
     }
   }, [searchParams])
+
+  const fetchItemData = async (itemId: string) => {
+    try {
+      const response = await fetch(`/api/items/${itemId}`)
+      if (response.ok) {
+        const data = await response.json()
+        const item = data.item
+        
+        // Pre-populate form with fetched item data
+        setUseInventory(true)
+        setFormData({
+          offeringTitle: item.name,
+          offeringDescription: item.description || "",
+          seekingItems: [""],
+          photoUrl: item.imageUrl || "",
+          photoPreview: item.imageUrl || ""
+        })
+        
+        // Set selected inventory item
+        setSelectedInventoryItem(item)
+      }
+    } catch (error) {
+      console.error('Error fetching item data:', error)
+    }
+  }
 
   const fetchInventory = async () => {
     try {
@@ -286,13 +314,13 @@ export default function NewOfferPage() {
                 // Trigger photo upload
                 document.getElementById('photo-upload')?.click()
               }}
-              className={`flex-1 py-3 px-6 text-button rounded-sm border transition-all font-normal shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] ${
+              className={`flex-1 py-3 px-6 text-button rounded-sm border transition-all font-normal shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] flex items-center justify-center ${
                 !useInventory 
                   ? 'bg-tan text-black border-black' 
                   : 'bg-tan text-black border-black'
               }`}
             >
-              <Plus size={16} className="inline mr-2" />
+              <Plus size={20} className="mr-2" />
               New item
             </button>
             <button

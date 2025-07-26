@@ -201,9 +201,9 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemId: 
 
         {/* Item Image and Action Buttons */}
         <div className="px-6 py-0">
-          <div className="mb-6">
+          <div className="mb-6 flex justify-center items-start gap-6">
             {/* Image */}
-            <div className="flex justify-center mb-4">
+            <div className="flex-shrink-0">
               {hasImage ? (
                 <div className="w-48 h-48 rounded-sm overflow-hidden border border-brown/10">
                   <Image
@@ -246,7 +246,7 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemId: 
 
             {/* Action Buttons - only show for current owner */}
             {isCurrentOwner && (
-              <div className="flex flex-col space-y-3 max-w-48 mx-auto">
+              <div className="flex flex-col space-y-3 w-48">
                 <button
                   onClick={handleOfferItem}
                   className="w-full bg-tan text-black border border-black py-3 px-4 rounded-sm transition-all text-center font-medium shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
@@ -285,7 +285,7 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemId: 
                       : entry.city || entry.country || 'Unknown location'
                     
                     return (
-                      <div key={entry.id} className="flex items-start space-x-3 p-4 bg-tan rounded-sm border border-brown/10">
+                      <div key={entry.id} className="flex items-center space-x-3 p-4 bg-tan rounded-sm border border-brown/10">
                         {/* Profile Image */}
                         <div className="flex-shrink-0">
                           {entry.toOwner?.avatarUrl ? (
@@ -309,16 +309,12 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemId: 
                         
                         {/* Timeline Content */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-start space-x-2 text-sm">
-                            <div className="flex flex-col space-y-1">
-                              <div className="flex items-center space-x-2">
-                                <MapPin size={14} className="text-brown/50 flex-shrink-0" />
-                                <span className="text-gray">Traded in {location}</span>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Calendar size={14} className="text-brown/50 flex-shrink-0" />
-                                <span className="text-gray/70">{date}</span>
-                              </div>
+                          <div className="flex justify-between items-center text-sm">
+                            <div>
+                              <span className="text-gray">Traded in {location}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray/70">{date}</span>
                             </div>
                           </div>
                         </div>

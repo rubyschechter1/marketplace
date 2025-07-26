@@ -79,7 +79,17 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(proposedTrade)
+    // Hide reviews until both parties have reviewed (Airbnb-style)
+    let visibleReviews = proposedTrade.reviews || []
+    if (visibleReviews.length < 2) {
+      // Less than 2 reviews means not both parties have reviewed yet
+      visibleReviews = []
+    }
+
+    return NextResponse.json({
+      ...proposedTrade,
+      reviews: visibleReviews
+    })
   } catch (error) {
     console.error("Error fetching proposed trade:", error)
     return NextResponse.json(

@@ -12,6 +12,7 @@ interface ReviewFormProps {
     content: string | null
   }
   inline?: boolean
+  buttonText?: string
 }
 
 export default function ReviewForm({ 
@@ -19,7 +20,8 @@ export default function ReviewForm({
   revieweeName,
   onSubmit,
   existingReview,
-  inline = false
+  inline = false,
+  buttonText
 }: ReviewFormProps) {
   const [rating, setRating] = useState(existingReview?.rating || 0)
   const [content, setContent] = useState(existingReview?.content || "")
@@ -77,7 +79,7 @@ export default function ReviewForm({
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="Share your experience (optional)"
+        placeholder="Share your experience! (optional, but helps us keep the platform transparent and safe for everyone!)"
         className="w-full p-2 bg-tan border border-gray/20 rounded-sm resize-none placeholder-gray focus:outline-none focus:ring-1 focus:ring-gray"
         rows={3}
       />
@@ -91,7 +93,7 @@ export default function ReviewForm({
         disabled={submitting || rating === 0}
         className="mt-3 w-full bg-tan text-black border border-black p-2 rounded-sm hover:bg-black hover:text-tan transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {submitting ? "Submitting..." : existingReview ? "Update review" : "Submit review"}
+        {submitting ? "Submitting..." : buttonText || (existingReview ? "Update review" : "Submit review")}
       </button>
     </div>
   )

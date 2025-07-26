@@ -240,29 +240,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create a system message in the conversation
-    if (offerId && tradeId) {
-      await prisma.messages.create({
-        data: {
-          offerId: offerId,
-          proposedTradeId: tradeId,
-          senderId: null, // System message
-          recipientId: null,
-          content: `ITEM_GIVEN:${session.user.id}:${session.user.name || 'Someone'}:${catalogItem.name}`
-        }
-      })
-
-      // Create review prompt message for the recipient
-      await prisma.messages.create({
-        data: {
-          offerId: offerId,
-          proposedTradeId: tradeId,
-          senderId: null, // System message
-          recipientId: recipientId,
-          content: `How did your exchange with ${currentUser.firstName} go? Please rate your experience.`
-        }
-      })
-    }
+    // Note: Item transfer system message and review prompts are now handled by the review system
+    // when both parties complete their reviews
 
     return NextResponse.json({
       success: true,

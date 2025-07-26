@@ -43,8 +43,20 @@ export async function GET(
       orderBy: { createdAt: 'desc' }
     })
 
-    // Show all reviews to anyone viewing the profile
-    const visibleReviews = reviews
+    // Only show reviews where both parties have completed their reviews (Airbnb-style)
+    const visibleReviews = []
+    
+    for (const review of reviews) {
+      // Count total reviews for this trade
+      const tradeReviewCount = await prisma.reviews.count({
+        where: { proposedTradeId: review.proposedTradeId }
+      })
+      
+      // Only include review if both parties have reviewed (2 reviews for the trade)
+      if (tradeReviewCount === 2) {
+        visibleReviews.push(review)
+      }
+    }
 
     // Get user's reputation score
     const reputationScore = await prisma.userReputationScores.findUnique({

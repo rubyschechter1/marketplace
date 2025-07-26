@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import AuthLayout from "@/components/AuthLayout"
 import ProfileThumbnail from "@/components/ProfileThumbnail"
-import { ChevronLeft, Send } from "lucide-react"
+import { ChevronLeft, Send, X } from "lucide-react"
 import Link from "next/link"
 import { useUser } from "@/contexts/UserContext"
 import { useLocation } from "@/contexts/LocationContext"
@@ -98,6 +98,7 @@ export default function MessagePage({
   const [isItemAvailable, setIsItemAvailable] = useState(true)
   const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set())
   const [givingItem, setGivingItem] = useState(false)
+  const [showTradeReviewModal, setShowTradeReviewModal] = useState(false)
   const [messageError, setMessageError] = useState("")
   const [itemAlreadyGiven, setItemAlreadyGiven] = useState(false)
   const hasRefreshedUser = useRef(false)
@@ -694,6 +695,10 @@ export default function MessagePage({
             
             // System messages
             if (isSystemMessage) {
+              // If system message has a specific recipient, only show to that user
+              if (message.recipientId && message.recipientId !== session?.user?.id) {
+                return null // Don't show this message to other users
+              }
               // Check if this is a review request message
               const isReviewRequest = message.content.includes('rate your experience')
               // Check if this is a review submission message
@@ -834,46 +839,22 @@ export default function MessagePage({
             </div>
             <div className="flex justify-between mt-3">
               {!itemAlreadyGiven ? (
-                <button
-                  onClick={() => {
-                    // Check if there's a specific item to give based on trade context
-                    let hasSpecificItem = false
-                    let specificItemName = ""
-                    
-                    if (session?.user?.id === tradeData.offer.traveler.id && tradeData.offer.itemInstance) {
-                      hasSpecificItem = true
-                      specificItemName = tradeData.offer.itemInstance.catalogItem.name
-                    } else if (session?.user?.id === tradeData.proposer.id && tradeData.offeredItemInstance) {
-                      hasSpecificItem = true
-                      specificItemName = tradeData.offeredItemInstance.catalogItem.name
-                    }
-                    
-                    // Always use smart give item - it will automatically detect the correct item
-                    const confirmed = confirm(
-                      `⚠️ Important: Only click "Give Item" if you have already physically given the item to ${formatDisplayName(otherUser.firstName, otherUser.lastName)} in person.\n\n` +
-                      `This will:\n` +
-                      `• Transfer the item from your inventory to ${formatDisplayName(otherUser.firstName, otherUser.lastName)}'s inventory\n` +
-                      `• Add it to their item collection\n` +
-                      `• Create a permanent record in the item's history\n\n` +
-                      `Have you already physically given the item to ${formatDisplayName(otherUser.firstName, otherUser.lastName)}?`
-                    )
-                    
-                    if (confirmed) {
-                      handleSmartGiveItem()
-                    }
-                  }}
-                  disabled={givingItem}
-                  className="bg-tan text-black border border-black px-2.5 py-1 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-xs font-medium shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
-                >
-                  <Image 
-                    src="/images/brownhat_final.png" 
-                    alt="Give Item" 
-                    width={16} 
-                    height={16} 
-                    className="mr-2" 
-                  />
-                  Give item
-                </button>
+                <div className="flex flex-col">
+                  <button
+                    onClick={() => setShowTradeReviewModal(true)}
+                    disabled={givingItem}
+                    className="bg-tan text-black border border-black px-2.5 py-1 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-xs font-medium shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
+                  >
+                    <Image 
+                      src="/images/brownhat_final.png" 
+                      alt="Send item" 
+                      width={16} 
+                      height={16} 
+                      className="mr-2" 
+                    />
+                    Send item
+                  </button>
+                </div>
               ) : (
                 <div className="bg-gray/20 text-gray border border-gray/30 px-2.5 py-1 rounded-sm flex items-center text-xs font-medium cursor-not-allowed">
                   <Image 
@@ -906,6 +887,51 @@ export default function MessagePage({
           </div>
           )}
         </div>
+
+        {/* Trade Review Modal */}
+        {showTradeReviewModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-tan border-2 border-black rounded-sm p-6 max-w-sm w-full relative">
+              {/* X Button */}
+              <button
+                onClick={() => setShowTradeReviewModal(false)}
+                className="absolute top-4 right-4 text-black hover:text-gray transition-colors"
+              >
+                <X size={20} />
+              </button>
+              
+              <h3 className="text-lg font-normal mb-4 text-center">Rate Your Trade</h3>
+              
+              <div className="mb-4">
+                <ReviewForm
+                  proposedTradeId={tradeId}
+                  revieweeName={formatDisplayName(otherUser.firstName, otherUser.lastName)}
+                  existingReview={existingReview || undefined}
+                  onSubmit={() => {
+                    setShowTradeReviewModal(false)
+                    // Refresh messages to show any updates
+                    setTimeout(async () => {
+                      const messagesResponse = await fetch(`/api/messages/${offerId}/${tradeId}`)
+                      if (messagesResponse.ok) {
+                        const data = await messagesResponse.json()
+                        setMessages(data.messages || [])
+                        // Scroll to bottom
+                        setTimeout(() => {
+                          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+                        }, 100)
+                      }
+                    }, 500)
+                  }}
+                  inline={true}
+                  buttonText="Send item"
+                />
+                <p className="text-xs text-gray mt-3 text-center">
+                  After both parties submit a review, a trade of items will be made. Check the inventory tab for your new item!
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </AuthLayout>

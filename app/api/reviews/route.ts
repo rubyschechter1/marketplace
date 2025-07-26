@@ -127,20 +127,64 @@ export async function POST(request: NextRequest) {
       select: { firstName: true }
     })
 
-    // Create a system message to show the review was submitted
-    const reviewMessage = existingReview
-      ? `${reviewer?.firstName || 'User'} updated their review`
-      : `${reviewer?.firstName || 'User'} submitted a review`
-    
-    await prisma.messages.create({
-      data: {
-        content: reviewMessage,
-        offerId: proposedTrade.offerId,
-        proposedTradeId: proposedTradeId,
-        // No senderId for system messages
-        // No recipientId for system messages
+    // Check if both parties have now reviewed - if so, complete the trade
+    const allReviews = await prisma.reviews.findMany({
+      where: { proposedTradeId },
+      include: {
+        reviewer: { select: { firstName: true, lastName: true } }
       }
     })
+
+    // Need exactly 2 reviews (one from each party)
+    if (allReviews.length === 2) {
+      // Both parties have reviewed - now reveal reviews and complete the trade
+      
+      // Create system message showing both reviews are now visible (Airbnb-style)
+      await prisma.messages.create({
+        data: {
+          content: `📝 Both parties have reviewed each other! Reviews are now visible.`,
+          offerId: proposedTrade.offerId,
+          proposedTradeId: proposedTradeId,
+          // No senderId for system messages
+          // No recipientId for system messages
+        }
+      })
+      
+      // Complete the trade by transferring items
+      await completeTradeWithItemTransfer(proposedTrade, proposedTradeId)
+    } else {
+      // Only one party has reviewed so far - create messages for both parties
+      const reviewerName = reviewer?.firstName || 'Someone'
+      
+      // Message for the reviewer
+      const reviewerMessage = existingReview
+        ? `You updated your review. It will be visible once both parties have reviewed.`
+        : `You submitted your review. It will be visible once both parties have reviewed.`
+      
+      await prisma.messages.create({
+        data: {
+          content: reviewerMessage,
+          offerId: proposedTrade.offerId,
+          proposedTradeId: proposedTradeId,
+          senderId: null, // System message
+          recipientId: reviewerId, // Only visible to the reviewer
+        }
+      })
+      
+      // Message for the other party
+      const otherPartyId = isOfferOwner ? proposedTrade.proposerId : proposedTrade.offer.travelerId
+      const otherPartyMessage = `${reviewerName} has submitted their review on the trade. It will be visible once both parties have reviewed. In order to send a review, click the "Send item" button.`
+      
+      await prisma.messages.create({
+        data: {
+          content: otherPartyMessage,
+          offerId: proposedTrade.offerId,
+          proposedTradeId: proposedTradeId,
+          senderId: null, // System message
+          recipientId: otherPartyId, // Only visible to the other party
+        }
+      })
+    }
 
     return NextResponse.json(review)
   } catch (error) {
@@ -149,6 +193,113 @@ export async function POST(request: NextRequest) {
       { error: "Failed to save review" },
       { status: 500 }
     )
+  }
+}
+
+async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId: string) {
+  try {
+    console.log('🎉 Both parties have reviewed - completing trade:', proposedTradeId)
+    
+    // Get the full trade details with items
+    const tradeDetails = await prisma.proposedTrades.findUnique({
+      where: { id: proposedTradeId },
+      include: {
+        proposer: true,
+        offeredItemInstance: {
+          include: { catalogItem: true }
+        },
+        offer: {
+          include: {
+            traveler: true,
+            itemInstance: {
+              include: { catalogItem: true }
+            }
+          }
+        }
+      }
+    })
+
+    if (!tradeDetails) return
+
+    const offerOwner = tradeDetails.offer.traveler
+    const proposer = tradeDetails.proposer
+
+    // Transfer offered item from proposer to offer owner
+    if (tradeDetails.offeredItemInstance) {
+      await prisma.itemInstances.update({
+        where: { id: tradeDetails.offeredItemInstance.id },
+        data: {
+          currentOwnerId: offerOwner.id,
+          isAvailable: true
+        }
+      })
+
+      // Create history entry
+      await prisma.itemHistory.create({
+        data: {
+          itemInstanceId: tradeDetails.offeredItemInstance.id,
+          fromOwnerId: proposer.id,
+          toOwnerId: offerOwner.id,
+          tradeId: proposedTradeId,
+          city: offerOwner.lastCity,
+          country: offerOwner.lastCountry,
+          transferMethod: "traded"
+        }
+      })
+    }
+
+    // Transfer requested item from offer owner to proposer
+    if (tradeDetails.offer.itemInstance) {
+      await prisma.itemInstances.update({
+        where: { id: tradeDetails.offer.itemInstance.id },
+        data: {
+          currentOwnerId: proposer.id,
+          isAvailable: true
+        }
+      })
+
+      // Create history entry
+      await prisma.itemHistory.create({
+        data: {
+          itemInstanceId: tradeDetails.offer.itemInstance.id,
+          fromOwnerId: offerOwner.id,
+          toOwnerId: proposer.id,
+          tradeId: proposedTradeId,
+          city: proposer.lastCity,
+          country: proposer.lastCountry,
+          transferMethod: "traded"
+        }
+      })
+
+      // Mark the offer as completed
+      await prisma.offers.update({
+        where: { id: tradeDetails.offerId },
+        data: { status: 'completed' }
+      })
+    }
+
+    // Create a system message announcing the completed trade
+    await prisma.messages.create({
+      data: {
+        content: `🎉 Trade completed! Both parties have reviewed each other. Items have been transferred to your inventories.`,
+        offerId: tradeDetails.offerId,
+        proposedTradeId: proposedTradeId,
+        // No senderId for system messages
+        // No recipientId for system messages
+      }
+    })
+
+    console.log('✅ Trade completed successfully:', proposedTradeId)
+  } catch (error) {
+    console.error('❌ Error completing trade:', error)
+    // Create error message
+    await prisma.messages.create({
+      data: {
+        content: `❌ Error completing trade automatically. Please contact support.`,
+        offerId: proposedTrade.offerId,
+        proposedTradeId: proposedTradeId,
+      }
+    })
   }
 }
 

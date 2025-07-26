@@ -216,68 +216,8 @@ export async function PUT(
         })
       }
 
-      // If accepting a trade, handle inventory transfers and reject other pending trades
+      // If accepting a trade, reject other pending trades (but don't transfer items yet)
       if (status === 'accepted') {
-        // Handle inventory item transfers
-        const offerOwner = proposedTrade.offer.traveler!
-        const proposer = proposedTrade.proposer!
-
-        // Transfer offered item from proposer to offer owner
-        if (proposedTrade.offeredItem) {
-          // Update ownership of the offered item
-          await tx.items.update({
-            where: { id: proposedTrade.offeredItem.id },
-            data: {
-              currentOwnerId: offerOwner.id,
-              isAvailable: true // Available again in new owner's inventory
-            }
-          })
-
-          // Create history entry for the transfer
-          await tx.itemHistory.create({
-            data: {
-              itemId: proposedTrade.offeredItem.id,
-              fromOwnerId: proposer.id,
-              toOwnerId: offerOwner.id,
-              tradeId: proposedTrade.id,
-              city: offerOwner.lastCity,
-              country: offerOwner.lastCountry,
-              transferMethod: "traded"
-            }
-          })
-        }
-
-        // Transfer requested item from offer owner to proposer
-        if (proposedTrade.offer.item) {
-          // Update ownership of the requested item
-          await tx.items.update({
-            where: { id: proposedTrade.offer.item.id },
-            data: {
-              currentOwnerId: proposer.id,
-              isAvailable: true // Available again in new owner's inventory
-            }
-          })
-
-          // Create history entry for the transfer
-          await tx.itemHistory.create({
-            data: {
-              itemId: proposedTrade.offer.item.id,
-              fromOwnerId: offerOwner.id,
-              toOwnerId: proposer.id,
-              tradeId: proposedTrade.id,
-              city: proposer.lastCity,
-              country: proposer.lastCountry,
-              transferMethod: "traded"
-            }
-          })
-
-          // Mark the offer as completed since the item has been traded
-          await tx.offers.update({
-            where: { id: proposedTrade.offerId },
-            data: { status: 'completed' }
-          })
-        }
-
         // Find all other pending trades for this offer
         const otherTrades = await tx.proposedTrades.findMany({
           where: {
@@ -312,6 +252,9 @@ export async function PUT(
             }
           })
         }
+        
+        // Note: Item transfers now happen when both parties complete their reviews
+        // This ensures the "Send item" button workflow is properly followed
       }
 
       // If unaccepting a trade (changing from accepted back to pending), make other trades available again

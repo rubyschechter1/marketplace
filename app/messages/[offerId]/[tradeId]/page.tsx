@@ -104,7 +104,7 @@ export default function MessagePage({
     if (content.startsWith('TRADE_ACCEPTED:')) {
       const [, actorId, actorName] = content.split(':')
       const displayName = session?.user?.id === actorId ? 'You' : actorName
-      return `${displayName} accepted the trade! The [SEND_ITEM_BUTTON] button has now been activated.\nOnce both parties click "send item" and review the trade, your new item will be found in your inventory!`
+      return `${displayName} accepted the trade! The [SEND_ITEM_BUTTON] button has now been activated.\nOnce both parties click "send item" and submit reviews, items will be exchanged and found in your inventories!`
     }
     
     if (content.startsWith('TRADE_CANCELED:')) {
@@ -230,30 +230,14 @@ export default function MessagePage({
       }
   }
 
-  // Check if item has already been given based on system messages or automatic trade transfers
+  // Check if item has already been given based on whether reviews are completed
   const checkIfItemAlreadyGiven = () => {
-    if (!session?.user?.id || !tradeData) return false
+    if (!session?.user?.id || !tradeData || !existingReview) return false
     
-    // Check if trade involves inventory items and has been accepted
-    // In this case, items are automatically transferred, so manual "Give Item" is not needed
-    if (tradeData.status === 'accepted') {
-      const isOfferOwner = session.user.id === tradeData.offer.traveler.id
-      const isProposer = session.user.id === tradeData.proposer.id
-      
-      // If this is an accepted trade with inventory items, the transfer is automatic
-      if ((isOfferOwner && tradeData.offer.item) || 
-          (isProposer && tradeData.offeredItem)) {
-        return true // Hide "Give Item" button - transfer was automatic
-      }
-    }
-    
-    // Check for manual transfer system messages (legacy behavior)
-    if (!messages.length) return false
-    const userName = session.user.name?.split(' ')[0] || 'Someone'
+    // If user has already reviewed, check if trade completion message exists
     return messages.some(message => 
       !message.senderId && // System message
-      message.content.includes(`${userName} has given you`) &&
-      message.content.includes('You can now see this item in your inventory')
+      message.content.includes('Trade completed! Both parties have reviewed each other')
     )
   }
 

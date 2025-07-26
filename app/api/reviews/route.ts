@@ -227,52 +227,68 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
 
     // Handle offered item transfer (from proposer to offer owner)
     if (tradeDetails.offeredItem) {
-      // Update item ownership
-      await prisma.items.update({
+      // Check if item is still owned by proposer (hasn't been transferred yet)
+      const currentOfferedItem = await prisma.items.findUnique({
         where: { id: tradeDetails.offeredItem.id },
-        data: {
-          currentOwnerId: offerOwner.id,
-          isAvailable: true
-        }
+        select: { currentOwnerId: true }
       })
+      
+      if (currentOfferedItem && currentOfferedItem.currentOwnerId === proposer.id) {
+        // Update item ownership
+        await prisma.items.update({
+          where: { id: tradeDetails.offeredItem.id },
+          data: {
+            currentOwnerId: offerOwner.id,
+            isAvailable: true
+          }
+        })
 
-      // Create history entry
-      await prisma.itemHistory.create({
-        data: {
-          itemId: tradeDetails.offeredItem.id,
-          fromOwnerId: proposer.id,
-          toOwnerId: offerOwner.id,
-          tradeId: proposedTradeId,
-          city: offerOwner.lastCity,
-          country: offerOwner.lastCountry,
-          transferMethod: "traded"
-        }
-      })
+        // Create history entry
+        await prisma.itemHistory.create({
+          data: {
+            itemId: tradeDetails.offeredItem.id,
+            fromOwnerId: proposer.id,
+            toOwnerId: offerOwner.id,
+            tradeId: proposedTradeId,
+            city: offerOwner.lastCity,
+            country: offerOwner.lastCountry,
+            transferMethod: "traded"
+          }
+        })
+      }
     }
 
     // Handle requested item transfer (from offer owner to proposer)
     if (tradeDetails.offer.item) {
-      // Update item ownership
-      await prisma.items.update({
+      // Check if item is still owned by offer owner (hasn't been transferred yet)
+      const currentRequestedItem = await prisma.items.findUnique({
         where: { id: tradeDetails.offer.item.id },
-        data: {
-          currentOwnerId: proposer.id,
-          isAvailable: true
-        }
+        select: { currentOwnerId: true }
       })
+      
+      if (currentRequestedItem && currentRequestedItem.currentOwnerId === offerOwner.id) {
+        // Update item ownership
+        await prisma.items.update({
+          where: { id: tradeDetails.offer.item.id },
+          data: {
+            currentOwnerId: proposer.id,
+            isAvailable: true
+          }
+        })
 
-      // Create history entry
-      await prisma.itemHistory.create({
-        data: {
-          itemId: tradeDetails.offer.item.id,
-          fromOwnerId: offerOwner.id,
-          toOwnerId: proposer.id,
-          tradeId: proposedTradeId,
-          city: proposer.lastCity,
-          country: proposer.lastCountry,
-          transferMethod: "traded"
-        }
-      })
+        // Create history entry
+        await prisma.itemHistory.create({
+          data: {
+            itemId: tradeDetails.offer.item.id,
+            fromOwnerId: offerOwner.id,
+            toOwnerId: proposer.id,
+            tradeId: proposedTradeId,
+            city: proposer.lastCity,
+            country: proposer.lastCountry,
+            transferMethod: "traded"
+          }
+        })
+      }
     }
 
     // Mark the offer as completed

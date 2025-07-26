@@ -36,6 +36,10 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
   const [loadingInventory, setLoadingInventory] = useState(false)
   const [selectedInventoryItem, setSelectedInventoryItem] = useState<any>(null)
   const [customItemError, setCustomItemError] = useState("")
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showErrorModal, setShowErrorModal] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     params.then(p => setOfferId(p.id))

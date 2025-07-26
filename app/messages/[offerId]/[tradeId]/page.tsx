@@ -101,6 +101,8 @@ export default function MessagePage({
   const [showTradeReviewModal, setShowTradeReviewModal] = useState(false)
   const [showAcceptConfirmModal, setShowAcceptConfirmModal] = useState(false)
   const [pendingTradeAction, setPendingTradeAction] = useState<'accept' | 'cancel' | null>(null)
+  const [showErrorModal, setShowErrorModal] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
   const [messageError, setMessageError] = useState("")
   const [itemAlreadyGiven, setItemAlreadyGiven] = useState(false)
   const hasRefreshedUser = useRef(false)

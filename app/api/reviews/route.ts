@@ -224,6 +224,11 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
     const offerOwner = tradeDetails.offer.traveler
     const proposer = tradeDetails.proposer
 
+    if (!offerOwner || !proposer) {
+      console.error('❌ Missing offer owner or proposer in trade details')
+      return
+    }
+
     // Transfer offered item from proposer to offer owner
     if (tradeDetails.offeredItemInstance) {
       await prisma.itemInstances.update({

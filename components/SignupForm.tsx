@@ -16,21 +16,23 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [showTermsModal, setShowTermsModal] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Check terms first before setting loading state
+    if (!formData.acceptedTerms) {
+      setShowTermsModal(true)
+      return
+    }
+    
     setIsLoading(true)
     setError("")
 
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords don't match")
-      setIsLoading(false)
-      return
-    }
-
-    if (!formData.acceptedTerms) {
-      setError("You must accept the Terms of Service to create an account")
       setIsLoading(false)
       return
     }
@@ -159,15 +161,36 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
 
         {/* Terms of Service Acceptance */}
         <div className="flex items-start space-x-3">
-          <input
-            id="acceptedTerms"
-            type="checkbox"
-            checked={formData.acceptedTerms}
-            onChange={(e) => setFormData({...formData, acceptedTerms: e.target.checked})}
-            className="mt-1 w-4 h-4 accent-black"
-            required
-          />
-          <label htmlFor="acceptedTerms" className="text-sm text-gray leading-relaxed">
+          <div className="relative mt-1">
+            <input
+              id="acceptedTerms"
+              type="checkbox"
+              checked={formData.acceptedTerms}
+              onChange={(e) => setFormData({...formData, acceptedTerms: e.target.checked})}
+              className="sr-only"
+            />
+            <label
+              htmlFor="acceptedTerms"
+              className={`w-4 h-4 border border-black rounded-sm cursor-pointer flex items-center justify-center transition-colors ${
+                formData.acceptedTerms ? 'bg-tan' : 'bg-tan'
+              }`}
+            >
+              {formData.acceptedTerms && (
+                <svg
+                  className="w-3 h-3 text-black"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              )}
+            </label>
+          </div>
+          <label htmlFor="acceptedTerms" className="text-sm text-gray leading-relaxed cursor-pointer">
             I acknowledge that I have read and agree to the{' '}
             <a 
               href="/terms" 
@@ -201,6 +224,26 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
       >
         Back
       </button>
+
+      {/* Terms of Service Modal */}
+      {showTermsModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-tan border border-black rounded-sm max-w-sm w-full p-6">
+            <h3 className="text-lg font-medium text-black mb-2">Terms of Service Required</h3>
+            <p className="text-sm text-gray mb-6">
+              You must accept the Terms of Service to create an account.
+            </p>
+            <div className="flex justify-center">
+              <button
+                onClick={() => setShowTermsModal(false)}
+                className="px-4 py-2 text-sm font-medium text-black bg-tan border border-black rounded-sm hover:bg-brown/10 transition-colors"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

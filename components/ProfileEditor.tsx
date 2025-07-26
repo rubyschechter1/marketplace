@@ -91,6 +91,10 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
   const [sessionLanguages, setSessionLanguages] = useState<string[]>([])
   const [sessionCountries, setSessionCountries] = useState<string[]>([])
   
+  // Local state for languages and countries to reflect immediate changes
+  const [currentLanguages, setCurrentLanguages] = useState<string[]>(user.languages)
+  const [currentCountries, setCurrentCountries] = useState<string[]>(user.countriesVisited || [])
+  
   const bioHasChanged = bio !== originalBio
 
   const updateProfile = async (data: any) => {
@@ -147,7 +151,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
     if (value.trim()) {
       const filtered = LANGUAGES.filter(lang => 
         lang.toLowerCase().includes(value.toLowerCase()) &&
-        !user.languages.includes(lang)
+        !currentLanguages.includes(lang)
       ).slice(0, 10) // Show max 10 suggestions
       setFilteredLanguages(filtered)
       setShowDropdown(true)
@@ -158,9 +162,14 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
   }
 
   const handleLanguageSelect = async (language: string) => {
-    const updatedLanguages = [...user.languages, language]
+    console.log('Selecting language:', language)
+    console.log('Current user languages:', currentLanguages)
+    const updatedLanguages = [...currentLanguages, language]
+    console.log('Updated languages:', updatedLanguages)
     const success = await updateProfile({ languages: updatedLanguages })
+    console.log('Update success:', success)
     if (success) {
+      setCurrentLanguages(updatedLanguages)
       setSessionLanguages(prev => [...prev, language])
       setNewLanguage("")
       setShowDropdown(false)
@@ -182,9 +191,10 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
       return
     }
     
-    const updatedLanguages = [...user.languages, selectedLanguage]
+    const updatedLanguages = [...currentLanguages, selectedLanguage]
     const success = await updateProfile({ languages: updatedLanguages })
     if (success) {
+      setCurrentLanguages(updatedLanguages)
       setNewLanguage("")
       setIsAddingLanguage(false)
       setShowDropdown(false)
@@ -195,10 +205,9 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
   const handleCountryInputChange = (value: string) => {
     setNewCountry(value)
     if (value.trim()) {
-      const countriesVisited = user.countriesVisited || []
       const filtered = COUNTRIES.filter(country => 
         country.toLowerCase().includes(value.toLowerCase()) &&
-        !countriesVisited.includes(country)
+        !currentCountries.includes(country)
       ).slice(0, 10) // Show max 10 suggestions
       setFilteredCountries(filtered)
       setShowCountryDropdown(true)
@@ -209,10 +218,14 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
   }
 
   const handleCountrySelect = async (country: string) => {
-    const currentCountries = user.countriesVisited || []
+    console.log('Selecting country:', country)
+    console.log('Current user countries:', currentCountries)
     const updatedCountries = [...currentCountries, country]
+    console.log('Updated countries:', updatedCountries)
     const success = await updateProfile({ countriesVisited: updatedCountries })
+    console.log('Country update success:', success)
     if (success) {
+      setCurrentCountries(updatedCountries)
       setSessionCountries(prev => [...prev, country])
       setNewCountry("")
       setShowCountryDropdown(false)
@@ -234,10 +247,10 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
       return
     }
     
-    const currentCountries = user.countriesVisited || []
     const updatedCountries = [...currentCountries, selectedCountry]
     const success = await updateProfile({ countriesVisited: updatedCountries })
     if (success) {
+      setCurrentCountries(updatedCountries)
       setNewCountry("")
       setIsAddingCountry(false)
       setShowCountryDropdown(false)
@@ -314,9 +327,9 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
         <h2 className="text-lg mb-2">Speaks</h2>
         {isAddingLanguage ? (
           <div className="mb-3">
-            {user.languages.length > 0 ? (
+            {currentLanguages.length > 0 ? (
               <div className="flex flex-wrap gap-2">
-                {user.languages.map((language, index) => (
+                {currentLanguages.map((language, index) => (
                   <span
                     key={index}
                     className="inline-flex items-center gap-1 text-sm font-bold text-gray bg-tan px-2 py-1 rounded border border-gray/20"
@@ -324,8 +337,11 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
                     {language}
                     <button
                       onClick={async () => {
-                        const updatedLanguages = user.languages.filter((_, i) => i !== index)
-                        await updateProfile({ languages: updatedLanguages })
+                        const updatedLanguages = currentLanguages.filter((_, i) => i !== index)
+                        const success = await updateProfile({ languages: updatedLanguages })
+                        if (success) {
+                          setCurrentLanguages(updatedLanguages)
+                        }
                       }}
                       className="text-black hover:text-gray text-xs font-bold ml-1"
                     >
@@ -340,8 +356,8 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
           </div>
         ) : (
           <p className="text-sm text-gray italic mb-3">
-            {user.languages.length > 0 
-              ? user.languages.join(', ')
+            {currentLanguages.length > 0 
+              ? currentLanguages.join(', ')
               : "No languages added yet"
             }
           </p>
@@ -400,7 +416,10 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
                   // Remove all languages added in this session
                   if (sessionLanguages.length > 0) {
                     const originalLanguages = user.languages.filter(lang => !sessionLanguages.includes(lang))
-                    await updateProfile({ languages: originalLanguages })
+                    const success = await updateProfile({ languages: originalLanguages })
+                    if (success) {
+                      setCurrentLanguages(originalLanguages)
+                    }
                   }
                   setNewLanguage("")
                   setIsAddingLanguage(false)
@@ -420,7 +439,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
             onClick={() => setIsAddingLanguage(true)}
             className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors"
           >
-            {user.languages.length > 0 ? "Edit languages" : "Add language"}
+            {currentLanguages.length > 0 ? "Edit languages" : "Add language"}
           </button>
         )}
       </div>
@@ -430,9 +449,9 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
         <h2 className="text-lg mb-2">Countries visited</h2>
         {isAddingCountry ? (
           <div className="mb-3">
-            {user.countriesVisited && user.countriesVisited.length > 0 ? (
+            {currentCountries.length > 0 ? (
               <div className="flex flex-wrap gap-2">
-                {user.countriesVisited.map((country, index) => (
+                {currentCountries.map((country, index) => (
                   <span
                     key={index}
                     className="inline-flex items-center gap-1 text-sm font-bold text-gray bg-tan px-2 py-1 rounded border border-gray/20"
@@ -440,8 +459,11 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
                     {country}
                     <button
                       onClick={async () => {
-                        const updatedCountries = (user.countriesVisited || []).filter((_, i) => i !== index)
-                        await updateProfile({ countriesVisited: updatedCountries })
+                        const updatedCountries = currentCountries.filter((_, i) => i !== index)
+                        const success = await updateProfile({ countriesVisited: updatedCountries })
+                        if (success) {
+                          setCurrentCountries(updatedCountries)
+                        }
                       }}
                       className="text-black hover:text-gray text-xs font-bold ml-1"
                     >
@@ -456,8 +478,8 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
           </div>
         ) : (
           <p className="text-sm text-gray italic mb-3">
-            {user.countriesVisited && user.countriesVisited.length > 0 
-              ? user.countriesVisited.join(', ')
+            {currentCountries.length > 0 
+              ? currentCountries.join(', ')
               : "No countries added yet"
             }
           </p>
@@ -516,7 +538,10 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
                   // Remove all countries added in this session
                   if (sessionCountries.length > 0) {
                     const originalCountries = (user.countriesVisited || []).filter(country => !sessionCountries.includes(country))
-                    await updateProfile({ countriesVisited: originalCountries })
+                    const success = await updateProfile({ countriesVisited: originalCountries })
+                    if (success) {
+                      setCurrentCountries(originalCountries)
+                    }
                   }
                   setNewCountry("")
                   setIsAddingCountry(false)
@@ -536,7 +561,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
             onClick={() => setIsAddingCountry(true)}
             className="text-sm bg-tan text-black px-4 py-2 rounded-sm border border-black hover:bg-black hover:text-tan transition-colors"
           >
-            {user.countriesVisited && user.countriesVisited.length > 0 ? "Edit countries" : "Add country"}
+            {currentCountries.length > 0 ? "Edit countries" : "Add country"}
           </button>
         )}
       </div>

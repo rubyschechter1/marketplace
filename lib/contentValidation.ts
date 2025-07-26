@@ -59,15 +59,37 @@ Be reasonable - allow normal conversation and item descriptions. Only flag conte
         const result = JSON.parse(content.text)
         
         if (!result.valid) {
-          // Customize the error message based on the reason
-          let errorMessage = `${fieldName} contains content that violates our community guidelines.`
+          // Log the AI's reason for debugging (not shown to user)
+          console.log(`Content validation failed for "${fieldName}":`, result.reason)
           
-          if (result.reason?.toLowerCase().includes('currency') || 
-              result.reason?.toLowerCase().includes('money') ||
-              result.reason?.toLowerCase().includes('price')) {
+          // Use standardized error messages based on violation type
+          let errorMessage: string
+          
+          // Check the AI's reason to determine violation type
+          const reason = result.reason?.toLowerCase() || ''
+          
+          if (reason.includes('currency') || 
+              reason.includes('money') ||
+              reason.includes('price') ||
+              reason.includes('payment') ||
+              reason.includes('cash') ||
+              reason.includes('dollar') ||
+              reason.includes('euro') ||
+              reason.includes('sell') ||
+              reason.includes('buy')) {
             errorMessage = `${fieldName} cannot contain currency symbols or money-related terms. This is a bartering platform - no money involved! 🤝`
+          } else if (reason.includes('profan') ||
+                     reason.includes('inappropriate') ||
+                     reason.includes('offensive') ||
+                     reason.includes('hate') ||
+                     reason.includes('sexual') ||
+                     reason.includes('violence') ||
+                     reason.includes('drug') ||
+                     reason.includes('illegal')) {
+            errorMessage = `${fieldName} contains inappropriate content. Please keep your language respectful and family-friendly.`
           } else {
-            errorMessage = `${fieldName} contains inappropriate content. ${result.reason || 'Please review and revise your content.'}`
+            // Generic message for other violations
+            errorMessage = `${fieldName} contains content that violates our community guidelines. Please review and revise.`
           }
           
           return {

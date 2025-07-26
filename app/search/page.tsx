@@ -120,6 +120,53 @@ export default function SearchPage() {
       offer.title.toLowerCase().includes(searchLower)
   })
 
+  // Show loading skeleton when user data is not loaded yet
+  if (!currentUser && status !== "loading") {
+    return (
+      <AuthLayout>
+        <main className="p-6 max-w-md mx-auto">
+          {/* Location header skeleton */}
+          <div className="mb-8 bg-tan border border-black rounded-sm p-4 animate-pulse">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-gray/20 rounded-full mr-3"></div>
+                <div className="h-4 bg-gray/20 rounded w-24"></div>
+              </div>
+              <div className="h-3 bg-gray/20 rounded w-16"></div>
+            </div>
+          </div>
+          
+          {/* Search Input skeleton */}
+          <div className="relative mb-8">
+            <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray" size={20} />
+            <div className="w-full pl-10 pr-4 py-3 border border-black rounded-sm bg-tan">
+              <div className="h-4 bg-gray/20 rounded w-32"></div>
+            </div>
+          </div>
+
+          {/* Toggle slider skeleton */}
+          <div className="mb-8">
+            <div className="relative inline-flex bg-tan border border-black rounded-sm p-1 shadow-[3px_3px_0px_#000000] animate-pulse">
+              <div className="px-6 py-2">
+                <div className="h-4 bg-gray/20 rounded w-12"></div>
+              </div>
+              <div className="px-6 py-2">
+                <div className="h-4 bg-gray/20 rounded w-8"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Search Results skeleton */}
+          <div className="space-y-4">
+            <OfferCardSkeleton />
+            <OfferCardSkeleton />
+            <OfferCardSkeleton />
+          </div>
+        </main>
+      </AuthLayout>
+    )
+  }
+
   return (
     <AuthLayout>
       <main className="p-6 max-w-md mx-auto">

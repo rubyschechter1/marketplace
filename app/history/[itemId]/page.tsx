@@ -190,7 +190,7 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemId: 
         {/* Header */}
         <div className="bg-tan p-6">
           <div className="flex items-center justify-center relative mb-1">
-            <Link href="/inventory" className="absolute left-0 p-2 -ml-6.75 text-brown hover:bg-brown/10 rounded-lg transition-colors">
+            <Link href="/inventory" className="absolute left-0 p-2 text-brown hover:bg-brown/10 rounded-lg transition-colors" style={{ marginLeft: '-32px' }}>
               <ChevronLeft size={24} />
             </Link>
             <h1 className="text-2xl font-bold text-black">

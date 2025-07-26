@@ -8,6 +8,7 @@ import SignOutButton from "@/components/SignOutButton"
 import ProfileEditor from "@/components/ProfileEditor"
 import ProfileHeader from "@/components/ProfileHeader"
 import UserReviews from "@/components/UserReviews"
+import BrownHatLoader from "@/components/BrownHatLoader"
 import { ChevronLeft } from "lucide-react"
 
 interface UserWithOffers {
@@ -96,8 +97,8 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <AuthLayout>
-        <main className="p-6 max-w-md mx-auto">
-          <p>Loading...</p>
+        <main className="p-6 max-w-md mx-auto h-screen flex items-center justify-center">
+          <BrownHatLoader size="large" text="Loading profile..." />
         </main>
       </AuthLayout>
     )

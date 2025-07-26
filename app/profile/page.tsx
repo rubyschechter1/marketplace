@@ -120,7 +120,7 @@ export default function ProfilePage() {
   // Get list of offered items
   const offeredItems = actualOffers.map((offer: any) => offer.item.name)
 
-  const hasEnoughReviewsForSticky = reviewCount >= 5
+  const hasEnoughReviewsForSticky = reviewCount >= 3
 
   return (
     <AuthLayout>

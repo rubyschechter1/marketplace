@@ -65,6 +65,28 @@ A barter marketplace for travelers with:
    - No vendor lock-in
    - More initial setup but full control
 
+## Database Development Workflow
+
+**IMPORTANT: No Migrations During Early Development**
+- We're in early stages with a single database (production)
+- Do NOT use `prisma migrate dev` or create migration files
+- Use this simplified workflow:
+  1. Make changes to `prisma/schema.prisma`
+  2. Run `npx prisma db push` to update the database
+  3. Run `npx prisma generate` to update the client
+- Once we have separate dev/staging/prod databases, we'll switch to proper migrations
+
+**FOR CLAUDE: When using this workflow, ALWAYS print this warning:**
+```
+⚠️  WARNING: Using prisma db push (no-migrations workflow)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This will directly modify the PRODUCTION database!
+- Changes cannot be rolled back
+- No migration history will be created
+- This is only safe during early development
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
 ## Database Schema
 
 ### Core Tables

@@ -318,7 +318,7 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemId: 
         {/* Delete Confirmation Modal */}
         {showDeleteModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-sm max-w-sm w-full p-6">
+            <div className="bg-tan border border-black rounded-sm max-w-sm w-full p-6 shadow-[3px_3px_0px_#000000]">
               <h3 className="text-lg font-medium text-black mb-2">Delete Item</h3>
               <p className="text-sm text-gray mb-6">
                 Are you sure you want to delete "{item?.name}"? This action cannot be undone.
@@ -326,13 +326,13 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemId: 
               <div className="flex space-x-3">
                 <button
                   onClick={() => setShowDeleteModal(false)}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-gray bg-gray/10 rounded-sm hover:bg-gray/20 transition-colors"
+                  className="flex-1 px-4 py-2 text-sm font-medium text-black bg-tan border border-black rounded-sm hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] transition-all shadow-[3px_3px_0px_#000000]"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-sm hover:bg-red-700 transition-colors"
+                  className="flex-1 px-4 py-2 text-sm font-medium text-black bg-tan border border-black rounded-sm hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] transition-all shadow-[3px_3px_0px_#000000]"
                 >
                   Delete
                 </button>

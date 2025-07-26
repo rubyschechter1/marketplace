@@ -33,7 +33,14 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        console.log("✅ User found, checking password...")
+        console.log("✅ User found, checking email verification...")
+        
+        if (!user.emailVerified) {
+          console.log("❌ Email not verified")
+          throw new Error("Please verify your email before logging in")
+        }
+        
+        console.log("✅ Email verified, checking password...")
         const isPasswordValid = await compare(credentials.password, user.password)
 
         if (!isPasswordValid) {

@@ -30,7 +30,12 @@ export default function LoginForm({ onSwitch, onBack }: { onSwitch: () => void; 
 
       if (result?.error) {
         console.log("❌ Login error:", result.error)
-        setError("Invalid email or password")
+        // Check if the error is about email verification
+        if (result.error.includes("verify your email")) {
+          setError("Please verify your email before logging in. Check your inbox for the verification link.")
+        } else {
+          setError("Invalid email or password")
+        }
       } else if (result?.ok) {
         console.log("✅ Login successful, refreshing page...")
         // Small delay to ensure session is set, then reload

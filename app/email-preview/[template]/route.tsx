@@ -5,12 +5,17 @@ import * as React from 'react';
 // Import all email templates
 import { PasswordResetEmail } from '@/emails/password-reset';
 import { WelcomeEmail } from '@/emails/welcome';
+import { VerificationEmail } from '@/emails/verification';
 import { TradeProposalEmail } from '@/emails/trade-proposal';
 import { TradeStatusEmail } from '@/emails/trade-status';
 import { NewMessageEmail } from '@/emails/new-message';
 
 // Sample data for each template
 const sampleData = {
+  'verification': {
+    firstName: 'Emma',
+    verificationUrl: 'https://brownstrawhat.com/api/auth/verify-email?token=sample-verification-token',
+  },
   'password-reset': {
     firstName: 'John',
     resetLink: 'https://brownstrawhat.com/auth/reset-password?token=sample-token',
@@ -58,6 +63,10 @@ export async function GET(
   let previewData;
 
   switch (template) {
+    case 'verification':
+      previewData = sampleData['verification'];
+      emailComponent = React.createElement(VerificationEmail, previewData);
+      break;
     case 'password-reset':
       previewData = sampleData['password-reset'];
       emailComponent = React.createElement(PasswordResetEmail, previewData);
@@ -87,6 +96,7 @@ export async function GET(
         { 
           error: 'Template not found',
           available: [
+            'verification',
             'password-reset',
             'welcome',
             'trade-proposal',

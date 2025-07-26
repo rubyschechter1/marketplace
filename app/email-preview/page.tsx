@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 export default function EmailPreviewPage() {
   const templates = [
+    { id: 'verification', name: 'Email Verification', description: 'Sent when a user signs up to verify their email' },
     { id: 'welcome', name: 'Welcome Email', description: 'Sent when a user signs up' },
     { id: 'password-reset', name: 'Password Reset', description: 'Sent when user requests password reset' },
     { id: 'trade-proposal', name: 'Trade Proposal', description: 'Sent when someone proposes a trade' },

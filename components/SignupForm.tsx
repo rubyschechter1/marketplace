@@ -16,12 +16,14 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError("")
+    setSuccess("")
 
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords don't match")
@@ -54,19 +56,17 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
         throw new Error(data.error || "Something went wrong")
       }
 
-      // Auto sign in after signup
-      const result = await signIn("credentials", {
-        email: formData.email,
-        password: formData.password,
-        redirect: false,
+      // Show success message about email verification
+      setSuccess(data.message || "Please check your email to verify your account before logging in.")
+      // Clear form
+      setFormData({
+        email: "",
+        password: "",
+        confirmPassword: "",
+        firstName: "",
+        lastInitial: "",
+        acceptedTerms: false
       })
-
-      if (result?.error) {
-        setError("Failed to sign in after signup")
-      } else {
-        router.push("/profile")
-        router.refresh()
-      }
     } catch (error: any) {
       setError(error.message)
     } finally {
@@ -182,6 +182,12 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
 
         {error && (
           <div className="text-red-600 text-body">{error}</div>
+        )}
+
+        {success && (
+          <div className="bg-green-50 border border-green-300 text-green-800 px-4 py-3 rounded-sm text-body">
+            {success}
+          </div>
         )}
 
         <Button

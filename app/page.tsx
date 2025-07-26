@@ -43,7 +43,7 @@ async function getCurrentUser(userId: string) {
   return data.user
 }
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ welcome?: string }> }) {
+export default async function Home({ searchParams }: { searchParams: Promise<{ welcome?: string; verified?: string; error?: string }> }) {
   const session = await getServerSession(authOptions)
   const params = await searchParams
 
@@ -60,7 +60,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
           />
         </div>
         
-        <AuthForms />
+        <AuthForms verified={params.verified} error={params.error} />
       </main>
     )
   }

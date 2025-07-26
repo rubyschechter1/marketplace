@@ -2,9 +2,10 @@ import { NextResponse } from "next/server"
 import { hash } from "bcryptjs"
 import { PrismaClient } from "@prisma/client"
 import { resend, FROM_EMAIL } from "@/lib/email/resend"
-import { WelcomeEmail } from "@/emails/welcome"
+import { VerificationEmail } from "@/emails/verification"
 import { render } from '@react-email/render'
 import * as React from 'react'
+import crypto from 'crypto'
 
 const prisma = new PrismaClient()
 
@@ -43,33 +44,43 @@ export async function POST(req: Request) {
     // Hash password
     const hashedPassword = await hash(password, 12)
 
-    // Create user
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex')
+    const tokenExpiry = new Date()
+    tokenExpiry.setHours(tokenExpiry.getHours() + 24) // Token expires in 24 hours
+
+    // Create user with verification token
     const user = await prisma.travelers.create({
       data: {
         email,
         firstName,
         lastName,
-        password: hashedPassword
+        password: hashedPassword,
+        emailVerified: false,
+        emailVerificationToken: verificationToken,
+        emailVerificationTokenExpiry: tokenExpiry
       }
     })
 
-    // Send welcome email
+    // Send verification email
     if (process.env.RESEND_API_KEY) {
       try {
+        const verificationUrl = `${process.env.NEXTAUTH_URL}/api/auth/verify-email?token=${verificationToken}`
+        
         await resend.emails.send({
           from: FROM_EMAIL,
           to: email,
-          subject: 'BSH: Welcome to Brown Straw Hat!',
+          subject: 'BSH: Verify your email address',
           html: await render(
-            React.createElement(WelcomeEmail, {
+            React.createElement(VerificationEmail, {
               firstName,
-              email,
+              verificationUrl,
             })
           ),
         });
       } catch (emailError) {
-        console.error('Failed to send welcome email:', emailError);
-        // Don't fail the signup if email fails
+        console.error('Failed to send verification email:', emailError);
+        // Don't fail the signup if email fails, but log it
       }
     }
 
@@ -79,7 +90,8 @@ export async function POST(req: Request) {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName
-      }
+      },
+      message: "Please check your email to verify your account before logging in."
     })
   } catch (error) {
     console.error("Signup error:", error)

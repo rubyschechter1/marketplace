@@ -12,7 +12,6 @@ import { useLocation } from "@/contexts/LocationContext"
 import BrownHatLoader from "@/components/BrownHatLoader"
 import ReviewForm from "@/components/ReviewForm"
 import Image from "next/image"
-import { validateNoCurrency } from "@/lib/currencyFilter"
 import { formatDisplayName, getDisplayName } from "@/lib/formatName"
 
 interface Message {
@@ -330,12 +329,7 @@ export default function MessagePage({
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !tradeData) return
 
-    // Validate message for currency content and inappropriate content
-    const validation = validateNoCurrency(newMessage, "Messages", "message")
-    if (!validation.isValid) {
-      setMessageError(validation.error!)
-      return
-    }
+    // Validation will be handled on the server side
 
     setMessageError("") // Clear any previous errors
     setSending(true)
@@ -365,6 +359,9 @@ export default function MessagePage({
         setTimeout(() => {
           messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
         }, 100)
+      } else {
+        const errorData = await response.json()
+        setMessageError(errorData.error || 'Failed to send message')
       }
     } catch (error) {
       console.error('Error sending message:', error)
@@ -872,15 +869,8 @@ export default function MessagePage({
               <textarea
                 value={newMessage}
                 onChange={(e) => {
-                  const value = e.target.value
-                  // Real-time validation for currency content and inappropriate content
-                  const validation = validateNoCurrency(value, "Messages", "message")
-                  if (!validation.isValid) {
-                    setMessageError(validation.error!)
-                  } else {
-                    setMessageError("")
-                  }
-                  setNewMessage(value)
+                  setNewMessage(e.target.value)
+                  setMessageError("")
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {

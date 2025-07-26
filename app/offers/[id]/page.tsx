@@ -10,7 +10,6 @@ import { MapPin, ChevronLeft, PackageOpen } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useLocation } from "@/contexts/LocationContext"
 import BrownHatLoader from "@/components/BrownHatLoader"
-import { validateNoCurrency } from "@/lib/currencyFilter"
 import { getDisplayName } from "@/lib/formatName"
 
 export default function OfferPage({ params }: { params: Promise<{ id: string }> }) {
@@ -211,13 +210,6 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
       itemName = isOtherSelected ? customItemText : (selectedItem || "")
       if (!itemName) return
       
-      // Validate item name for currency content and inappropriate content
-      const validation = validateNoCurrency(itemName, "Item name", "offer")
-      if (!validation.isValid) {
-        setCustomItemError(validation.error!)
-        return
-      }
-      
       // Create an item for what the user is offering
       const itemResponse = await fetch('/api/items', {
         method: 'POST',
@@ -230,7 +222,10 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
       })
       
       if (!itemResponse.ok) {
-        throw new Error('Failed to create item')
+        const errorData = await itemResponse.json()
+        setCustomItemError(errorData.error || 'Failed to create item')
+        setIsSubmitting(false)
+        return
       }
       
       const { item } = await itemResponse.json()
@@ -247,7 +242,10 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
       })
       
       if (!tradeResponse.ok) {
-        throw new Error('Failed to propose trade')
+        const errorData = await tradeResponse.json()
+        setCustomItemError(errorData.error || 'Failed to propose trade')
+        setIsSubmitting(false)
+        return
       }
       
       // Mark this item as submitted and refresh the offer
@@ -488,15 +486,8 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                             type="text"
                             value={customItemText}
                             onChange={(e) => {
-                              const value = e.target.value
-                              // Real-time validation for currency content and inappropriate content
-                              const validation = validateNoCurrency(value, "Custom item name", "offer")
-                              if (!validation.isValid) {
-                                setCustomItemError(validation.error!)
-                              } else {
-                                setCustomItemError("")
-                              }
-                              setCustomItemText(value)
+                              setCustomItemText(e.target.value)
+                              setCustomItemError("")
                             }}
                             placeholder="Enter item name"
                             className="w-full p-3 border border-black rounded-sm bg-tan placeholder-gray text-body focus:outline-none focus:ring-1 focus:ring-black"

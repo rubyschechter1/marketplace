@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { PrismaClient } from "@prisma/client"
-import { validateNoCurrency } from "@/lib/currencyFilter"
+import { validateMultipleFields } from "@/lib/contentValidation"
 
 const prisma = new PrismaClient()
 
@@ -16,32 +16,26 @@ export async function PUT(req: Request) {
     const data = await req.json()
     const { firstName, lastName, bio, avatarUrl, languages, countriesVisited } = data
 
-    // Validate content for currency references and inappropriate content
+    // Validate content fields
+    const fieldsToValidate = []
+    
     if (firstName) {
-      const firstNameValidation = validateNoCurrency(firstName, "First name", "profile")
-      if (!firstNameValidation.isValid) {
-        return NextResponse.json(
-          { error: firstNameValidation.error },
-          { status: 400 }
-        )
-      }
+      fieldsToValidate.push({ text: firstName, fieldName: "First name", context: "profile" as const })
     }
-
+    
     if (lastName) {
-      const lastNameValidation = validateNoCurrency(lastName, "Last name", "profile")
-      if (!lastNameValidation.isValid) {
-        return NextResponse.json(
-          { error: lastNameValidation.error },
-          { status: 400 }
-        )
-      }
+      fieldsToValidate.push({ text: lastName, fieldName: "Last name", context: "profile" as const })
     }
-
+    
     if (bio) {
-      const bioValidation = validateNoCurrency(bio, "Bio", "profile")
-      if (!bioValidation.isValid) {
+      fieldsToValidate.push({ text: bio, fieldName: "Bio", context: "profile" as const })
+    }
+    
+    if (fieldsToValidate.length > 0) {
+      const validation = await validateMultipleFields(fieldsToValidate)
+      if (!validation.isValid) {
         return NextResponse.json(
-          { error: bioValidation.error },
+          { error: validation.error },
           { status: 400 }
         )
       }

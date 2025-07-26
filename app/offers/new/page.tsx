@@ -8,7 +8,6 @@ import Button from "@/components/ui/Button"
 import BrownHatLoader from "@/components/BrownHatLoader"
 import AuthLayout from "@/components/AuthLayout"
 import Image from "next/image"
-import { validateNoCurrency } from "@/lib/currencyFilter"
 
 export default function NewOfferPage() {
   const router = useRouter()
@@ -168,13 +167,6 @@ export default function NewOfferPage() {
   }
 
   const handleSeekingItemChange = (index: number, value: string) => {
-    // Check for currency content and inappropriate content
-    const validation = validateNoCurrency(value, "Looking for items", "offer")
-    if (!validation.isValid) {
-      setError(validation.error!)
-      return
-    }
-    
     setError("") // Clear any previous errors
     const newItems = [...formData.seekingItems]
     newItems[index] = value
@@ -197,33 +189,7 @@ export default function NewOfferPage() {
     setIsSubmitting(true)
     setError("")
 
-    // Validate all form fields for currency content and inappropriate content
-    const titleValidation = validateNoCurrency(formData.offeringTitle, "Item title", "offer")
-    if (!titleValidation.isValid) {
-      setError(titleValidation.error!)
-      setIsSubmitting(false)
-      return
-    }
-
-    const descriptionValidation = validateNoCurrency(formData.offeringDescription, "Item description", "offer")
-    if (!descriptionValidation.isValid) {
-      setError(descriptionValidation.error!)
-      setIsSubmitting(false)
-      return
-    }
-
-    // Validate all seeking items
-    for (let i = 0; i < formData.seekingItems.length; i++) {
-      const item = formData.seekingItems[i]
-      if (item.trim()) {
-        const itemValidation = validateNoCurrency(item, `Looking for item ${i + 1}`, "offer")
-        if (!itemValidation.isValid) {
-          setError(itemValidation.error!)
-          setIsSubmitting(false)
-          return
-        }
-      }
-    }
+    // Form validation will be handled on the server side
 
     try {
       // First, get user's location
@@ -231,50 +197,52 @@ export default function NewOfferPage() {
         navigator.geolocation.getCurrentPosition(resolve, reject)
       })
 
-      let itemId = null
-
       if (useInventory && selectedInventoryItem) {
-        // Using inventory item
-        itemId = selectedInventoryItem.id
-      } else {
-        // Create new item
-        const itemResponse = await fetch("/api/items", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: formData.offeringTitle,
-            description: formData.offeringDescription,
-            imageUrl: formData.photoUrl || null
-          })
-        })
-
-        if (!itemResponse.ok) {
-          throw new Error("Failed to create item")
+        // Using inventory item - create offer with existing item
+        const offerData = {
+          itemId: selectedInventoryItem.id,
+          title: formData.offeringTitle,
+          description: formData.offeringDescription,
+          lookingFor: formData.seekingItems.filter(i => i),
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          locationName: "Current Location"
         }
 
-        const { item } = await itemResponse.json()
-        itemId = item.id
-      }
+        const offerResponse = await fetch("/api/offers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(offerData)
+        })
 
-      // Create offer with location
-      const offerData: any = {
-        itemId,
-        title: formData.offeringTitle,
-        description: formData.offeringDescription,
-        lookingFor: formData.seekingItems.filter(i => i),
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        locationName: "Current Location"
-      }
+        if (!offerResponse.ok) {
+          const errorData = await offerResponse.json()
+          throw new Error(errorData.error || "Failed to create offer")
+        }
+      } else {
+        // Create new item and offer together
+        const offerWithItemData = {
+          itemName: formData.offeringTitle,
+          itemDescription: formData.offeringDescription,
+          itemImageUrl: formData.photoUrl || null,
+          offerTitle: formData.offeringTitle,
+          offerDescription: formData.offeringDescription,
+          lookingFor: formData.seekingItems.filter(i => i),
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          locationName: "Current Location"
+        }
 
-      const offerResponse = await fetch("/api/offers", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(offerData)
-      })
+        const response = await fetch("/api/offers/with-item", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(offerWithItemData)
+        })
 
-      if (!offerResponse.ok) {
-        throw new Error("Failed to create offer")
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || "Failed to create offer")
+        }
       }
 
       router.push("/")
@@ -442,15 +410,8 @@ export default function NewOfferPage() {
               placeholder={useInventory ? "Selected from inventory" : "add item title (e.g. blue tennis shoes)"}
               value={formData.offeringTitle}
               onChange={(e) => {
-                if (!useInventory) {
-                  const validation = validateNoCurrency(e.target.value, "Item title", "offer")
-                  if (!validation.isValid) {
-                    setError(validation.error!)
-                    return
-                  }
-                  setError("")
-                }
                 setFormData({...formData, offeringTitle: e.target.value})
+                setError("")
               }}
               className={`w-full p-4 border border-black rounded-sm text-body focus:outline-none focus:ring-1 focus:ring-black ${
                 useInventory ? 'bg-tan cursor-not-allowed' : 'bg-tan placeholder-gray'
@@ -462,13 +423,8 @@ export default function NewOfferPage() {
               placeholder={useInventory ? "Add description for this offer (optional)" : "add description (optional)"}
               value={formData.offeringDescription}
               onChange={(e) => {
-                const validation = validateNoCurrency(e.target.value, "Item description", "offer")
-                if (!validation.isValid) {
-                  setError(validation.error!)
-                  return
-                }
-                setError("")
                 setFormData({...formData, offeringDescription: e.target.value})
+                setError("")
               }}
               className="w-full p-4 mt-3 border border-black rounded-sm bg-tan placeholder-gray text-body focus:outline-none focus:ring-1 focus:ring-black resize-none"
               rows={3}

@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { PrismaClient } from "@prisma/client"
 import { geocodeCoordinates } from "@/lib/location-utils"
 import { transformOffersWithLocation } from "@/lib/prisma-transforms"
-import { validateNoCurrency } from "@/lib/currencyFilter"
+import { validateContent, validateMultipleFields } from "@/lib/contentValidation"
 
 const prisma = new PrismaClient()
 const SEARCH_RADIUS_KM = 10
@@ -108,50 +108,38 @@ export async function POST(req: Request) {
     const data = await req.json()
     const { type = "offer", itemId, title, description, askDescription, lookingFor, latitude, longitude, locationName } = data
 
-    // Validate content for currency references and inappropriate content
+    // Validate all content fields at once
+    const fieldsToValidate = []
+    
     if (title) {
-      const titleValidation = validateNoCurrency(title, "Title", "offer")
-      if (!titleValidation.isValid) {
-        return NextResponse.json(
-          { error: titleValidation.error },
-          { status: 400 }
-        )
-      }
+      fieldsToValidate.push({ text: title, fieldName: "Title", context: "offer" as const })
     }
-
+    
     if (description) {
-      const descValidation = validateNoCurrency(description, "Description", "offer")
-      if (!descValidation.isValid) {
-        return NextResponse.json(
-          { error: descValidation.error },
-          { status: 400 }
-        )
-      }
+      fieldsToValidate.push({ text: description, fieldName: "Description", context: "offer" as const })
     }
-
+    
     if (askDescription) {
-      const askDescValidation = validateNoCurrency(askDescription, "Ask description", "offer")
-      if (!askDescValidation.isValid) {
+      fieldsToValidate.push({ text: askDescription, fieldName: "Ask description", context: "offer" as const })
+    }
+    
+    // Add lookingFor items to validation
+    if (lookingFor && Array.isArray(lookingFor)) {
+      lookingFor.forEach((item, index) => {
+        if (item && typeof item === 'string') {
+          fieldsToValidate.push({ text: item, fieldName: `Looking for item ${index + 1}`, context: "offer" as const })
+        }
+      })
+    }
+    
+    // Validate all fields
+    if (fieldsToValidate.length > 0) {
+      const validation = await validateMultipleFields(fieldsToValidate)
+      if (!validation.isValid) {
         return NextResponse.json(
-          { error: askDescValidation.error },
+          { error: validation.error },
           { status: 400 }
         )
-      }
-    }
-
-    // Validate lookingFor items
-    if (lookingFor && Array.isArray(lookingFor)) {
-      for (let i = 0; i < lookingFor.length; i++) {
-        const item = lookingFor[i]
-        if (item && typeof item === 'string') {
-          const itemValidation = validateNoCurrency(item, `Looking for item ${i + 1}`, "offer")
-          if (!itemValidation.isValid) {
-            return NextResponse.json(
-              { error: itemValidation.error },
-              { status: 400 }
-            )
-          }
-        }
       }
     }
 

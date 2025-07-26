@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { PrismaClient } from "@prisma/client"
-import { validateNoCurrency } from "@/lib/currencyFilter"
+import { validateMultipleFields } from "@/lib/contentValidation"
 import { formatDisplayName } from "@/lib/formatName"
 
 const prisma = new PrismaClient()
@@ -138,24 +138,21 @@ export async function POST(request: NextRequest) {
         }
       })
     } else if (itemName) {
-      // Validate item name for currency content and inappropriate content
-      const nameValidation = validateNoCurrency(itemName, "Item name", "offer")
-      if (!nameValidation.isValid) {
+      // Validate content fields
+      const fieldsToValidate = [
+        { text: itemName, fieldName: "Item name", context: "offer" as const }
+      ]
+      
+      if (itemDescription) {
+        fieldsToValidate.push({ text: itemDescription, fieldName: "Item description", context: "offer" as const })
+      }
+      
+      const validation = await validateMultipleFields(fieldsToValidate)
+      if (!validation.isValid) {
         return NextResponse.json(
-          { error: nameValidation.error },
+          { error: validation.error },
           { status: 400 }
         )
-      }
-
-      // Validate item description for currency content and inappropriate content
-      if (itemDescription) {
-        const descValidation = validateNoCurrency(itemDescription, "Item description", "offer")
-        if (!descValidation.isValid) {
-          return NextResponse.json(
-            { error: descValidation.error },
-            { status: 400 }
-          )
-        }
       }
 
       // Check if recipient already has an item with this name

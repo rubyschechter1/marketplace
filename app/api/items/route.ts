@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { PrismaClient } from "@prisma/client"
-import { validateNoCurrency } from "@/lib/currencyFilter"
+import { validateContent, validateMultipleFields } from "@/lib/contentValidation"
 
 const prisma = new PrismaClient()
 
@@ -23,24 +23,21 @@ export async function POST(req: Request) {
       )
     }
 
-    // Validate item name for currency content and inappropriate content
-    const nameValidation = validateNoCurrency(name, "Item name", "offer")
-    if (!nameValidation.isValid) {
+    // Validate content fields
+    const fieldsToValidate = [
+      { text: name, fieldName: "Item name", context: "offer" as const }
+    ]
+    
+    if (description) {
+      fieldsToValidate.push({ text: description, fieldName: "Item description", context: "offer" as const })
+    }
+    
+    const validation = await validateMultipleFields(fieldsToValidate)
+    if (!validation.isValid) {
       return NextResponse.json(
-        { error: nameValidation.error },
+        { error: validation.error },
         { status: 400 }
       )
-    }
-
-    // Validate item description for currency content and inappropriate content
-    if (description) {
-      const descValidation = validateNoCurrency(description, "Item description", "offer")
-      if (!descValidation.isValid) {
-        return NextResponse.json(
-          { error: descValidation.error },
-          { status: 400 }
-        )
-      }
     }
 
     const item = await prisma.items.create({

@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { validateNoCurrency } from "@/lib/currencyFilter"
 
 // Top 200 most common languages
 const LANGUAGES = [
@@ -124,13 +123,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
   }
 
   const handleSaveBio = async () => {
-    // Validate bio for currency content and inappropriate content
-    const validation = validateNoCurrency(bio, "Bio", "profile")
-    if (!validation.isValid) {
-      setBioError(validation.error!)
-      setError(validation.error!)
-      return
-    }
+    // Validation will be handled on the server side
     
     setBioError("")
     const success = await updateProfile({ bio })
@@ -269,15 +262,8 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
               <textarea
                 value={bio}
                 onChange={(e) => {
-                  const value = e.target.value
-                  // Real-time validation for currency content and inappropriate content
-                  const validation = validateNoCurrency(value, "Bio", "profile")
-                  if (!validation.isValid) {
-                    setBioError(validation.error!)
-                  } else {
-                    setBioError("")
-                  }
-                  setBio(value)
+                  setBio(e.target.value)
+                  setBioError("")
                 }}
                 className="w-full border border-black rounded-md p-4 text-sm min-h-[100px] focus:outline-none focus:ring-1 focus:ring-black resize-none bg-tan placeholder-gray"
                 placeholder="Tell other travelers about yourself!"

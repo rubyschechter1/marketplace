@@ -7,7 +7,7 @@ import { NewMessageEmail } from "@/emails/new-message"
 import { render } from '@react-email/render'
 import * as React from 'react'
 import { analyzeConversationForExchangeDate, saveExchangeDate } from "@/lib/ai/date-extraction"
-import { validateNoCurrency } from "@/lib/currencyFilter"
+import { validateContent } from "@/lib/contentValidation"
 
 const prisma = new PrismaClient()
 
@@ -28,11 +28,11 @@ export async function POST(req: Request) {
       )
     }
 
-    // Validate message content for currency references and inappropriate content
-    const contentValidation = validateNoCurrency(content, "Message content", "message")
-    if (!contentValidation.isValid) {
+    // Validate message content
+    const validation = await validateContent(content, "Message content", "message")
+    if (!validation.isValid) {
       return NextResponse.json(
-        { error: contentValidation.error },
+        { error: validation.error },
         { status: 400 }
       )
     }

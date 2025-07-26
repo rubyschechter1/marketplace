@@ -281,6 +281,21 @@ export default function MessagePage({
             // Add new messages to the state
             setMessages(prev => [...prev, ...data.messages])
             
+            // Check for system messages that should trigger state refresh
+            const hasTradeStatusChange = data.messages.some((msg: Message) => 
+              !msg.senderId && (
+                msg.content.startsWith('TRADE_ACCEPTED:') ||
+                msg.content.startsWith('TRADE_CANCELED:') ||
+                msg.content.includes('Both parties have reviewed each other') ||
+                msg.content.includes('Trade completed!')
+              )
+            )
+            
+            if (hasTradeStatusChange) {
+              // Refresh trade data to update button states
+              fetchData()
+            }
+            
             // Mark them as read if user is recipient
             const unreadMessages = data.messages.filter(
               (msg: Message) => msg.recipientId === session.user.id && !msg.isRead

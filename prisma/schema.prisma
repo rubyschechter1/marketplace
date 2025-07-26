@@ -14,7 +14,6 @@ model items {
   category          String?           @db.VarChar(50)
   condition         String?           @db.VarChar(50)
   imageUrl          String?           @map("image_url") @db.VarChar(500)
-  originalOwnerId   String            @map("original_owner_id") @db.Uuid
   currentOwnerId    String            @map("current_owner_id") @db.Uuid
   isAvailable       Boolean           @default(true) @map("is_available")
   acquisitionMethod String            @map("acquisition_method") @db.VarChar(50) // "created", "traded", "gifted"
@@ -22,14 +21,12 @@ model items {
   instanceCreatedAt DateTime          @default(now()) @map("instance_created_at") @db.Timestamptz(6)
   serialNumber      String?           @map("serial_number") @db.VarChar(100)
   
-  originalOwner     travelers         @relation("items_originalOwner", fields: [originalOwnerId], references: [id], onUpdate: NoAction)
   currentOwner      travelers         @relation("items_currentOwner", fields: [currentOwnerId], references: [id], onUpdate: NoAction)
   offers            offers[]
   proposedTrades    proposedTrades[]
   history           itemHistory[]
   
   @@index([currentOwnerId], map: "idx_items_current_owner")
-  @@index([originalOwnerId], map: "idx_items_original_owner")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -102,7 +99,6 @@ model travelers {
   emailVerificationToken                    String?           @unique @map("email_verification_token") @db.VarChar(255)
   emailVerificationTokenExpiry              DateTime?         @map("email_verification_token_expiry") @db.Timestamptz(6)
   ownedItems                                items[]           @relation("items_currentOwner")
-  originalItems                             items[]           @relation("items_originalOwner")
   messagesReceived                          messages[]        @relation("messages_recipient_idTotravelers")
   messagesSent                              messages[]        @relation("messages_sender_idTotravelers")
   offers                                    offers[]

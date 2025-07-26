@@ -1,6 +1,37 @@
 // Currency and money-related filtering for barter-only platform
 import { validateContent as validateContentModeration } from './contentModeration'
 
+// Exceptions for words that can have non-financial meanings
+const CHARGE_EXCEPTIONS = [
+  /\bcharging\s+(?:cable|cord|wire|block|adapter|station|port|dock|pad|mat|stand|base)\b/gi,
+  /\b(?:phone|device|battery|electric|electrical|power|usb|wireless|fast|quick|rapid|solar)\s+charg(?:e|er|ing)\b/gi,
+  /\bcharg(?:e|er|ing)\s+(?:port|cable|cord|wire|block|adapter|station|dock|pad|mat|stand|base|device|battery)\b/gi,
+  /\b(?:car|wall|portable|wireless|fast|quick|rapid|solar|phone|laptop|tablet)\s+charger\b/gi,
+  /\bcharger\s+(?:cable|cord|wire|block|adapter|port|for)\b/gi,
+]
+
+const BILL_EXCEPTIONS = [
+  /\bbill\s+(?:of\s+)?(?:materials|lading|sale|rights|health)\b/gi,
+  /\b(?:dollar|five|ten|twenty|hundred)\s+(?:dollar\s+)?bill\b/gi,
+  /\bbill\s+(?:gates|clinton|murray|nye)\b/gi, // Common names
+]
+
+const BANK_EXCEPTIONS = [
+  /\b(?:river|blood|memory|data|food|seed|gene|sperm|eye|snow)\s+bank\b/gi,
+  /\bbank\s+(?:statement|holiday|robber|robbery|shot|run)\b/gi,
+]
+
+const TIP_EXCEPTIONS = [
+  /\btip\s+(?:of|over|jar|off|toe|calculator)\b/gi,
+  /\b(?:pro|helpful|useful|quick|safety|travel|cooking|cleaning)\s+tips?\b/gi,
+  /\btips?\s+(?:and|for|on|to)\b/gi,
+]
+
+const RENT_EXCEPTIONS = [
+  /\brent\s+(?:a|an|control|stabilized|free|out|apart|asunder)\b/gi,
+  /\b(?:for|to)\s+rent(?:al)?\b/gi,
+]
+
 const CURRENCY_PATTERNS = [
   // Currency symbols
   /\$/g, // Dollar sign
@@ -51,20 +82,15 @@ const CURRENCY_PATTERNS = [
   /\bexpensive\b/gi,
   /\bcheap\b/gi,
   /\bafford\b/gi,
-  /\brent\b/gi,
-  /\brental\b/gi,
   /\bloan\b/gi,
   /\bdebt\b/gi,
   /\bcredit\b/gi,
-  /\bbank\b/gi,
   /\batm\b/gi,
   /\bwallet\b/gi,
   /\bincome\b/gi,
   /\bsalary\b/gi,
   /\bwage\b/gi,
   /\bwages\b/gi,
-  /\btip\b/gi,
-  /\btips\b/gi,
   /\bcommission\b/gi,
   /\bfee\b/gi,
   /\bfees\b/gi,
@@ -72,6 +98,11 @@ const CURRENCY_PATTERNS = [
   /\bcharging\b/gi,
   /\bbill\b/gi,
   /\bbilling\b/gi,
+  /\bbank\b/gi,
+  /\btip\b/gi,
+  /\btips\b/gi,
+  /\brent\b/gi,
+  /\brental\b/gi,
   /\binvoice\b/gi,
   /\breceipt\b/gi,
   /\brefund\b/gi,
@@ -138,6 +169,17 @@ const CURRENCY_PATTERNS = [
 
 export function containsCurrency(text: string): boolean {
   if (!text) return false
+  
+  // Check if text matches any exception patterns first
+  const hasChargeException = CHARGE_EXCEPTIONS.some(pattern => pattern.test(text))
+  const hasBillException = BILL_EXCEPTIONS.some(pattern => pattern.test(text))
+  const hasBankException = BANK_EXCEPTIONS.some(pattern => pattern.test(text))
+  const hasTipException = TIP_EXCEPTIONS.some(pattern => pattern.test(text))
+  const hasRentException = RENT_EXCEPTIONS.some(pattern => pattern.test(text))
+  
+  if (hasChargeException || hasBillException || hasBankException || hasTipException || hasRentException) {
+    return false
+  }
   
   return CURRENCY_PATTERNS.some(pattern => pattern.test(text))
 }

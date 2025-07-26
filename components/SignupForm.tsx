@@ -388,10 +388,13 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
             
             <div className="p-4 border-t border-black">
               <button
-                onClick={() => setShowTermsContent(false)}
-                className="w-full px-4 py-2 bg-tan text-black border border-black rounded-sm hover:bg-brown/10 transition-colors"
+                onClick={() => {
+                  setFormData({...formData, acceptedTerms: true})
+                  setShowTermsContent(false)
+                }}
+                className="w-full px-4 py-2 bg-black text-tan border border-black rounded-sm hover:bg-gray transition-colors font-medium"
               >
-                Close
+                Accept Terms of Service
               </button>
             </div>
           </div>

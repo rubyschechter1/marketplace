@@ -149,7 +149,9 @@ export default function InventoryPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-8">
-            {items.map((item) => (
+            {items
+              .sort((a, b) => new Date(b.instanceCreatedAt).getTime() - new Date(a.instanceCreatedAt).getTime())
+              .map((item) => (
               <Link 
                 key={item.id}
                 href={`/history/${item.id}`}

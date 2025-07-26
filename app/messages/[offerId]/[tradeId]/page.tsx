@@ -840,20 +840,33 @@ export default function MessagePage({
             <div className="flex justify-between mt-3">
               {!itemAlreadyGiven ? (
                 <div className="flex flex-col">
-                  <button
-                    onClick={() => setShowTradeReviewModal(true)}
-                    disabled={givingItem}
-                    className="bg-tan text-black border border-black px-2.5 py-1 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-xs font-medium shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
-                  >
-                    <Image 
-                      src="/images/brownhat_final.png" 
-                      alt="Send item" 
-                      width={16} 
-                      height={16} 
-                      className="mr-2" 
-                    />
-                    Send item
-                  </button>
+                  {tradeData.status === 'accepted' ? (
+                    <button
+                      onClick={() => setShowTradeReviewModal(true)}
+                      disabled={givingItem}
+                      className="bg-tan text-black border border-black px-2.5 py-1 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-xs font-medium shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
+                    >
+                      <Image 
+                        src="/images/brownhat_final.png" 
+                        alt="Send item" 
+                        width={16} 
+                        height={16} 
+                        className="mr-2" 
+                      />
+                      Send item
+                    </button>
+                  ) : (
+                    <div className="bg-gray/20 text-gray border border-gray/30 px-2.5 py-1 rounded-sm flex items-center text-xs font-medium cursor-not-allowed">
+                      <Image 
+                        src="/images/brownhat_final.png" 
+                        alt="Trade not accepted" 
+                        width={16} 
+                        height={16} 
+                        className="mr-2 opacity-50" 
+                      />
+                      Trade must be accepted first
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="bg-gray/20 text-gray border border-gray/30 px-2.5 py-1 rounded-sm flex items-center text-xs font-medium cursor-not-allowed">

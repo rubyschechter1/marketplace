@@ -54,67 +54,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // If trade is not accepted yet, accept it automatically when submitting a review
+    // Check if trade is accepted
     if (proposedTrade.status !== 'accepted') {
-      if (proposedTrade.status === 'pending') {
-        // Auto-accept the trade when someone submits a review
-        await prisma.proposedTrades.update({
-          where: { id: proposedTradeId },
-          data: { status: 'accepted' }
-        })
-        
-        // Create system message for trade acceptance
-        await prisma.messages.create({
-          data: {
-            offerId: proposedTrade.offerId,
-            proposedTradeId: proposedTradeId,
-            senderId: null, // System message
-            recipientId: null,
-            content: `Trade accepted automatically when review was submitted.`
-          }
-        })
-        
-        // Mark other pending trades as unavailable
-        const otherTrades = await prisma.proposedTrades.findMany({
-          where: {
-            offerId: proposedTrade.offerId,
-            id: { not: proposedTradeId },
-            status: 'pending'
-          }
-        })
-
-        if (otherTrades.length > 0) {
-          await prisma.proposedTrades.updateMany({
-            where: {
-              offerId: proposedTrade.offerId,
-              id: { not: proposedTradeId },
-              status: 'pending'
-            },
-            data: {
-              status: 'unavailable',
-              updatedAt: new Date()
-            }
-          })
-
-          // Create system messages for each other trade
-          for (const otherTrade of otherTrades) {
-            await prisma.messages.create({
-              data: {
-                offerId: proposedTrade.offerId,
-                proposedTradeId: otherTrade.id,
-                senderId: null, // System message
-                recipientId: null,
-                content: 'This item is no longer available - another trade was accepted'
-              }
-            })
-          }
-        }
-      } else {
-        return NextResponse.json(
-          { error: "Can only review pending or accepted trades" },
-          { status: 400 }
-        )
-      }
+      return NextResponse.json(
+        { error: "Can only review accepted trades" },
+        { status: 400 }
+      )
     }
 
     // Determine reviewer and reviewee

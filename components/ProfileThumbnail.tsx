@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { useSession } from "next-auth/react"
 import { formatDisplayName } from "@/lib/formatName"
 
 interface ProfileThumbnailProps {
@@ -21,6 +22,8 @@ export default function ProfileThumbnail({
   className = "",
   fromPage
 }: ProfileThumbnailProps) {
+  const { data: session } = useSession()
+  const isOwnProfile = session?.user?.id === user.id
   const sizeClasses = {
     sm: 'w-10 h-10 text-sm',
     md: 'w-12 h-12 text-base',
@@ -52,9 +55,11 @@ export default function ProfileThumbnail({
       <div className={combinedClasses}>
         {avatarContent}
       </div>
-      <span className={`${textSizeClasses[size]} text-gray mt-1 text-center`}>
-        {formatDisplayName(user.firstName, user.lastName)}
-      </span>
+      {!isOwnProfile && (
+        <span className={`${textSizeClasses[size]} text-gray mt-1 text-center`}>
+          {formatDisplayName(user.firstName, user.lastName)}
+        </span>
+      )}
     </div>
   )
 

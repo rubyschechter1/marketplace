@@ -288,9 +288,6 @@ export default function ProfileHeader({ user, isOwnProfile, reputationScore }: P
                   className="w-5 h-5 object-contain"
                 />
               ))}
-              <span className="text-sm ml-1">
-                ({reputationScore.totalReviews})
-              </span>
             </div>
           )}
 

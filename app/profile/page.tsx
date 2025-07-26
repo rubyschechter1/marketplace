@@ -37,6 +37,7 @@ export default function ProfilePage() {
   const [user, setUser] = useState<UserWithOffers | null>(null)
   const [loading, setLoading] = useState(true)
   const [reputationScore, setReputationScore] = useState<{ totalReviews: number; averageRating: number } | null>(null)
+  const [reviewCount, setReviewCount] = useState(0)
   
   const userId = searchParams.get('id') || session?.user?.id
   const fromPage = searchParams.get('from')
@@ -68,6 +69,7 @@ export default function ProfilePage() {
         if (reviewsResponse.ok) {
           const reviewData = await reviewsResponse.json()
           setReputationScore(reviewData.reputationScore)
+          setReviewCount(reviewData.reviews?.length || 0)
         }
       } catch (error) {
         console.error('Error fetching user:', error)
@@ -118,112 +120,125 @@ export default function ProfilePage() {
   // Get list of offered items
   const offeredItems = actualOffers.map((offer: any) => offer.item.name)
 
+  const hasEnoughReviewsForSticky = reviewCount >= 5
+
   return (
     <AuthLayout>
-      <main className="p-6 max-w-md mx-auto">
-        {/* Profile Header Component */}
-        <ProfileHeader 
-          user={{
-            id: user.id,
-            firstName: user.firstName,
-            lastName: user.lastName || undefined,
-            avatarUrl: user.avatarUrl,
-            createdAt: user.createdAt
-          }} 
-          isOwnProfile={isOwnProfile} 
-          reputationScore={reputationScore || undefined}
-        />
+      <main className={`max-w-md mx-auto ${hasEnoughReviewsForSticky ? 'h-screen flex flex-col' : 'p-6'}`}>
+        {/* Sticky Header Content */}
+        <div className={`${hasEnoughReviewsForSticky ? 'flex-shrink-0 p-6 pb-0' : ''}`}>
+          {/* Profile Header Component */}
+          <ProfileHeader 
+            user={{
+              id: user.id,
+              firstName: user.firstName,
+              lastName: user.lastName || undefined,
+              avatarUrl: user.avatarUrl,
+              createdAt: user.createdAt
+            }} 
+            isOwnProfile={isOwnProfile} 
+            reputationScore={reputationScore || undefined}
+          />
 
-        {/* Email Section - Only show for own profile */}
-        {isOwnProfile && (
+          {/* Email Section - Only show for own profile */}
+          {isOwnProfile && (
+            <div className="mb-6">
+              <div className="flex items-center justify-between">
+                <p className="text-sm">Email: {user.email}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Profile Editor Component - Only for own profile */}
+          {isOwnProfile ? (
+            <ProfileEditor user={{
+              id: user.id,
+              bio: user.bio,
+              languages: user.languages,
+              countriesVisited: user.countriesVisited || []
+            }} />
+          ) : (
+            <>
+              {/* Read-only About Section for other users */}
+              <div className="mb-6">
+                <h2 className="text-lg mb-3">About</h2>
+                {user.bio ? (
+                  <p className="text-sm whitespace-pre-line">{user.bio}</p>
+                ) : (
+                  <p className="text-sm text-gray italic">No bio yet.</p>
+                )}
+              </div>
+
+              {/* Read-only Languages Section for other users */}
+              <div className="mb-6">
+                <h2 className="text-lg mb-2">Speaks</h2>
+                <p className="text-sm text-gray italic">
+                  {user.languages && user.languages.length > 0 
+                    ? user.languages.join(', ')
+                    : "No languages added yet"
+                  }
+                </p>
+              </div>
+
+              {/* Read-only Countries Visited Section for other users */}
+              <div className="mb-6">
+                <h2 className="text-lg mb-2">Countries visited</h2>
+                <p className="text-sm text-gray italic">
+                  {user.countriesVisited && user.countriesVisited.length > 0 
+                    ? user.countriesVisited.join(', ')
+                    : "No countries added yet"
+                  }
+                </p>
+              </div>
+            </>
+          )}
+
+          {/* Offered Items Section */}
           <div className="mb-6">
-            <div className="flex items-center justify-between">
-              <p className="text-sm">Email: {user.email}</p>
-            </div>
+            <h2 className="text-lg mb-2">Has offered {actualOffers.length} items</h2>
+            <p className="text-sm text-gray italic">
+              {offeredItems.length > 0 
+                ? offeredItems.join(', ')
+                : "No items offered yet"
+              }
+            </p>
           </div>
-        )}
 
-        {/* Profile Editor Component - Only for own profile */}
-        {isOwnProfile ? (
-          <ProfileEditor user={{
-            id: user.id,
-            bio: user.bio,
-            languages: user.languages,
-            countriesVisited: user.countriesVisited || []
-          }} />
-        ) : (
-          <>
-            {/* Read-only About Section for other users */}
-            <div className="mb-6">
-              <h2 className="text-lg mb-3">About</h2>
-              {user.bio ? (
-                <p className="text-sm whitespace-pre-line">{user.bio}</p>
-              ) : (
-                <p className="text-sm text-gray italic">No bio yet.</p>
-              )}
-            </div>
-
-            {/* Read-only Languages Section for other users */}
-            <div className="mb-6">
-              <h2 className="text-lg mb-2">Speaks</h2>
-              <p className="text-sm text-gray italic">
-                {user.languages && user.languages.length > 0 
-                  ? user.languages.join(', ')
-                  : "No languages added yet"
-                }
-              </p>
-            </div>
-
-            {/* Read-only Countries Visited Section for other users */}
-            <div className="mb-6">
-              <h2 className="text-lg mb-2">Countries visited</h2>
-              <p className="text-sm text-gray italic">
-                {user.countriesVisited && user.countriesVisited.length > 0 
-                  ? user.countriesVisited.join(', ')
-                  : "No countries added yet"
-                }
-              </p>
-            </div>
-          </>
-        )}
-
-        {/* Offered Items Section */}
-        <div className="mb-6">
-          <h2 className="text-lg mb-2">Has offered {actualOffers.length} items</h2>
-          <p className="text-sm text-gray italic">
-            {offeredItems.length > 0 
-              ? offeredItems.join(', ')
-              : "No items offered yet"
-            }
-          </p>
+          {/* Reviews Header */}
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-lg">Reviews</h2>
+            {reviewCount > 0 && (
+              <span className="text-lg text-gray">({reviewCount})</span>
+            )}
+          </div>
         </div>
 
-
-
         {/* Reviews Section */}
-        <div className="mb-8">
-          <h2 className="text-lg mb-4">Reviews</h2>
+        <div className={`${hasEnoughReviewsForSticky ? 'flex-1 overflow-y-auto px-6' : 'mb-8'}`}>
           <UserReviews userId={user.id} />
         </div>
 
-        {/* Sign Out Button - Only for own profile */}
-        {isOwnProfile && (
-          <div className="w-full mb-6">
-            <SignOutButton className="w-full bg-tan text-black border border-black rounded-sm py-3 text-sm hover:bg-black hover:text-tan transition-colors" />
-          </div>
-        )}
+        {/* Bottom Buttons */}
+        <div className={`${hasEnoughReviewsForSticky ? 'flex-shrink-0 p-6 pt-4' : ''}`}>
+          {/* Sign Out Button - Only for own profile */}
+          {isOwnProfile && (
+            <div className="w-full mb-6">
+              <SignOutButton className="w-full bg-tan text-black border border-black rounded-sm py-3 text-sm hover:bg-black hover:text-tan transition-colors" />
+            </div>
+          )}
 
-        {/* Back Button - Only show if viewing someone else's profile */}
-        {!isOwnProfile && (
-          <div className="w-full">
-            <button 
-              onClick={handleBackClick}
-              className="w-full bg-tan text-black border border-black rounded-sm py-3 text-sm hover:bg-black hover:text-tan transition-colors flex items-center justify-center"
-            >
-              Back
-            </button>
-          </div>
-        )}
+          {/* Back Button - Only show if viewing someone else's profile */}
+          {!isOwnProfile && (
+            <div className="w-full">
+              <button 
+                onClick={handleBackClick}
+                className="w-full bg-tan text-black border border-black rounded-sm py-3 text-sm hover:bg-black hover:text-tan transition-colors flex items-center justify-center"
+              >
+                Back
+              </button>
+            </div>
+          )}
+        </div>
       </main>
     </AuthLayout>
   )

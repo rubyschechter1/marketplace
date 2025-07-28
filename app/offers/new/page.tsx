@@ -200,10 +200,9 @@ export default function NewOfferPage() {
       // Filter out empty seeking items
       const seekingItems = formData.seekingItems.filter(i => i.trim())
       
-      // If no seeking items specified, automatically add default options
-      const lookingFor = seekingItems.length > 0 
-        ? seekingItems 
-        : ["other item", "item from inventory"]
+      // If no seeking items specified, use empty array
+      // (The "other" and "from inventory" options are always available on the offer page)
+      const lookingFor = seekingItems
 
       if (useInventory && selectedInventoryItem) {
         // Using inventory item - create offer with existing item

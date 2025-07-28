@@ -387,11 +387,11 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                 )}
               </div>
             
-            {offer.lookingFor && offer.lookingFor.length > 0 && !isDeleted && (
+            {!isDeleted && (
               <div className="text-body mb-4">
                 {offer.type === 'ask' ? 'Can offer:' : 'Looking for:'}
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {offer.lookingFor.map((item: string, index: number) => (
+                  {offer.lookingFor && offer.lookingFor.map((item: string, index: number) => (
                     <button 
                       key={index}
                       className={`px-3 py-1 rounded-sm text-sm transition-all ${

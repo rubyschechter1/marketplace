@@ -44,25 +44,33 @@ export default function ProfilePage() {
   const fromPage = searchParams.get('from')
   const isOwnProfile = session?.user?.id === userId
 
+  console.log('Profile page - Session status:', status, 'Session:', session, 'userId:', userId)
+
   useEffect(() => {
     if (status === "loading") return
     
     if (!userId) {
+      console.log('No userId found, redirecting to home')
       router.push("/")
       return
     }
 
     async function fetchUser() {
       try {
+        console.log('Fetching user data for:', userId)
         const [userResponse, reviewsResponse] = await Promise.all([
           fetch(`/api/users/${userId}`),
           fetch(`/api/reviews/user/${userId}`)
         ])
         
+        console.log('User response status:', userResponse.status)
         if (userResponse.ok) {
           const userData = await userResponse.json()
+          console.log('User data loaded:', userData)
           setUser(userData)
         } else {
+          const errorData = await userResponse.json()
+          console.error('Failed to fetch user:', errorData)
           router.push("/")
           return
         }

@@ -156,13 +156,14 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemId: 
       })
 
       if (!response.ok) {
-        throw new Error('Failed to delete item')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete item')
       }
 
       router.push('/inventory')
     } catch (error) {
       console.error('Error deleting item:', error)
-      alert('Failed to delete item. Please try again.')
+      alert(error instanceof Error ? error.message : 'Failed to delete item. Please try again.')
     }
   }
 

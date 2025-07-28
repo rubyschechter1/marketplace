@@ -197,13 +197,21 @@ export default function NewOfferPage() {
         navigator.geolocation.getCurrentPosition(resolve, reject)
       })
 
+      // Filter out empty seeking items
+      const seekingItems = formData.seekingItems.filter(i => i.trim())
+      
+      // If no seeking items specified, automatically add default options
+      const lookingFor = seekingItems.length > 0 
+        ? seekingItems 
+        : ["other item", "item from inventory"]
+
       if (useInventory && selectedInventoryItem) {
         // Using inventory item - create offer with existing item
         const offerData = {
           itemId: selectedInventoryItem.id,
           title: formData.offeringTitle,
           description: formData.offeringDescription,
-          lookingFor: formData.seekingItems.filter(i => i),
+          lookingFor: lookingFor,
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           locationName: "Current Location"
@@ -227,7 +235,7 @@ export default function NewOfferPage() {
           itemImageUrl: formData.photoUrl || null,
           offerTitle: formData.offeringTitle,
           offerDescription: formData.offeringDescription,
-          lookingFor: formData.seekingItems.filter(i => i),
+          lookingFor: lookingFor,
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           locationName: "Current Location"

@@ -407,8 +407,8 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                               : submittedItem === item
                               ? 'bg-tan text-black border-2 border-black'
                               : selectedItem === item
-                              ? 'bg-tan text-black border-2 border-black hover:border-1'
-                              : 'bg-tan text-black border border-black hover:border-1 hover:border-black'
+                              ? 'bg-tan text-black border-2 border-black shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]'
+                              : 'bg-tan text-black border border-black shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]'
                           }`}
                           disabled={isOwner || !!userProposedItem}
                           onClick={() => {
@@ -432,8 +432,8 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                             : userProposedItem
                             ? 'bg-tan border border-gray text-gray cursor-default'
                             : isOtherSelected
-                            ? 'bg-tan text-black border-2 border-black hover:border-1'
-                            : 'bg-tan text-black border border-black hover:border-1 hover:border-black'
+                            ? 'bg-tan text-black border-2 border-black shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]'
+                            : 'bg-tan text-black border border-black shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]'
                         }`}
                         disabled={isOwner || !!userProposedItem}
                         onClick={() => {
@@ -457,8 +457,8 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                             : userProposedItem
                             ? 'bg-tan border border-gray text-gray cursor-default'
                             : selectedInventoryItem
-                            ? 'bg-tan text-black border-2 border-black hover:border-1'
-                            : 'bg-tan text-black border border-black hover:border-1 hover:border-black'
+                            ? 'bg-tan text-black border-2 border-black shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]'
+                            : 'bg-tan text-black border border-black shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]'
                         }`}
                         disabled={isOwner || !!userProposedItem}
                         onClick={() => {
@@ -698,7 +698,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                                 // Just navigate to the conversation - no need for initial message
                                 router.push(`/messages/${offer.id}/${trade.id}?from=offer-${offer.id}`)
                               }}
-                              className={`${isAccepted ? 'bg-black text-tan border-tan hover:bg-tan hover:text-black' : 'bg-tan text-black border-black hover:bg-black hover:text-tan'} border px-3 py-1 rounded-sm text-sm transition-colors`}
+                              className={`${isAccepted ? 'bg-black text-tan border-tan hover:bg-tan hover:text-black' : 'bg-tan text-black border-black hover:bg-black hover:text-tan'} border px-3 py-1 rounded-sm text-sm transition-all shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]`}
                             >
                               message
                             </button>
@@ -726,7 +726,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
               <div className="w-64">
               <button
                 onClick={handleDeleteOffer}
-                className="w-full bg-tan text-black border border-black p-3 rounded-sm hover:bg-black hover:text-tan hover:border-black transition-colors"
+                className="w-full bg-tan text-black border border-black p-3 rounded-sm hover:bg-black hover:text-tan hover:border-black transition-all shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
               >
                 Delete {offer.type === 'ask' ? 'ask' : 'offer'}
               </button>

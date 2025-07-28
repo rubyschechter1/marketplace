@@ -440,7 +440,7 @@ export default function NewOfferPage() {
 
           {/* You are looking for */}
           <div>
-            <h2 className="text-body mb-3">You are looking for</h2>
+            <h2 className="text-body mb-3">You are looking for (optional)</h2>
             <div className="space-y-3">
               {formData.seekingItems.map((item, index) => (
                 <div key={index} className="relative">

@@ -34,7 +34,7 @@ interface TradeData {
   status?: string // Will be removed in future
   isRejected: boolean
   isWithdrawn: boolean
-  isGiftMode: boolean
+  isGiftMode?: boolean // Optional until migration is applied
   proposer: {
     id: string
     firstName: string
@@ -806,7 +806,7 @@ export default function MessagePage({
           {/* Gift Mode Option - Only show for offer owner after trade accepted but not yet in gift mode */}
           {session?.user?.id === tradeData.offer.traveler.id && 
            isTradeStatus(tradeData, 'accepted') && 
-           !tradeData.isGiftMode && 
+           !(tradeData.isGiftMode ?? false) && 
            !existingReview && 
            tradeData.offer.status !== 'deleted' && (
             <div className="border-t border-black mt-0 pt-3 px-3 pb-3">
@@ -903,7 +903,7 @@ export default function MessagePage({
                               proposedTradeId={tradeId}
                               revieweeName={formatDisplayName(otherUser.firstName, otherUser.lastName)}
                               existingReview={existingReview || undefined}
-                              isGiftMode={tradeData.isGiftMode}
+                              isGiftMode={tradeData.isGiftMode ?? false}
                               onSubmit={() => {
                                 // Hide the review form after submission
                                 setShowReviewForm(false)
@@ -1155,14 +1155,14 @@ export default function MessagePage({
                 <X size={20} />
               </button>
               
-              <h3 className="text-lg font-normal mb-4 text-center">{tradeData.isGiftMode ? 'Rate Your Gift Experience' : 'Rate Your Trade'}</h3>
+              <h3 className="text-lg font-normal mb-4 text-center">{tradeData.isGiftMode ?? false ? 'Rate Your Gift Experience' : 'Rate Your Trade'}</h3>
               
               <div className="mb-4">
                 <ReviewForm
                   proposedTradeId={tradeId}
                   revieweeName={formatDisplayName(otherUser.firstName, otherUser.lastName)}
                   existingReview={existingReview || undefined}
-                  isGiftMode={tradeData.isGiftMode}
+                  isGiftMode={tradeData.isGiftMode ?? false}
                   onSubmit={() => {
                     setShowTradeReviewModal(false)
                     // Refresh messages to show any updates

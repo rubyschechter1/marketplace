@@ -477,7 +477,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                   /* No specific items requested - show special UI */
                   <>
                     <div className="text-gray text-sm mb-3 italic">
-                      {offer.traveler?.firstName || 'User'} has not requested anything specific for this offer.
+                      {isOwner ? 'You have' : `${offer.traveler?.firstName || 'User'} has`} not requested anything specific for this offer.
                     </div>
                     
                     {!isOwner && (
@@ -646,7 +646,10 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
             
             <div className="space-y-3">
               {offer.proposedTrades?.map((trade: any) => {
-                const isAccepted = isTradeStatus(trade, 'accepted')
+                const isAccepted = isTradeStatus({
+                  ...trade,
+                  offer: { acceptedTradeId: offer.acceptedTradeId }
+                }, 'accepted')
                 return (
                   <div key={trade.id} className="flex justify-center items-start gap-3" style={{ marginLeft: '-50px' }}>
                     <ProfileThumbnail 

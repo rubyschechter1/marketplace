@@ -157,7 +157,7 @@ export async function POST(request: NextRequest) {
       const reviewerName = reviewer?.firstName || 'Someone'
       
       // Check if this is a gift mode trade
-      const isGiftMode = proposedTrade.isGiftMode
+      const isGiftMode = proposedTrade.isGiftMode ?? false
       
       // Message for the reviewer
       const reviewerMessage = existingReview
@@ -231,7 +231,7 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
     }
 
     // Check if this is a gift mode trade
-    const isGift = tradeDetails.isGiftMode
+    const isGift = tradeDetails.isGiftMode ?? false
 
     // Handle offered item transfer (from proposer to offer owner) - always happens
     if (tradeDetails.offeredItem) {

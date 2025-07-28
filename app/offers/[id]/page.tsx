@@ -482,18 +482,18 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                     
                     {!isOwner && (
                       <>
-                        <button 
-                          className="w-full bg-tan text-black border border-black px-4 py-2 rounded-sm transition-all mb-3 shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
-                          onClick={() => {
-                            // TODO: Implement request item functionality
-                            alert('Request item functionality coming soon!')
-                          }}
-                        >
-                          Request item
-                        </button>
-                        
                         <div className="text-sm mb-2">Offer an item to trade:</div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 mb-3">
+                          <button 
+                            className="px-3 py-1 rounded-sm text-sm transition-all bg-tan text-black border border-black hover:border-1 hover:border-black"
+                            onClick={() => {
+                              // TODO: Implement request item functionality
+                              alert('Request item functionality coming soon!')
+                            }}
+                          >
+                            Request item
+                          </button>
+                          
                           <button 
                             className={`px-3 py-1 rounded-sm text-sm transition-all ${
                               isOtherSelected

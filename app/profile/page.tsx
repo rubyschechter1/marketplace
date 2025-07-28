@@ -135,7 +135,7 @@ export default function ProfilePage() {
     <AuthLayout>
       <main className={`max-w-md mx-auto ${hasEnoughReviewsForSticky ? 'h-screen flex flex-col' : 'p-6'}`}>
         {/* Sticky Header Content */}
-        <div className={`${hasEnoughReviewsForSticky ? 'flex-shrink-0 p-6 pb-0' : ''}`}>
+        <div className={`${hasEnoughReviewsForSticky ? 'flex-shrink-0 p-2 pb-0' : ''}`}>
           {/* Profile Header Component */}
           <ProfileHeader 
             user={{
@@ -151,7 +151,7 @@ export default function ProfilePage() {
 
           {/* Email Section - Only show for own profile */}
           {isOwnProfile && (
-            <div className="mb-6">
+            <div className={hasEnoughReviewsForSticky ? "mb-1" : "mb-6"}>
               <div className="flex items-center justify-between">
                 <p className="text-sm">Email: {user.email}</p>
               </div>
@@ -169,8 +169,8 @@ export default function ProfilePage() {
           ) : (
             <>
               {/* Read-only About Section for other users */}
-              <div className="mb-6">
-                <h2 className="text-lg mb-3">About</h2>
+              <div className={hasEnoughReviewsForSticky ? "mb-1" : "mb-6"}>
+                <h2 className="text-lg mb-1">About</h2>
                 {user.bio ? (
                   <p className="text-sm whitespace-pre-line">{user.bio}</p>
                 ) : (
@@ -179,8 +179,8 @@ export default function ProfilePage() {
               </div>
 
               {/* Read-only Languages Section for other users */}
-              <div className="mb-6">
-                <h2 className="text-lg mb-2">Speaks</h2>
+              <div className={hasEnoughReviewsForSticky ? "mb-1" : "mb-6"}>
+                <h2 className="text-lg mb-0">Speaks</h2>
                 <p className="text-sm text-gray italic">
                   {user.languages && user.languages.length > 0 
                     ? user.languages.join(', ')
@@ -190,8 +190,8 @@ export default function ProfilePage() {
               </div>
 
               {/* Read-only Countries Visited Section for other users */}
-              <div className="mb-6">
-                <h2 className="text-lg mb-2">Countries visited</h2>
+              <div className={hasEnoughReviewsForSticky ? "mb-1" : "mb-6"}>
+                <h2 className="text-lg mb-0">Countries visited</h2>
                 <p className="text-sm text-gray italic">
                   {user.countriesVisited && user.countriesVisited.length > 0 
                     ? user.countriesVisited.join(', ')
@@ -203,8 +203,8 @@ export default function ProfilePage() {
           )}
 
           {/* Offered Items Section */}
-          <div className="mb-6">
-            <h2 className="text-lg mb-2">Has offered {actualOffers.length} items</h2>
+          <div className={hasEnoughReviewsForSticky ? "mb-4" : "mb-6"}>
+            <h2 className="text-lg mb-0">Has offered {actualOffers.length} items</h2>
             <p className="text-sm text-gray italic">
               {offeredItems.length > 0 
                 ? offeredItems.join(', ')
@@ -214,7 +214,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Reviews Header */}
-          <div className="flex items-center gap-2 mb-4">
+          <div id="reviews" className={`flex items-center gap-2 ${hasEnoughReviewsForSticky ? "mb-1" : "mb-4"}`}>
             <h2 className="text-lg">Reviews</h2>
             {reviewCount > 0 && (
               <span className="text-lg text-gray">({reviewCount})</span>
@@ -223,12 +223,12 @@ export default function ProfilePage() {
         </div>
 
         {/* Reviews Section */}
-        <div className={`${hasEnoughReviewsForSticky ? 'flex-1 overflow-y-auto px-6' : 'mb-8'}`}>
+        <div className={`${hasEnoughReviewsForSticky ? 'flex-1 overflow-y-auto px-4 min-h-0' : 'mb-8'}`}>
           <UserReviews userId={user.id} />
         </div>
 
         {/* Bottom Buttons */}
-        <div className={`${hasEnoughReviewsForSticky ? 'flex-shrink-0 p-6 pt-4' : ''}`}>
+        <div className={`${hasEnoughReviewsForSticky ? 'flex-shrink-0 p-2 pt-0' : ''}`}>
           {/* Sign Out Button - Only for own profile */}
           {isOwnProfile && (
             <div className="w-full mb-6">

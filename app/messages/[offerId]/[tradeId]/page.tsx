@@ -110,7 +110,7 @@ export default function MessagePage({
     if (content.startsWith('TRADE_ACCEPTED:')) {
       const [, actorId, actorName] = content.split(':')
       const displayName = session?.user?.id === actorId ? 'You' : actorName
-      return `${displayName} accepted the trade! The [SEND_ITEM_BUTTON] button has now been activated.\nOnce both parties click "send item" and submit reviews, items will be exchanged and found in your inventories!`
+      return `${displayName} accepted the trade! The [SEND_ITEM_BUTTON] button has now been activated.\nOnce both parties have traded, click "send item" to submit your review. Items will be exchanged and found in your inventories!`
     }
     
     if (content.startsWith('TRADE_CANCELED:')) {
@@ -882,7 +882,21 @@ export default function MessagePage({
                           ))}
                         </div>
                       ) : (
-                        <p>{formatSystemMessage(message.content)}</p>
+                        <div>
+                          <p>{formatSystemMessage(message.content)}</p>
+                          {/* Add "See review" button for trade completion messages */}
+                          {(message.content.includes('Trade completed! Both parties have reviewed each other') || 
+                            message.content.includes('Gift completed! Both parties have reviewed each other')) && (
+                            <div className="mt-3">
+                              <Link 
+                                href="/profile#reviews"
+                                className="inline-block bg-tan text-black border border-black px-3 py-1 rounded-sm text-sm hover:bg-black hover:text-tan transition-colors shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
+                              >
+                                See review
+                              </Link>
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
                     

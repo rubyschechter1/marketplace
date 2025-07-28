@@ -533,8 +533,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                     )}
                   </>
                 )}
-            )}
-                
+            
             {(selectedItem || isOtherSelected || selectedInventoryItem) && !submittedItem && !userProposedItem && (
                   <div className="mt-4">
                     {selectedInventoryItem ? (

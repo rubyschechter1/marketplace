@@ -156,6 +156,9 @@ export async function POST(request: NextRequest) {
       // Only one party has reviewed so far - create messages for both parties
       const reviewerName = reviewer?.firstName || 'Someone'
       
+      // Check if this is a gift mode trade
+      const isGiftMode = proposedTrade.isGiftMode
+      
       // Message for the reviewer
       const reviewerMessage = existingReview
         ? `You updated your review. It will be visible once both parties have reviewed.`
@@ -173,7 +176,9 @@ export async function POST(request: NextRequest) {
       
       // Message for the other party
       const otherPartyId = isOfferOwner ? proposedTrade.proposerId : proposedTrade.offer.travelerId
-      const otherPartyMessage = `${reviewerName} has submitted their review on the trade. It will be visible once both parties have reviewed. In order to send a review, click the "Send item" button.`
+      const otherPartyMessage = isGiftMode
+        ? `${reviewerName} has submitted their review on the gift. It will be visible once both parties have reviewed. In order to send a review, click the "Send item" button.`
+        : `${reviewerName} has submitted their review on the trade. It will be visible once both parties have reviewed. In order to send a review, click the "Send item" button.`
       
       await prisma.messages.create({
         data: {
@@ -225,7 +230,10 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
       return
     }
 
-    // Handle offered item transfer (from proposer to offer owner)
+    // Check if this is a gift mode trade
+    const isGift = tradeDetails.isGiftMode
+
+    // Handle offered item transfer (from proposer to offer owner) - always happens
     if (tradeDetails.offeredItem) {
       // Check if item is still owned by proposer (hasn't been transferred yet)
       const currentOfferedItem = await prisma.items.findUnique({
@@ -252,15 +260,15 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
             tradeId: proposedTradeId,
             city: offerOwner.lastCity,
             country: offerOwner.lastCountry,
-            transferMethod: "traded",
+            transferMethod: isGift ? "gifted" : "traded",
             receiverAvatarUrl: offerOwner.avatarUrl
           }
         })
       }
     }
 
-    // Handle requested item transfer (from offer owner to proposer)
-    if (tradeDetails.offer.item) {
+    // Handle requested item transfer (from offer owner to proposer) - only in bilateral trades
+    if (tradeDetails.offer.item && !isGift) {
       // Check if item is still owned by offer owner (hasn't been transferred yet)
       const currentRequestedItem = await prisma.items.findUnique({
         where: { id: tradeDetails.offer.item.id },
@@ -300,9 +308,13 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
     })
 
     // Create a system message announcing the completed trade
+    const completionMessage = isGift 
+      ? `Gift completed! Both parties have reviewed each other. The gift has been transferred to the recipient's inventory.`
+      : `Trade completed! Both parties have reviewed each other. Items have been transferred to your inventories.`
+    
     await prisma.messages.create({
       data: {
-        content: `Trade completed! Both parties have reviewed each other. Items have been transferred to your inventories.`,
+        content: completionMessage,
         offerId: tradeDetails.offerId,
         proposedTradeId: proposedTradeId,
         // No senderId for system messages

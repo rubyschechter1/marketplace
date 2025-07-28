@@ -13,6 +13,7 @@ interface ReviewFormProps {
   }
   inline?: boolean
   buttonText?: string
+  isGiftMode?: boolean
 }
 
 export default function ReviewForm({ 
@@ -21,7 +22,8 @@ export default function ReviewForm({
   onSubmit,
   existingReview,
   inline = false,
-  buttonText
+  buttonText,
+  isGiftMode = false
 }: ReviewFormProps) {
   const [rating, setRating] = useState(existingReview?.rating || 0)
   const [content, setContent] = useState(existingReview?.content || "")
@@ -65,7 +67,7 @@ export default function ReviewForm({
   return (
     <div className={`${inline ? '' : 'mx-5'} p-4 bg-gray/10 rounded-sm`}>
       <h3 className="font-medium mb-3 text-center text-gray text-sm">
-        {existingReview ? "Update your review" : "Rate your exchange"} with {revieweeName}
+        {existingReview ? "Update your review" : (isGiftMode ? "Rate your gift experience" : "Rate your exchange")} with {revieweeName}
       </h3>
       
       <div className="mb-4 flex justify-center">

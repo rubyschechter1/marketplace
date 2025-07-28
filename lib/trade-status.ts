@@ -6,6 +6,7 @@ interface Trade {
   id: string
   isRejected: boolean
   isWithdrawn: boolean
+  isGiftMode: boolean
   offer: {
     acceptedTradeId: string | null
   }
@@ -45,4 +46,18 @@ export function isTradeStatus(trade: Trade, status: ComputedTradeStatus): boolea
  */
 export function isTradeActive(trade: Trade): boolean {
   return !trade.isRejected && !trade.isWithdrawn
+}
+
+/**
+ * Check if a trade is in gift mode (one-way transfer)
+ */
+export function isGiftMode(trade: Trade): boolean {
+  return trade.isGiftMode && isTradeStatus(trade, 'accepted')
+}
+
+/**
+ * Check if a trade requires both parties to send items (traditional trade)
+ */
+export function isBilateralTrade(trade: Trade): boolean {
+  return isTradeStatus(trade, 'accepted') && !trade.isGiftMode
 }

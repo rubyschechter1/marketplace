@@ -34,6 +34,7 @@ interface TradeData {
   status?: string // Will be removed in future
   isRejected: boolean
   isWithdrawn: boolean
+  isGiftMode: boolean
   proposer: {
     id: string
     firstName: string
@@ -99,6 +100,7 @@ export default function MessagePage({
   const [errorMessage, setErrorMessage] = useState("")
   const [messageError, setMessageError] = useState("")
   const [itemAlreadyGiven, setItemAlreadyGiven] = useState(false)
+  const [settingGiftMode, setSettingGiftMode] = useState(false)
   const hasRefreshedUser = useRef(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
@@ -124,6 +126,12 @@ export default function MessagePage({
       } else {
         return `${actorName} has given you ${itemName}! You can find your new item in your inventory.`
       }
+    }
+    
+    if (content.startsWith('GIFT_MODE_ENABLED:')) {
+      const [, actorId, actorName] = content.split(':')
+      const displayName = session?.user?.id === actorId ? 'You' : actorName
+      return `${displayName} set this to gift mode! Only ${tradeData?.proposer ? (session?.user?.id === tradeData.proposer.id ? 'you' : formatDisplayName(tradeData.proposer.firstName, tradeData.proposer.lastName)) : 'the proposer'} needs to send their item. The [SEND_ITEM_BUTTON] button is now available for the gift giver.`
     }
     
     return content // Return original content for other system messages
@@ -641,6 +649,42 @@ export default function MessagePage({
     }
   }
 
+  const handleSetGiftMode = async () => {
+    if (!tradeData || !confirm('Are you sure you want to convert this to a gift? The other person will only need to send their item without expecting anything in return.')) return
+
+    setSettingGiftMode(true)
+    try {
+      const response = await fetch(`/api/proposed-trades/${tradeId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isGiftMode: true })
+      })
+
+      if (response.ok) {
+        // Refresh trade data to show gift mode
+        const tradeResponse = await fetch(`/api/proposed-trades/${tradeId}`)
+        if (tradeResponse.ok) {
+          const updatedTrade = await tradeResponse.json()
+          setTradeData(updatedTrade)
+        }
+        
+        // Refresh messages to show system message
+        const messagesResponse = await fetch(`/api/messages/${offerId}/${tradeId}`)
+        if (messagesResponse.ok) {
+          const data = await messagesResponse.json()
+          setMessages(data.messages || [])
+        }
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to set gift mode')
+      }
+    } catch (error) {
+      console.error('Error setting gift mode:', error)
+      alert('Failed to set gift mode')
+    } finally {
+      setSettingGiftMode(false)
+    }
+  }
 
   if (loading || !tradeData) {
     return (
@@ -758,6 +802,31 @@ export default function MessagePage({
               </div>
             )}
           </div>
+          
+          {/* Gift Mode Option - Only show for offer owner after trade accepted but not yet in gift mode */}
+          {session?.user?.id === tradeData.offer.traveler.id && 
+           isTradeStatus(tradeData, 'accepted') && 
+           !tradeData.isGiftMode && 
+           !existingReview && 
+           tradeData.offer.status !== 'deleted' && (
+            <div className="border-t border-black mt-0 pt-3 px-3 pb-3">
+              <div className="text-center">
+                <p className="text-xs text-gray mb-2">Don't need anything in return?</p>
+                <button 
+                  onClick={handleSetGiftMode}
+                  disabled={settingGiftMode}
+                  className="bg-tan text-black border border-black px-3 py-1 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] text-xs"
+                >
+                  {settingGiftMode ? (
+                    <div className="flex items-center">
+                      <BrownHatLoader size="small" />
+                      <span className="ml-1">...</span>
+                    </div>
+                  ) : 'No return needed'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Messages Container - Only This Scrolls */}
@@ -834,6 +903,7 @@ export default function MessagePage({
                               proposedTradeId={tradeId}
                               revieweeName={formatDisplayName(otherUser.firstName, otherUser.lastName)}
                               existingReview={existingReview || undefined}
+                              isGiftMode={tradeData.isGiftMode}
                               onSubmit={() => {
                                 // Hide the review form after submission
                                 setShowReviewForm(false)
@@ -1085,13 +1155,14 @@ export default function MessagePage({
                 <X size={20} />
               </button>
               
-              <h3 className="text-lg font-normal mb-4 text-center">Rate Your Trade</h3>
+              <h3 className="text-lg font-normal mb-4 text-center">{tradeData.isGiftMode ? 'Rate Your Gift Experience' : 'Rate Your Trade'}</h3>
               
               <div className="mb-4">
                 <ReviewForm
                   proposedTradeId={tradeId}
                   revieweeName={formatDisplayName(otherUser.firstName, otherUser.lastName)}
                   existingReview={existingReview || undefined}
+                  isGiftMode={tradeData.isGiftMode}
                   onSubmit={() => {
                     setShowTradeReviewModal(false)
                     // Refresh messages to show any updates

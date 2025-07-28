@@ -105,7 +105,80 @@ export async function PUT(
 
     const { id } = await context.params
     const body = await request.json()
-    const { status } = body
+    const { status, isGiftMode } = body
+
+    // Handle gift mode update
+    if (isGiftMode !== undefined) {
+      // Fetch the proposed trade with all necessary relations
+      const proposedTrade = await prisma.proposedTrades.findUnique({
+        where: { id },
+        include: {
+          proposer: true,
+          offeredItem: true,
+          offer: {
+            include: {
+              traveler: true,
+              item: true
+            }
+          }
+        }
+      })
+
+      if (!proposedTrade) {
+        return NextResponse.json(
+          { error: "Proposed trade not found" },
+          { status: 404 }
+        )
+      }
+
+      // Only offer owner can set gift mode
+      if (proposedTrade.offer.travelerId !== session.user.id) {
+        return NextResponse.json(
+          { error: "Only the offer owner can set gift mode" },
+          { status: 403 }
+        )
+      }
+
+      // Can only set gift mode on accepted trades
+      if (proposedTrade.offer.acceptedTradeId !== id) {
+        return NextResponse.json(
+          { error: "Can only set gift mode on accepted trades" },
+          { status: 400 }
+        )
+      }
+
+      // Update the trade to gift mode
+      const updatedTrade = await prisma.proposedTrades.update({
+        where: { id },
+        data: { 
+          isGiftMode: true,
+          updatedAt: new Date()
+        },
+        include: {
+          proposer: true,
+          offeredItem: true,
+          offer: {
+            include: {
+              traveler: true,
+              item: true
+            }
+          }
+        }
+      })
+
+      // Create system message about gift mode
+      await prisma.messages.create({
+        data: {
+          offerId: proposedTrade.offerId,
+          proposedTradeId: proposedTrade.id,
+          senderId: null, // System message
+          recipientId: null,
+          content: `GIFT_MODE_ENABLED:${session.user.id}:${session.user.name || 'Someone'}`
+        }
+      })
+
+      return NextResponse.json(updatedTrade)
+    }
 
     if (!status || !['accepted', 'pending', 'rejected', 'withdrawn', 'unavailable'].includes(status)) {
       return NextResponse.json(

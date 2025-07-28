@@ -389,87 +389,149 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
             
             {!isDeleted && (
               <div className="text-body mb-4">
-                {offer.type === 'ask' ? 'Can offer:' : 'Looking for:'}
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {offer.lookingFor && offer.lookingFor.map((item: string, index: number) => (
-                    <button 
-                      key={index}
-                      className={`px-3 py-1 rounded-sm text-sm transition-all ${
-                        isOwner 
-                          ? 'bg-tan border border-gray text-gray cursor-default' 
-                          : userProposedItem
-                          ? userProposedItem === item
-                            ? 'bg-tan text-black border-2 border-black cursor-default'
-                            : 'bg-tan border border-gray text-gray cursor-default'
-                          : submittedItem === item
-                          ? 'bg-tan text-black border-2 border-black'
-                          : selectedItem === item
-                          ? 'bg-tan text-black border-2 border-black hover:border-1'
-                          : 'bg-tan text-black border border-black hover:border-1 hover:border-black'
-                      }`}
-                      disabled={isOwner || !!userProposedItem}
-                      onClick={() => {
-                        if (!isOwner && !userProposedItem && submittedItem !== item) {
-                          setSelectedItem(selectedItem === item ? null : item)
-                          setIsOtherSelected(false)
-                          setCustomItemText("")
-                          setSelectedInventoryItem(null)
-                        }
-                      }}
-                    >
-                      {item}
-                    </button>
-                  ))}
-                  
-                  {/* Other option */}
-                  <button 
-                    className={`px-3 py-1 rounded-sm text-sm transition-all ${
-                      isOwner 
-                        ? 'bg-tan border border-gray text-gray cursor-default' 
-                        : userProposedItem
-                        ? 'bg-tan border border-gray text-gray cursor-default'
-                        : isOtherSelected
-                        ? 'bg-tan text-black border-2 border-black hover:border-1'
-                        : 'bg-tan text-black border border-black hover:border-1 hover:border-black'
-                    }`}
-                    disabled={isOwner || !!userProposedItem}
-                    onClick={() => {
-                      if (!isOwner && !userProposedItem) {
-                        setIsOtherSelected(!isOtherSelected)
-                        setSelectedItem(null)
-                        setSelectedInventoryItem(null)
-                        if (!isOtherSelected) {
-                          setCustomItemText("")
-                        }
-                      }
-                    }}
-                  >
-                    other
-                  </button>
-                  
-                  {/* From Inventory option */}
-                  <button 
-                    className={`px-3 py-1 rounded-sm text-sm transition-all flex items-center ${
-                      isOwner 
-                        ? 'bg-tan border border-gray text-gray cursor-default' 
-                        : userProposedItem
-                        ? 'bg-tan border border-gray text-gray cursor-default'
-                        : selectedInventoryItem
-                        ? 'bg-tan text-black border-2 border-black hover:border-1'
-                        : 'bg-tan text-black border border-black hover:border-1 hover:border-black'
-                    }`}
-                    disabled={isOwner || !!userProposedItem}
-                    onClick={() => {
-                      if (!isOwner && !userProposedItem) {
-                        setShowInventoryModal(true)
-                        fetchInventory()
-                      }
-                    }}
-                  >
-                    <Image src="/images/backpack_icon.png" alt="Inventory" width={14} height={14} className="mr-1" />
-                    from inventory
-                  </button>
-                </div>
+                {/* Check if they specified what they're looking for */}
+                {offer.lookingFor && offer.lookingFor.length > 0 ? (
+                  <>
+                    {offer.type === 'ask' ? 'Can offer:' : 'Looking for:'}
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {offer.lookingFor.map((item: string, index: number) => (
+                        <button 
+                          key={index}
+                          className={`px-3 py-1 rounded-sm text-sm transition-all ${
+                            isOwner 
+                              ? 'bg-tan border border-gray text-gray cursor-default' 
+                              : userProposedItem
+                              ? userProposedItem === item
+                                ? 'bg-tan text-black border-2 border-black cursor-default'
+                                : 'bg-tan border border-gray text-gray cursor-default'
+                              : submittedItem === item
+                              ? 'bg-tan text-black border-2 border-black'
+                              : selectedItem === item
+                              ? 'bg-tan text-black border-2 border-black hover:border-1'
+                              : 'bg-tan text-black border border-black hover:border-1 hover:border-black'
+                          }`}
+                          disabled={isOwner || !!userProposedItem}
+                          onClick={() => {
+                            if (!isOwner && !userProposedItem && submittedItem !== item) {
+                              setSelectedItem(selectedItem === item ? null : item)
+                              setIsOtherSelected(false)
+                              setCustomItemText("")
+                              setSelectedInventoryItem(null)
+                            }
+                          }}
+                        >
+                          {item}
+                        </button>
+                      ))}
+                      
+                      {/* Always show Other and From Inventory options */}
+                      <button 
+                        className={`px-3 py-1 rounded-sm text-sm transition-all ${
+                          isOwner 
+                            ? 'bg-tan border border-gray text-gray cursor-default' 
+                            : userProposedItem
+                            ? 'bg-tan border border-gray text-gray cursor-default'
+                            : isOtherSelected
+                            ? 'bg-tan text-black border-2 border-black hover:border-1'
+                            : 'bg-tan text-black border border-black hover:border-1 hover:border-black'
+                        }`}
+                        disabled={isOwner || !!userProposedItem}
+                        onClick={() => {
+                          if (!isOwner && !userProposedItem) {
+                            setIsOtherSelected(!isOtherSelected)
+                            setSelectedItem(null)
+                            setSelectedInventoryItem(null)
+                            if (!isOtherSelected) {
+                              setCustomItemText("")
+                            }
+                          }
+                        }}
+                      >
+                        other
+                      </button>
+                      
+                      <button 
+                        className={`px-3 py-1 rounded-sm text-sm transition-all flex items-center ${
+                          isOwner 
+                            ? 'bg-tan border border-gray text-gray cursor-default' 
+                            : userProposedItem
+                            ? 'bg-tan border border-gray text-gray cursor-default'
+                            : selectedInventoryItem
+                            ? 'bg-tan text-black border-2 border-black hover:border-1'
+                            : 'bg-tan text-black border border-black hover:border-1 hover:border-black'
+                        }`}
+                        disabled={isOwner || !!userProposedItem}
+                        onClick={() => {
+                          if (!isOwner && !userProposedItem) {
+                            setShowInventoryModal(true)
+                            fetchInventory()
+                          }
+                        }}
+                      >
+                        <Image src="/images/backpack_icon.png" alt="Inventory" width={14} height={14} className="mr-1" />
+                        from inventory
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  /* No specific items requested - show special UI */
+                  <>
+                    <div className="text-gray text-sm mb-3 italic">
+                      {offer.traveler?.firstName || 'User'} has not requested anything specific for this offer.
+                    </div>
+                    
+                    {!isOwner && (
+                      <>
+                        <button 
+                          className="w-full bg-tan text-black border border-black px-4 py-2 rounded-sm transition-all mb-3 shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
+                          onClick={() => {
+                            // TODO: Implement request item functionality
+                            alert('Request item functionality coming soon!')
+                          }}
+                        >
+                          Request item
+                        </button>
+                        
+                        <div className="text-sm mb-2">Offer an item to trade:</div>
+                        <div className="flex gap-2">
+                          <button 
+                            className={`px-3 py-1 rounded-sm text-sm transition-all ${
+                              isOtherSelected
+                                ? 'bg-tan text-black border-2 border-black hover:border-1'
+                                : 'bg-tan text-black border border-black hover:border-1 hover:border-black'
+                            }`}
+                            onClick={() => {
+                              setIsOtherSelected(!isOtherSelected)
+                              setSelectedItem(null)
+                              setSelectedInventoryItem(null)
+                              if (!isOtherSelected) {
+                                setCustomItemText("")
+                              }
+                            }}
+                          >
+                            other
+                          </button>
+                          
+                          <button 
+                            className={`px-3 py-1 rounded-sm text-sm transition-all flex items-center ${
+                              selectedInventoryItem
+                                ? 'bg-tan text-black border-2 border-black hover:border-1'
+                                : 'bg-tan text-black border border-black hover:border-1 hover:border-black'
+                            }`}
+                            onClick={() => {
+                              setShowInventoryModal(true)
+                              fetchInventory()
+                            }}
+                          >
+                            <Image src="/images/backpack_icon.png" alt="Inventory" width={14} height={14} className="mr-1" />
+                            from inventory
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </>
+                )}
+              </div>
                 
                 {(selectedItem || isOtherSelected || selectedInventoryItem) && !submittedItem && !userProposedItem && (
                   <div className="mt-4">

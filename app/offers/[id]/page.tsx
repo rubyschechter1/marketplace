@@ -482,10 +482,9 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                     
                     {!isOwner && (
                       <>
-                        <div className="text-sm mb-2">Offer an item to trade:</div>
-                        <div className="flex gap-2 mb-3">
+                        <div className="mb-3">
                           <button 
-                            className="px-3 py-1 rounded-sm text-sm transition-all bg-tan text-black border border-black hover:border-1 hover:border-black"
+                            className="px-3 py-1 rounded-sm text-sm transition-all bg-tan text-black border border-black shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
                             onClick={() => {
                               // TODO: Implement request item functionality
                               alert('Request item functionality coming soon!')
@@ -493,12 +492,15 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                           >
                             Request item
                           </button>
-                          
+                        </div>
+                        
+                        <div className="text-sm mb-2">Or offer an item to trade:</div>
+                        <div className="flex gap-2 mb-3">
                           <button 
-                            className={`px-3 py-1 rounded-sm text-sm transition-all ${
+                            className={`px-3 py-1 rounded-sm text-sm transition-all shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] ${
                               isOtherSelected
-                                ? 'bg-tan text-black border-2 border-black hover:border-1'
-                                : 'bg-tan text-black border border-black hover:border-1 hover:border-black'
+                                ? 'bg-tan text-black border-2 border-black'
+                                : 'bg-tan text-black border border-black'
                             }`}
                             onClick={() => {
                               setIsOtherSelected(!isOtherSelected)
@@ -513,10 +515,10 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                           </button>
                           
                           <button 
-                            className={`px-3 py-1 rounded-sm text-sm transition-all flex items-center ${
+                            className={`px-3 py-1 rounded-sm text-sm transition-all flex items-center shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] ${
                               selectedInventoryItem
-                                ? 'bg-tan text-black border-2 border-black hover:border-1'
-                                : 'bg-tan text-black border border-black hover:border-1 hover:border-black'
+                                ? 'bg-tan text-black border-2 border-black'
+                                : 'bg-tan text-black border border-black'
                             }`}
                             onClick={() => {
                               setShowInventoryModal(true)

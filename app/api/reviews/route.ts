@@ -210,7 +210,10 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
       }
     })
 
-    if (!tradeDetails) return
+    if (!tradeDetails) {
+      console.error('❌ No trade details found for:', proposedTradeId)
+      return
+    }
 
     const offerOwner = tradeDetails.offer.traveler
     const proposer = tradeDetails.proposer
@@ -222,73 +225,138 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
 
     // Check if this is a gift mode trade
     const isGift = tradeDetails.isGiftMode ?? false
+    
+    console.log('📋 Trade Summary:', {
+      tradeId: proposedTradeId,
+      isGift,
+      offerType: tradeDetails.offer.type,
+      proposer: `${proposer.firstName} (${proposer.id})`,
+      offerOwner: `${offerOwner.firstName} (${offerOwner.id})`,
+      offeredItem: tradeDetails.offeredItem ? `${tradeDetails.offeredItem.name} (${tradeDetails.offeredItem.id})` : 'None',
+      requestedItem: tradeDetails.offer.item ? `${tradeDetails.offer.item.name} (${tradeDetails.offer.item.id})` : 'None'
+    })
+
+    let offeredItemTransferred = false
+    let requestedItemTransferred = false
 
     // Handle offered item transfer (from proposer to offer owner) - always happens
     if (tradeDetails.offeredItem) {
-      // Check if item is still owned by proposer (hasn't been transferred yet)
-      const currentOfferedItem = await prisma.items.findUnique({
-        where: { id: tradeDetails.offeredItem.id },
-        select: { currentOwnerId: true }
-      })
-      
-      if (currentOfferedItem && currentOfferedItem.currentOwnerId === proposer.id) {
-        // Update item ownership
-        await prisma.items.update({
+      try {
+        console.log('📦 Processing offered item transfer:', tradeDetails.offeredItem.name)
+        
+        // Check if item is still owned by proposer (hasn't been transferred yet)
+        const currentOfferedItem = await prisma.items.findUnique({
           where: { id: tradeDetails.offeredItem.id },
-          data: {
-            currentOwnerId: offerOwner.id,
-            isAvailable: true
-          }
+          select: { currentOwnerId: true, name: true, isAvailable: true }
         })
+        
+        console.log('👤 Offered item current state:', {
+          itemId: tradeDetails.offeredItem.id,
+          currentOwner: currentOfferedItem?.currentOwnerId,
+          expectedOwner: proposer.id,
+          isAvailable: currentOfferedItem?.isAvailable,
+          ownershipMatches: currentOfferedItem?.currentOwnerId === proposer.id
+        })
+        
+        if (currentOfferedItem && currentOfferedItem.currentOwnerId === proposer.id) {
+          console.log('✅ Transferring offered item from', proposer.firstName, 'to', offerOwner.firstName)
+          
+          // Update item ownership
+          await prisma.items.update({
+            where: { id: tradeDetails.offeredItem.id },
+            data: {
+              currentOwnerId: offerOwner.id,
+              isAvailable: true
+            }
+          })
 
-        // Create history entry with receiver's avatar
-        await prisma.itemHistory.create({
-          data: {
-            itemId: tradeDetails.offeredItem.id,
-            fromOwnerId: proposer.id,
-            toOwnerId: offerOwner.id,
-            tradeId: proposedTradeId,
-            city: offerOwner.lastCity,
-            country: offerOwner.lastCountry,
-            transferMethod: isGift ? "gifted" : "traded",
-            receiverAvatarUrl: offerOwner.avatarUrl
-          }
-        })
+          // Create history entry with receiver's avatar
+          await prisma.itemHistory.create({
+            data: {
+              itemId: tradeDetails.offeredItem.id,
+              fromOwnerId: proposer.id,
+              toOwnerId: offerOwner.id,
+              tradeId: proposedTradeId,
+              city: offerOwner.lastCity || "Unknown City",
+              country: offerOwner.lastCountry || "Unknown Country", 
+              transferMethod: isGift ? "gifted" : "traded",
+              receiverAvatarUrl: offerOwner.avatarUrl
+            }
+          })
+          
+          offeredItemTransferred = true
+          console.log('✅ Offered item transfer completed successfully!')
+        } else if (!currentOfferedItem) {
+          console.log('❌ Offered item not found in database')
+        } else {
+          console.log('⚠️ Offered item not transferred - current owner:', currentOfferedItem.currentOwnerId, 'expected:', proposer.id)
+        }
+      } catch (error) {
+        console.error('❌ Error transferring offered item:', error)
       }
+    } else {
+      console.log('ℹ️ No offered item to transfer')
     }
 
     // Handle requested item transfer (from offer owner to proposer) - only in bilateral trades
     if (tradeDetails.offer.item && !isGift) {
-      // Check if item is still owned by offer owner (hasn't been transferred yet)
-      const currentRequestedItem = await prisma.items.findUnique({
-        where: { id: tradeDetails.offer.item.id },
-        select: { currentOwnerId: true }
-      })
-      
-      if (currentRequestedItem && currentRequestedItem.currentOwnerId === offerOwner.id) {
-        // Update item ownership
-        await prisma.items.update({
+      try {
+        console.log('📦 Processing requested item transfer:', tradeDetails.offer.item.name)
+        
+        // Check if item is still owned by offer owner (hasn't been transferred yet)
+        const currentRequestedItem = await prisma.items.findUnique({
           where: { id: tradeDetails.offer.item.id },
-          data: {
-            currentOwnerId: proposer.id,
-            isAvailable: true
-          }
+          select: { currentOwnerId: true, name: true, isAvailable: true }
         })
+        
+        console.log('👤 Requested item current state:', {
+          itemId: tradeDetails.offer.item.id,
+          currentOwner: currentRequestedItem?.currentOwnerId,
+          expectedOwner: offerOwner.id,
+          isAvailable: currentRequestedItem?.isAvailable,
+          ownershipMatches: currentRequestedItem?.currentOwnerId === offerOwner.id
+        })
+        
+        if (currentRequestedItem && currentRequestedItem.currentOwnerId === offerOwner.id) {
+          console.log('✅ Transferring requested item from', offerOwner.firstName, 'to', proposer.firstName)
+          
+          // Update item ownership
+          await prisma.items.update({
+            where: { id: tradeDetails.offer.item.id },
+            data: {
+              currentOwnerId: proposer.id,
+              isAvailable: true
+            }
+          })
 
-        // Create history entry with receiver's avatar
-        await prisma.itemHistory.create({
-          data: {
-            itemId: tradeDetails.offer.item.id,
-            fromOwnerId: offerOwner.id,
-            toOwnerId: proposer.id,
-            tradeId: proposedTradeId,
-            city: proposer.lastCity,
-            country: proposer.lastCountry,
-            transferMethod: "traded",
-            receiverAvatarUrl: proposer.avatarUrl
-          }
-        })
+          // Create history entry with receiver's avatar
+          await prisma.itemHistory.create({
+            data: {
+              itemId: tradeDetails.offer.item.id,
+              fromOwnerId: offerOwner.id,
+              toOwnerId: proposer.id,
+              tradeId: proposedTradeId,
+              city: proposer.lastCity || "Unknown City",
+              country: proposer.lastCountry || "Unknown Country",
+              transferMethod: "traded",
+              receiverAvatarUrl: proposer.avatarUrl
+            }
+          })
+          
+          requestedItemTransferred = true
+          console.log('✅ Requested item transfer completed successfully!')
+        } else if (!currentRequestedItem) {
+          console.log('❌ Requested item not found in database')
+        } else {
+          console.log('⚠️ Requested item not transferred - current owner:', currentRequestedItem.currentOwnerId, 'expected:', offerOwner.id)
+        }
+      } catch (error) {
+        console.error('❌ Error transferring requested item:', error)
       }
+    } else if (isGift) {
+      console.log('ℹ️ Gift mode - no requested item to transfer')
+    } else {
+      console.log('ℹ️ No requested item to transfer')
     }
 
     // Mark the offer as completed
@@ -334,13 +402,44 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
       })
     }
 
+    console.log('🎯 Trade completion summary:', {
+      tradeId: proposedTradeId,
+      offeredItemTransferred,
+      requestedItemTransferred,
+      isGift,
+      totalItemsExpected: isGift ? 1 : (tradeDetails.offeredItem && tradeDetails.offer.item ? 2 : 1)
+    })
+
+    // Create error message if transfers failed
+    if (tradeDetails.offeredItem && !offeredItemTransferred) {
+      console.error('❌ Offered item transfer failed')
+      await prisma.messages.create({
+        data: {
+          content: `Error: Offered item transfer failed. Please contact support.`,
+          offerId: tradeDetails.offerId,
+          proposedTradeId: proposedTradeId,
+        }
+      })
+    }
+
+    if (tradeDetails.offer.item && !isGift && !requestedItemTransferred) {
+      console.error('❌ Requested item transfer failed')
+      await prisma.messages.create({
+        data: {
+          content: `Error: Requested item transfer failed. Please contact support.`,
+          offerId: tradeDetails.offerId,
+          proposedTradeId: proposedTradeId,
+        }
+      })
+    }
+
     console.log('✅ Trade completed successfully:', proposedTradeId)
   } catch (error) {
     console.error('❌ Error completing trade:', error)
     // Create error message
     await prisma.messages.create({
       data: {
-        content: `Error completing trade automatically. Please contact support.`,
+        content: `Error completing trade automatically. Please contact support. Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
         offerId: proposedTrade.offerId,
         proposedTradeId: proposedTradeId,
       }

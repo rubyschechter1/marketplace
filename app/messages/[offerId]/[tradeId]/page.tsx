@@ -751,7 +751,15 @@ export default function MessagePage({
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm">
-                <span className="font-normal">{session?.user?.id === tradeData.proposer.id ? 'You' : formatDisplayName(tradeData.proposer.firstName, tradeData.proposer.lastName)}</span> {session?.user?.id === tradeData.proposer.id ? 'offer' : 'offers'} <span className="italic">{tradeData.offeredItem?.name}</span>
+{tradeData.offeredItem ? (
+                  <>
+                    <span className="font-normal">{session?.user?.id === tradeData.proposer.id ? 'You' : formatDisplayName(tradeData.proposer.firstName, tradeData.proposer.lastName)}</span> {session?.user?.id === tradeData.proposer.id ? 'offer' : 'offers'} <span className="italic">{tradeData.offeredItem.name}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-normal">{session?.user?.id === tradeData.proposer.id ? 'You' : formatDisplayName(tradeData.proposer.firstName, tradeData.proposer.lastName)}</span> {session?.user?.id === tradeData.proposer.id ? 'requested' : 'requests'} <span className="italic">{tradeData.offer.item?.name || tradeData.offer.title}</span>
+                  </>
+                )}
               </p>
             </div>
             {/* Accept trade button (only for offer owner and if offer not deleted) - moved inline */}
@@ -792,7 +800,7 @@ export default function MessagePage({
                         <BrownHatLoader size="small" />
                         <span className="ml-1">...</span>
                       </div>
-                    ) : 'Accept'}
+                    ) : (tradeData.isGiftMode ? 'Confirm gift' : 'Accept')}
                   </button>
                 ) : (
                   <div className="bg-gray/10 text-gray border border-gray/20 px-2 py-1 rounded-sm text-xs">
@@ -1085,7 +1093,9 @@ export default function MessagePage({
                           height={16} 
                           className="mr-2 opacity-50" 
                         />
-                        Item sent
+{tradeData.isGiftMode && !tradeData.offeredItem ? 'Gift sent' : 
+                         tradeData.isGiftMode && tradeData.offeredItem ? 'Gift accepted' : 
+                         'Item sent'}
                       </div>
                     ) : (
                       <button
@@ -1100,7 +1110,9 @@ export default function MessagePage({
                           height={16} 
                           className="mr-2" 
                         />
-                        Send item
+{tradeData.isGiftMode && !tradeData.offeredItem ? 'Send gift' : 
+                         tradeData.isGiftMode && tradeData.offeredItem ? 'Accept gift' : 
+                         'Send item'}
                       </button>
                     )
                   ) : (
@@ -1112,7 +1124,9 @@ export default function MessagePage({
                         height={16} 
                         className="mr-2 opacity-50" 
                       />
-                      Trade must be accepted first
+{tradeData.isGiftMode && !tradeData.offeredItem ? 'Gift must be confirmed first' : 
+                       tradeData.isGiftMode && tradeData.offeredItem ? 'Gift must be confirmed first' : 
+                       'Trade must be accepted first'}
                     </div>
                   )}
                 </div>
@@ -1208,10 +1222,10 @@ export default function MessagePage({
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-tan border-2 border-black rounded-sm p-6 max-w-sm w-full">
               <h3 className="text-lg font-normal mb-4 text-center">
-                Accept Trade?
+{tradeData.isGiftMode ? 'Confirm Gift?' : 'Accept Trade?'}
               </h3>
               <p className="text-sm text-gray mb-6 text-center">
-                Are you sure you want to accept this trade?
+{tradeData.isGiftMode ? 'Are you sure you want to confirm this gift?' : 'Are you sure you want to accept this trade?'}
               </p>
               <div className="flex gap-3">
                 <button
@@ -1224,7 +1238,7 @@ export default function MessagePage({
                   onClick={confirmAcceptTrade}
                   className="flex-1 px-4 py-2 bg-tan text-black border border-black rounded-sm text-sm shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                 >
-                  Accept
+{tradeData.isGiftMode ? 'Confirm' : 'Accept'}
                 </button>
               </div>
             </div>

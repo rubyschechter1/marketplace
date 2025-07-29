@@ -16,6 +16,7 @@ export async function GET(req: NextRequest) {
     console.log("🎒 Fetching inventory for user:", session.user.id)
 
     // Fetch user's items where they are the current owner
+    // Order by the most recent transfer date to show newest acquisitions first
     const items = await prisma.items.findMany({
       where: {
         currentOwnerId: session.user.id
@@ -27,23 +28,33 @@ export async function GET(req: NextRequest) {
             transferDate: true,
             city: true,
             country: true,
-            transferMethod: true
+            transferMethod: true,
+            toOwnerId: true
           },
           orderBy: {
             transferDate: 'desc'
           }
         }
-      },
-      orderBy: {
-        instanceCreatedAt: 'desc'
       }
     })
 
-    console.log(`📦 Found ${items.length} items in inventory`)
+    // Sort items by their most recent acquisition date (when current user got them)
+    const sortedItems = items.sort((a, b) => {
+      // Find the most recent transfer to the current user for each item
+      const aLatestTransfer = a.history.find(h => h.toOwnerId === session.user.id)
+      const bLatestTransfer = b.history.find(h => h.toOwnerId === session.user.id)
+      
+      const aDate = aLatestTransfer ? new Date(aLatestTransfer.transferDate) : new Date(a.instanceCreatedAt)
+      const bDate = bLatestTransfer ? new Date(bLatestTransfer.transferDate) : new Date(b.instanceCreatedAt)
+      
+      return bDate.getTime() - aDate.getTime() // Most recent first
+    })
+
+    console.log(`📦 Found ${sortedItems.length} items in inventory`)
 
     return NextResponse.json({
-      items: items,
-      count: items.length
+      items: sortedItems,
+      count: sortedItems.length
     })
 
   } catch (error) {

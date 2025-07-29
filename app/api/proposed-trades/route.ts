@@ -61,11 +61,19 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { offerId, offeredItemId } = body
+    const { offerId, offeredItemId, isRequest } = body
 
-    if (!offerId || !offeredItemId) {
+    if (!offerId) {
       return NextResponse.json(
-        { error: "Missing required fields: offerId and offeredItemId" },
+        { error: "Missing required field: offerId" },
+        { status: 400 }
+      )
+    }
+
+    // For regular trades, offeredItemId is required. For requests, it's null
+    if (!isRequest && !offeredItemId) {
+      return NextResponse.json(
+        { error: "Missing required field: offeredItemId for trade proposals" },
         { status: 400 }
       )
     }
@@ -93,23 +101,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verify the offered item exists and belongs to the current user
-    const offeredItem = await prisma.items.findUnique({
-      where: { id: offeredItemId }
-    })
+    // For regular trades, verify the offered item exists and belongs to the current user
+    let offeredItem = null
+    if (!isRequest && offeredItemId) {
+      offeredItem = await prisma.items.findUnique({
+        where: { id: offeredItemId }
+      })
 
-    if (!offeredItem || offeredItem.currentOwnerId !== session.user.id || !offeredItem.isAvailable) {
-      return NextResponse.json(
-        { error: "Invalid offered item or item not available" },
-        { status: 400 }
-      )
+      if (!offeredItem || offeredItem.currentOwnerId !== session.user.id || !offeredItem.isAvailable) {
+        return NextResponse.json(
+          { error: "Invalid offered item or item not available" },
+          { status: 400 }
+        )
+      }
+
+      // Mark the item as not available during the trade proposal
+      await prisma.items.update({
+        where: { id: offeredItemId },
+        data: { isAvailable: false }
+      })
     }
-
-    // Mark the item as not available during the trade proposal
-    await prisma.items.update({
-      where: { id: offeredItemId },
-      data: { isAvailable: false }
-    })
 
     // Check if the user has already proposed a trade for this offer
     const existingTrade = await prisma.proposedTrades.findFirst({
@@ -133,11 +144,16 @@ export async function POST(request: NextRequest) {
       },
       proposer: {
         connect: { id: session.user.id }
-      }
+      },
+      // Set gift mode for requests
+      isGiftMode: isRequest || false
     }
 
-    createData.offeredItem = {
-      connect: { id: offeredItemId }
+    // Only connect offered item if this is not a request
+    if (!isRequest && offeredItemId) {
+      createData.offeredItem = {
+        connect: { id: offeredItemId }
+      }
     }
 
     const proposedTrade = await prisma.proposedTrades.create({
@@ -154,11 +170,18 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Create an initial message for this trade proposal
+    // Create an initial message for this trade proposal or request
     try {
       if (proposedTrade.offer.traveler) {
-        const offeredItemName = proposedTrade.offeredItem?.name || "item"
         const requestedItemName = proposedTrade.offer.item?.name || proposedTrade.offer.title
+        let messageContent: string
+
+        if (isRequest) {
+          messageContent = `Hi! I'd love to have your ${requestedItemName}. Would you be willing to gift it to me?`
+        } else {
+          const offeredItemName = proposedTrade.offeredItem?.name || "item"
+          messageContent = `Hi! I'd like to trade my ${offeredItemName} for your ${requestedItemName}.`
+        }
 
         await prisma.messages.create({
           data: {
@@ -166,7 +189,7 @@ export async function POST(request: NextRequest) {
             senderId: session.user.id,
             recipientId: proposedTrade.offer.traveler.id,
             proposedTradeId: proposedTrade.id,
-            content: `Hi! I'd like to trade my ${offeredItemName} for your ${requestedItemName}.`
+            content: messageContent
           }
         })
       }
@@ -179,12 +202,16 @@ export async function POST(request: NextRequest) {
     if (process.env.RESEND_API_KEY && proposedTrade.offer.traveler?.email) {
       try {
         const proposalLink = `${process.env.NEXTAUTH_URL}/offers/${offerId}`;
-        const offeredItemName = proposedTrade.offeredItem?.name || "item"
+        const subject = isRequest 
+          ? `BSH: ${proposedTrade.proposer.firstName} would like your ${proposedTrade.offer.title}!`
+          : `BSH: ${proposedTrade.proposer.firstName} wants to trade with you!`
+        
+        const offeredItemName = proposedTrade.offeredItem?.name || (isRequest ? "gift request" : "item")
         
         await resend.emails.send({
           from: FROM_EMAIL,
           to: proposedTrade.offer.traveler.email,
-          subject: `BSH: ${proposedTrade.proposer.firstName} wants to trade with you!`,
+          subject: subject,
           html: await render(
             React.createElement(TradeProposalEmail, {
               recipientName: proposedTrade.offer.traveler.firstName,

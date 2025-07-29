@@ -77,7 +77,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
             trade.proposer?.id === session.user.id
           )
           if (userTrade) {
-            setUserProposedItem(userTrade.offeredItem?.name)
+            setUserProposedItem(userTrade.offeredItem?.name || 'gift_request')
           }
         }
       } catch (error) {
@@ -176,6 +176,37 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
     setItemPhotoUrl(item.imageUrl || "")
     setItemPhotoPreview(item.imageUrl || "")
     setShowInventoryModal(false)
+  }
+
+  const handleRequestItem = async () => {
+    setIsSubmitting(true)
+    try {
+      // Create a request (proposed trade with no offered item)
+      const tradeResponse = await fetch('/api/proposed-trades', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          offerId: offer.id,
+          isRequest: true
+        })
+      })
+      
+      if (!tradeResponse.ok) {
+        const errorData = await tradeResponse.json()
+        alert(errorData.error || 'Failed to send request')
+        return
+      }
+      
+      const { proposedTrade } = await tradeResponse.json()
+      
+      // Navigate to the conversation
+      router.push(`/messages/${offer.id}/${proposedTrade.id}?from=offer-${offer.id}`)
+    } catch (error) {
+      console.error('Error sending request:', error)
+      alert('Failed to send request')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleDeleteOffer = async () => {
@@ -485,10 +516,8 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                         <div className="mb-3">
                           <button 
                             className="px-3 py-1 rounded-sm text-sm transition-all bg-tan text-black border border-black shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
-                            onClick={() => {
-                              // TODO: Implement request item functionality
-                              alert('Request item functionality coming soon!')
-                            }}
+                            onClick={handleRequestItem}
+                            disabled={isSubmitting}
                           >
                             Request item
                           </button>
@@ -672,10 +701,21 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
               session?.user?.id
             )}
                             </span>{' '}
-                            {isAccepted 
-                              ? (session?.user?.id === trade.proposer?.id ? 'offered' : 'offered')
-                              : (session?.user?.id === trade.proposer?.id ? 'offer' : 'offers')
-                            } <span className="italic">{trade.offeredItem?.name}</span>
+{trade.offeredItem ? (
+                              <>
+                                {isAccepted 
+                                  ? (session?.user?.id === trade.proposer?.id ? 'offered' : 'offered')
+                                  : (session?.user?.id === trade.proposer?.id ? 'offer' : 'offers')
+                                } <span className="italic">{trade.offeredItem.name}</span>
+                              </>
+                            ) : (
+                              <>
+                                {isAccepted 
+                                  ? (session?.user?.id === trade.proposer?.id ? 'requested this as a gift' : 'requested this as a gift')
+                                  : (session?.user?.id === trade.proposer?.id ? 'request this as a gift' : 'requests this as a gift')
+                                }
+                              </>
+                            )}
                           </div>
                         </div>
                       {/* Show item image for asks */}

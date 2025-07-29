@@ -150,7 +150,6 @@ export default function InventoryPage() {
             </div>
           </div>
         ) : (
-          {/* Grid displays items newest first: top-left, then left-to-right, top-to-bottom */}
           <div className="grid grid-cols-2 gap-8">
             {items.map((item) => (
               <Link 

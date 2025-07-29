@@ -47,10 +47,13 @@ export async function GET(req: NextRequest) {
       const aDate = aLatestTransfer ? new Date(aLatestTransfer.transferDate) : new Date(a.instanceCreatedAt)
       const bDate = bLatestTransfer ? new Date(bLatestTransfer.transferDate) : new Date(b.instanceCreatedAt)
       
-      return bDate.getTime() - aDate.getTime() // Most recent first
+      console.log(`🔍 Sorting ${a.name} (${aDate.toISOString()}) vs ${b.name} (${bDate.toISOString()})`)
+      
+      return bDate.getTime() - aDate.getTime() // Most recent first (newer items have higher timestamps)
     })
 
     console.log(`📦 Found ${sortedItems.length} items in inventory`)
+    console.log(`📋 Final order: ${sortedItems.map((item, index) => `${index + 1}. ${item.name}`).join(', ')}`)
 
     return NextResponse.json({
       items: sortedItems,

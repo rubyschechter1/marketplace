@@ -62,6 +62,15 @@ interface TradeData {
       imageUrl?: string
     }
   }
+  reviews?: Array<{
+    id: string
+    reviewerId: string
+    revieweeId: string
+    rating: number
+    content: string
+    createdAt: string
+    isEdited: boolean
+  }>
 }
 
 export default function MessagePage({ 
@@ -813,7 +822,7 @@ export default function MessagePage({
               <div className="ml-2 flex-shrink-0">
                 {/* Show accept/cancel button based on trade status */}
                 {isTradeStatus(tradeData, 'accepted') ? (
-                  existingReview ? (
+                  existingReview || (tradeData.reviews && tradeData.reviews.length >= 2) ? (
                     <div className="bg-gray/10 text-gray border border-gray/20 px-3 py-1 rounded-sm text-xs cursor-not-allowed">
                       Item traded
                     </div>

@@ -31,7 +31,11 @@ export async function GET(
         languages: true,
         countriesVisited: true,
         offers: {
-          where: { status: 'active' },
+          where: { 
+            status: { 
+              in: ['active', 'completed'] 
+            } 
+          },
           select: {
             id: true,
             title: true,

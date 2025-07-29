@@ -139,16 +139,6 @@ export async function POST(request: NextRequest) {
     if (allReviews.length === 2) {
       // Both parties have reviewed - now reveal reviews and complete the trade
       
-      // Create system message showing both reviews are now visible (Airbnb-style)
-      await prisma.messages.create({
-        data: {
-          content: `Both parties have reviewed each other! Reviews are now visible.`,
-          offerId: proposedTrade.offerId,
-          proposedTradeId: proposedTradeId,
-          // No senderId for system messages
-          // No recipientId for system messages
-        }
-      })
       
       // Complete the trade by transferring items
       await completeTradeWithItemTransfer(proposedTrade, proposedTradeId)

@@ -8,7 +8,7 @@ import Link from "next/link"
 import Button from "@/components/ui/Button"
 import BrownHatLoader from "@/components/BrownHatLoader"
 
-interface Item {
+interface InventoryItem {
   id: string
   name: string
   description: string | null
@@ -31,7 +31,7 @@ interface Item {
 
 export default function InventoryPage() {
   const { data: session } = useSession()
-  const [items, setItems] = useState<Item[]>([])
+  const [items, setItems] = useState<InventoryItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
@@ -46,6 +46,7 @@ export default function InventoryPage() {
         throw new Error('Failed to fetch inventory')
       }
       const data = await response.json()
+      // Items are already sorted by newest first in the API
       setItems(data.items || [])
     } catch (error) {
       console.error('Error fetching inventory:', error)
@@ -55,7 +56,7 @@ export default function InventoryPage() {
     }
   }
 
-  const getLocationString = (item: Item) => {
+  const getLocationString = (item: InventoryItem) => {
     console.log("🗺️ Checking location for item:", item.name, "History:", item.history)
     
     // Check if there's any history
@@ -83,7 +84,7 @@ export default function InventoryPage() {
     return "Unknown location"
   }
 
-  const getItemAge = (item: Item) => {
+  const getItemAge = (item: InventoryItem) => {
     const created = new Date(item.instanceCreatedAt)
     const now = new Date()
     const diffTime = Math.abs(now.getTime() - created.getTime())
@@ -149,6 +150,7 @@ export default function InventoryPage() {
             </div>
           </div>
         ) : (
+          {/* Grid displays items newest first: top-left, then left-to-right, top-to-bottom */}
           <div className="grid grid-cols-2 gap-8">
             {items.map((item) => (
               <Link 

@@ -540,31 +540,46 @@ export default function MessagePage({
       let itemImageUrl = ""
       let isInventoryItem = false
       
-      // If current user is the offer owner and it's their inventory item
-      if (session?.user?.id === tradeData.offer.traveler.id && tradeData.offer.item) {
-        itemToGive = tradeData.offer.item
-        itemName = tradeData.offer.item.name
-        isInventoryItem = true
+      // Handle gift mode (ask type offers) specially
+      if (tradeData.isGiftMode && tradeData.offer.type === 'ask') {
+        // For gift requests (asks), only the proposer gives an item
+        if (session?.user?.id === tradeData.proposer.id && tradeData.offeredItem) {
+          itemToGive = tradeData.offeredItem
+          itemName = tradeData.offeredItem.name
+          isInventoryItem = true
+        } else {
+          alert('Only the gift giver can send the item in a gift request')
+          return
+        }
       }
-      // If current user is the proposer and it's their inventory item
-      else if (session?.user?.id === tradeData.proposer.id && tradeData.offeredItem) {
-        itemToGive = tradeData.offeredItem
-        itemName = tradeData.offeredItem.name
-        isInventoryItem = true
-      }
-      // If current user is the offer owner and it's a new item offer
-      else if (session?.user?.id === tradeData.offer.traveler.id && tradeData.offer.item) {
-        itemName = tradeData.offer.item.name
-        itemDescription = ""
-        itemImageUrl = tradeData.offer.item.imageUrl || ""
-        isInventoryItem = false
-      }
-      // If current user is the proposer and it's their offered item for an ask
-      else if (session?.user?.id === tradeData.proposer.id && tradeData.offeredItem) {
-        itemName = tradeData.offeredItem.name
-        itemDescription = ""
-        itemImageUrl = tradeData.offeredItem.imageUrl || ""
-        isInventoryItem = false
+      // Handle regular trades and regular offers
+      else {
+        // If current user is the offer owner and it's their inventory item
+        if (session?.user?.id === tradeData.offer.traveler.id && tradeData.offer.item) {
+          itemToGive = tradeData.offer.item
+          itemName = tradeData.offer.item.name
+          isInventoryItem = true
+        }
+        // If current user is the proposer and it's their inventory item
+        else if (session?.user?.id === tradeData.proposer.id && tradeData.offeredItem) {
+          itemToGive = tradeData.offeredItem
+          itemName = tradeData.offeredItem.name
+          isInventoryItem = true
+        }
+        // If current user is the offer owner and it's a new item offer
+        else if (session?.user?.id === tradeData.offer.traveler.id && tradeData.offer.item) {
+          itemName = tradeData.offer.item.name
+          itemDescription = ""
+          itemImageUrl = tradeData.offer.item.imageUrl || ""
+          isInventoryItem = false
+        }
+        // If current user is the proposer and it's their offered item for an ask
+        else if (session?.user?.id === tradeData.proposer.id && tradeData.offeredItem) {
+          itemName = tradeData.offeredItem.name
+          itemDescription = ""
+          itemImageUrl = tradeData.offeredItem.imageUrl || ""
+          isInventoryItem = false
+        }
       }
       
       if (!itemName) {

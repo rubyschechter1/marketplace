@@ -44,29 +44,7 @@ export async function GET(request: NextRequest) {
     for (const tradeDate of tradesNeedingReviews) {
       const trade = tradeDate.proposedTrade
       
-      // Create review request messages for both parties
-      const messages = []
-      
-      // Message to proposer
-      messages.push({
-        offerId: trade.offerId,
-        proposedTradeId: trade.id,
-        senderId: null, // System message
-        recipientId: trade.proposerId,
-        content: `How did your exchange with ${trade.offer.traveler?.firstName} go? Please rate your experience.`
-      })
-      
-      // Message to offer owner
-      messages.push({
-        offerId: trade.offerId,
-        proposedTradeId: trade.id,
-        senderId: null, // System message
-        recipientId: trade.offer.travelerId,
-        content: `How did your exchange with ${trade.proposer.firstName} go? Please rate your experience.`
-      })
-
-      // Create messages in database
-      await prisma.messages.createMany({ data: messages })
+      // Review request messages disabled - users can review directly through the conversation
 
       // Update trade exchange date to mark review request as sent
       await prisma.tradeExchangeDates.update({
@@ -79,7 +57,7 @@ export async function GET(request: NextRequest) {
 
       results.push({
         tradeId: trade.id,
-        messagesCreated: messages.length
+        messagesCreated: 0 // No messages created - disabled
       })
     }
 
@@ -123,35 +101,7 @@ export async function GET(request: NextRequest) {
       const proposerReviewed = trade.reviews.some(r => r.reviewerId === trade.proposerId)
       const offerOwnerReviewed = trade.reviews.some(r => r.reviewerId === trade.offer.travelerId)
       
-      const messages = []
-      
-      if (!proposerReviewed) {
-        messages.push({
-          offerId: trade.offerId,
-          proposedTradeId: trade.id,
-          senderId: null,
-          recipientId: trade.proposerId,
-          content: `Reminder: Please rate your exchange with ${trade.offer.traveler?.firstName}. Your feedback helps build trust in our community.`
-        })
-      }
-      
-      if (!offerOwnerReviewed) {
-        messages.push({
-          offerId: trade.offerId,
-          proposedTradeId: trade.id,
-          senderId: null,
-          recipientId: trade.offer.travelerId,
-          content: `Reminder: Please rate your exchange with ${trade.proposer.firstName}. Your feedback helps build trust in our community.`
-        })
-      }
-
-      if (messages.length > 0) {
-        await prisma.messages.createMany({ data: messages })
-        results.push({
-          tradeId: trade.id,
-          followUpMessagesCreated: messages.length
-        })
-      }
+      // Follow-up reminder messages disabled - users can review directly through the conversation
     }
 
     return NextResponse.json({

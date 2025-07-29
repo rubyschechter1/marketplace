@@ -1126,8 +1126,8 @@ export default function MessagePage({
                           height={16} 
                           className="mr-2" 
                         />
-{tradeData.isGiftMode && !tradeData.offeredItem ? 'Send gift' : 
-                         tradeData.isGiftMode && tradeData.offeredItem ? 'Accept gift' : 
+{tradeData.isGiftMode ? 
+                           (session?.user?.id === tradeData.offer.traveler?.id ? 'Send gift' : 'Accept gift') :
                          'Send item'}
                       </button>
                     )

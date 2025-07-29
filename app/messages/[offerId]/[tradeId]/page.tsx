@@ -1324,7 +1324,7 @@ export default function MessagePage({
                 </button>
                 <button
                   onClick={confirmGiftMode}
-                  className="px-4 py-2 bg-black text-tan border border-black rounded-sm text-sm shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                  className="px-4 py-2 bg-tan text-black border border-black rounded-sm text-sm shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                 >
                   Convert to Gift
                 </button>

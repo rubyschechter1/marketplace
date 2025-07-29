@@ -101,6 +101,7 @@ export default function MessagePage({
   const [messageError, setMessageError] = useState("")
   const [itemAlreadyGiven, setItemAlreadyGiven] = useState(false)
   const [settingGiftMode, setSettingGiftMode] = useState(false)
+  const [showGiftModal, setShowGiftModal] = useState(false)
   const hasRefreshedUser = useRef(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
@@ -680,9 +681,13 @@ export default function MessagePage({
     }
   }
 
-  const handleSetGiftMode = async () => {
-    if (!tradeData || !confirm('Are you sure you want to convert this to a gift? The other person will only need to send their item without expecting anything in return.')) return
+  const handleSetGiftMode = () => {
+    if (!tradeData) return
+    setShowGiftModal(true)
+  }
 
+  const confirmGiftMode = async () => {
+    setShowGiftModal(false)
     setSettingGiftMode(true)
     try {
       const response = await fetch(`/api/proposed-trades/${tradeId}`, {
@@ -861,7 +866,7 @@ export default function MessagePage({
                       <BrownHatLoader size="small" />
                       <span className="ml-1">...</span>
                     </div>
-                  ) : 'No return needed'}
+                  ) : 'Gift item'}
                 </button>
               </div>
             </div>
@@ -1294,6 +1299,34 @@ export default function MessagePage({
                   className="px-4 py-2 bg-tan text-black border border-black rounded-sm text-sm shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                 >
                   OK
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Gift Confirmation Modal */}
+        {showGiftModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-tan border-2 border-black rounded-sm p-6 max-w-sm w-full">
+              <h3 className="text-lg font-normal mb-4 text-center">
+                Convert to Gift?
+              </h3>
+              <p className="text-sm text-gray mb-6 text-center">
+                Are you sure you want to convert this to a gift? The other person will only need to send their item without expecting anything in return.
+              </p>
+              <div className="flex justify-center space-x-3">
+                <button
+                  onClick={() => setShowGiftModal(false)}
+                  className="px-4 py-2 bg-tan text-black border border-black rounded-sm text-sm shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmGiftMode}
+                  className="px-4 py-2 bg-black text-tan border border-black rounded-sm text-sm shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                >
+                  Convert to Gift
                 </button>
               </div>
             </div>

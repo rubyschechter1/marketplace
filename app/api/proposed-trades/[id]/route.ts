@@ -166,14 +166,32 @@ export async function PUT(
         }
       })
 
-      // Create system message about gift mode
+      // Create personalized system messages about gift mode for each person
+      const giftSetterName = session.user.name || 'Someone'
+      
+      // Message for the person who set gift mode
       await prisma.messages.create({
         data: {
           offerId: proposedTrade.offerId,
           proposedTradeId: proposedTrade.id,
           senderId: null, // System message
-          recipientId: null,
-          content: `GIFT_MODE_ENABLED:${session.user.id}:${session.user.name || 'Someone'}`
+          recipientId: session.user.id, // Only visible to gift setter
+          content: `GIFT_MODE_SETTER:${session.user.id}:${giftSetterName}`
+        }
+      })
+      
+      // Message for the other person
+      const otherPersonId = proposedTrade.proposerId === session.user.id 
+        ? proposedTrade.offer.travelerId 
+        : proposedTrade.proposerId
+        
+      await prisma.messages.create({
+        data: {
+          offerId: proposedTrade.offerId,
+          proposedTradeId: proposedTrade.id,
+          senderId: null, // System message
+          recipientId: otherPersonId, // Only visible to other person
+          content: `GIFT_MODE_OTHER:${session.user.id}:${giftSetterName}`
         }
       })
 

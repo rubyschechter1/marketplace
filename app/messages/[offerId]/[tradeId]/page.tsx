@@ -145,6 +145,16 @@ export default function MessagePage({
       }
     }
     
+    if (content.startsWith('GIFT_MODE_SETTER:')) {
+      return `You set the offer to gift mode! Only you need to send your item. The Send gift button is now available for you to use.`
+    }
+    
+    if (content.startsWith('GIFT_MODE_OTHER:')) {
+      const [, actorId, actorName] = content.split(':')
+      return `${actorName} set the offer to gift mode! Only ${actorName} needs to send their item.`
+    }
+    
+    // Keep old format for backward compatibility
     if (content.startsWith('GIFT_MODE_ENABLED:')) {
       const [, actorId, actorName] = content.split(':')
       const displayName = session?.user?.id === actorId ? 'You' : actorName

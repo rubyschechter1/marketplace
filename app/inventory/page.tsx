@@ -47,7 +47,9 @@ export default function InventoryPage() {
       }
       const data = await response.json()
       // Items are already sorted by newest first in the API
-      setItems(data.items || [])
+      const items = data.items || []
+      console.log('📦 Received items in order:', items.map((item, index) => `${index + 1}. ${item.name}`).join(', '))
+      setItems(items)
     } catch (error) {
       console.error('Error fetching inventory:', error)
       setError('Failed to load inventory')
@@ -151,7 +153,9 @@ export default function InventoryPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-8">
-            {items.map((item) => (
+            {items.map((item, index) => {
+              console.log(`🎯 Grid position ${index + 1}: ${item.name} (${index % 2 === 0 ? 'left' : 'right'} column, row ${Math.floor(index / 2) + 1})`)
+              return (
               <Link 
                 key={item.id}
                 href={`/history/${item.id}`}
@@ -178,7 +182,8 @@ export default function InventoryPage() {
                   Acquired {getItemAge(item)} ago in {getLocationString(item)}
                 </div>
               </Link>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>

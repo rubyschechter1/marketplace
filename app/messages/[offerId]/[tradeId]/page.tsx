@@ -110,7 +110,23 @@ export default function MessagePage({
     if (content.startsWith('TRADE_ACCEPTED:')) {
       const [, actorId, actorName] = content.split(':')
       const displayName = session?.user?.id === actorId ? 'You' : actorName
-      return `${displayName} accepted the trade! The [SEND_ITEM_BUTTON] button has now been activated.\nOnce both parties have traded, click "send item" to submit your review. Items will be exchanged and found in your inventories!`
+      
+      // Check if this is a gift mode trade
+      if (tradeData?.isGiftMode) {
+        if (session?.user?.id === actorId) {
+          // Person who confirmed the gift
+          const receiverName = tradeData.offeredItem 
+            ? formatDisplayName(tradeData.proposer.firstName, tradeData.proposer.lastName)
+            : formatDisplayName(tradeData.offer.traveler?.firstName || '', tradeData.offer.traveler?.lastName || '')
+          return `You confirmed your gift! The Send gift button has now been activated. Once the gift has been given, click "Send gift" to submit your review. The item will be moved from your inventory to ${receiverName}'s inventory.`
+        } else {
+          // Person receiving the gift
+          return `${actorName} has confirmed your gift! The Accept gift button has now been activated. Once the gift has been received, click "Accept gift" to submit your review. The new item will appear in your inventory!`
+        }
+      } else {
+        // Regular trade
+        return `${displayName} accepted the trade! The [SEND_ITEM_BUTTON] button has now been activated.\nOnce both parties have traded, click "send item" to submit your review. Items will be exchanged and found in your inventories!`
+      }
     }
     
     if (content.startsWith('TRADE_CANCELED:')) {

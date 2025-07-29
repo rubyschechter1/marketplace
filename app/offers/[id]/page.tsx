@@ -357,7 +357,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
             {/* Item History Button - only show if item has history */}
             {offer.item && itemHasHistory && (
               <Link 
-                href={`/history/${offer.item.id}`}
+                href={`/history/${offer.item.id}?from=offer-${offer.id}`}
                 className="absolute -bottom-10 right-0 bg-tan text-black border border-black px-3 py-1 rounded-sm text-sm hover:bg-black hover:text-tan transition-colors shadow-[2px_2px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[1px] hover:translate-y-[1px]"
               >
                 Item History

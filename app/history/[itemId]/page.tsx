@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation"
 import BrownHatLoader from "@/components/BrownHatLoader"
 import { getDisplayName } from "@/lib/formatName"
 import Image from "next/image"
+import BackButton from "@/components/BackButton"
 
 interface HistoryEntry {
   id: string
@@ -35,18 +36,26 @@ interface Item {
   history: HistoryEntry[]
 }
 
-export default function ItemHistoryPage({ params }: { params: Promise<{ itemId: string }> }) {
+export default function ItemHistoryPage({ 
+  params,
+  searchParams 
+}: { 
+  params: Promise<{ itemId: string }>,
+  searchParams: Promise<{ from?: string }>
+}) {
   const { data: session } = useSession()
   const router = useRouter()
   const [item, setItem] = useState<Item | null>(null)
   const [loading, setLoading] = useState(true)
   const [itemId, setItemId] = useState("")
+  const [fromPage, setFromPage] = useState("")
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   useEffect(() => {
     params.then(p => setItemId(p.itemId))
-  }, [params])
+    searchParams.then(sp => setFromPage(sp.from || ''))
+  }, [params, searchParams])
 
   useEffect(() => {
     if (!itemId) return
@@ -180,9 +189,24 @@ export default function ItemHistoryPage({ params }: { params: Promise<{ itemId: 
         {/* Header */}
         <div className="bg-tan p-6">
           <div className="flex items-center justify-center relative mb-1">
-            <Link href="/inventory" className="absolute left-0 p-2 text-brown hover:bg-brown/10 rounded-lg transition-colors" style={{ marginLeft: '-32px' }}>
+            <button 
+              onClick={() => {
+                if (fromPage.startsWith('offer-')) {
+                  const offerId = fromPage.replace('offer-', '')
+                  router.push(`/offers/${offerId}`)
+                } else if (fromPage === 'inventory') {
+                  router.push('/inventory')
+                } else if (window.history.length > 1) {
+                  router.back()
+                } else {
+                  router.push('/inventory')
+                }
+              }}
+              className="absolute left-0 p-2 text-brown hover:bg-brown/10 rounded-lg transition-colors" 
+              style={{ marginLeft: '-32px' }}
+            >
               <ChevronLeft size={24} />
-            </Link>
+            </button>
             <h1 className="text-2xl font-bold text-black">
               {item?.name}'s Journey
             </h1>

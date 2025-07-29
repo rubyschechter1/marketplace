@@ -160,20 +160,46 @@ export async function POST(req: Request) {
         )
       }
 
-      // Verify item belongs to user and is available
+      // First check if item exists and belongs to user
       const item = await prisma.items.findFirst({
         where: {
           id: itemId,
-          currentOwnerId: session.user.id,
-          isAvailable: true
+          currentOwnerId: session.user.id
         }
       })
 
       if (!item) {
         return NextResponse.json(
-          { error: "Item not found, unauthorized, or not available" },
+          { error: "Item not found or you don't own this item" },
           { status: 404 }
         )
+      }
+
+      // Check if item is available
+      if (!item.isAvailable) {
+        // Check if item is already being offered
+        const existingOffer = await prisma.offers.findFirst({
+          where: {
+            itemId: itemId,
+            status: 'active'
+          }
+        })
+
+        if (existingOffer) {
+          return NextResponse.json(
+            { error: "This item is already being offered. Delete the existing offer first to create a new one." },
+            { status: 400 }
+          )
+        } else {
+          // Item is marked unavailable but no active offer exists - this is a data inconsistency
+          console.log(`🔧 Fixing availability for orphaned item: ${itemId}`)
+          await prisma.items.update({
+            where: { id: itemId },
+            data: { isAvailable: true }
+          })
+          
+          // Now the item should be available for offering
+        }
       }
 
       // Mark item as not available (being offered)

@@ -1109,8 +1109,8 @@ export default function MessagePage({
                           height={16} 
                           className="mr-2 opacity-50" 
                         />
-{tradeData.isGiftMode && !tradeData.offeredItem ? 'Gift sent' : 
-                         tradeData.isGiftMode && tradeData.offeredItem ? 'Gift accepted' : 
+{tradeData.isGiftMode ? 
+                           (session?.user?.id === tradeData.offer.traveler?.id ? 'Gift sent' : 'Gift accepted') :
                          'Item sent'}
                       </div>
                     ) : (
@@ -1223,7 +1223,9 @@ export default function MessagePage({
                     }, 500)
                   }}
                   inline={true}
-                  buttonText="Send item"
+                  buttonText={tradeData.isGiftMode ? 
+                    (session?.user?.id === tradeData.offer.traveler?.id ? 'Send gift' : 'Accept gift') :
+                    'Send item'}
                 />
                 <p className="text-xs text-gray mt-3 text-center">
                   After both parties submit a review, a trade of items will be made. Check the inventory tab for your new item!

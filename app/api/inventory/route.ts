@@ -40,12 +40,23 @@ export async function GET(req: NextRequest) {
 
     // Sort items by their most recent acquisition date (when current user got them)
     const sortedItems = items.sort((a, b) => {
-      // Find the most recent transfer to the current user for each item
+      // For each item, use the latest date between instanceCreatedAt and any transfer to current user
+      let aDate = new Date(a.instanceCreatedAt)
+      let bDate = new Date(b.instanceCreatedAt)
+      
+      // Check if there's a transfer to current user that's more recent
       const aLatestTransfer = a.history.find(h => h.toOwnerId === session.user.id)
       const bLatestTransfer = b.history.find(h => h.toOwnerId === session.user.id)
       
-      const aDate = aLatestTransfer ? new Date(aLatestTransfer.transferDate) : new Date(a.instanceCreatedAt)
-      const bDate = bLatestTransfer ? new Date(bLatestTransfer.transferDate) : new Date(b.instanceCreatedAt)
+      if (aLatestTransfer) {
+        const transferDate = new Date(aLatestTransfer.transferDate)
+        if (transferDate > aDate) aDate = transferDate
+      }
+      
+      if (bLatestTransfer) {
+        const transferDate = new Date(bLatestTransfer.transferDate)
+        if (transferDate > bDate) bDate = transferDate
+      }
       
       console.log(`🔍 Sorting ${a.name} (${aDate.toISOString()}) vs ${b.name} (${bDate.toISOString()})`)
       

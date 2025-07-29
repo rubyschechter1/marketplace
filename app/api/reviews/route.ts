@@ -307,20 +307,42 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
       data: { status: 'completed' }
     })
 
-    // Create a system message announcing the completed trade
-    const completionMessage = isGift 
-      ? `Gift completed! Both parties have reviewed each other. The gift has been transferred to the recipient's inventory.`
-      : `Trade completed! Both parties have reviewed each other. Items have been transferred to your inventories.`
-    
-    await prisma.messages.create({
-      data: {
-        content: completionMessage,
-        offerId: tradeDetails.offerId,
-        proposedTradeId: proposedTradeId,
-        // No senderId for system messages
-        // No recipientId for system messages
-      }
-    })
+    // Create personalized system messages announcing the completed trade
+    if (isGift) {
+      // For gifts, create separate messages for giver and receiver
+      // Gift receiver message (offer owner for asks)
+      await prisma.messages.create({
+        data: {
+          content: `Gift completed! Both parties have reviewed each other. The gift has been transferred to your inventory.`,
+          offerId: tradeDetails.offerId,
+          proposedTradeId: proposedTradeId,
+          senderId: null, // System message
+          recipientId: offerOwner.id, // Only visible to gift receiver
+        }
+      })
+      
+      // Gift giver message (proposer for asks)
+      await prisma.messages.create({
+        data: {
+          content: `Gift completed! Both parties have reviewed each other. The gift has been transferred to ${offerOwner.firstName}'s inventory.`,
+          offerId: tradeDetails.offerId,
+          proposedTradeId: proposedTradeId,
+          senderId: null, // System message
+          recipientId: proposer.id, // Only visible to gift giver
+        }
+      })
+    } else {
+      // For regular trades, keep the existing single message
+      await prisma.messages.create({
+        data: {
+          content: `Trade completed! Both parties have reviewed each other. Items have been transferred to your inventories.`,
+          offerId: tradeDetails.offerId,
+          proposedTradeId: proposedTradeId,
+          // No senderId for system messages
+          // No recipientId for system messages
+        }
+      })
+    }
 
     console.log('✅ Trade completed successfully:', proposedTradeId)
   } catch (error) {

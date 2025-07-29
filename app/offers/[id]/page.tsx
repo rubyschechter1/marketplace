@@ -6,7 +6,7 @@ import AuthLayout from "@/components/AuthLayout"
 import ProfileThumbnail from "@/components/ProfileThumbnail"
 import Link from "next/link"
 import Image from "next/image"
-import { MapPin, ChevronLeft, PackageOpen } from "lucide-react"
+import { MapPin, ChevronLeft, PackageOpen, Trash2 } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useLocation } from "@/contexts/LocationContext"
 import BrownHatLoader from "@/components/BrownHatLoader"
@@ -41,6 +41,8 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
   const [errorMessage, setErrorMessage] = useState("")
   const [isDeleting, setIsDeleting] = useState(false)
   const [itemHasHistory, setItemHasHistory] = useState<boolean>(false)
+  const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false)
+  const [tradeToWithdraw, setTradeToWithdraw] = useState<string | null>(null)
 
   useEffect(() => {
     params.then(p => setOfferId(p.id))
@@ -231,41 +233,95 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
     }
   }
 
-  const handleSubmitOffer = async () => {
-    let itemName = ""
-    let tradeData: any = { offerId: offer.id }
-    
-    if (selectedInventoryItem) {
-      itemName = selectedInventoryItem.name
-      tradeData.offeredItemId = selectedInventoryItem.id
-    } else {
-      itemName = isOtherSelected ? customItemText : (selectedItem || "")
-      if (!itemName) return
-      
-      // Create an item for what the user is offering
-      const itemResponse = await fetch('/api/items', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: itemName,
-          description: '',
-          imageUrl: itemPhotoUrl || null
-        })
+  const handleDeleteProposedTrade = async (tradeId: string) => {
+    setTradeToWithdraw(tradeId)
+    setShowWithdrawConfirm(true)
+  }
+
+  const confirmWithdraw = async () => {
+    if (!tradeToWithdraw) return
+
+    try {
+      const response = await fetch(`/api/proposed-trades/${tradeToWithdraw}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'withdrawn' })
       })
+
+      if (!response.ok) {
+        throw new Error('Failed to withdraw trade proposal')
+      }
+
+      // Update the local state instead of reloading
+      setOffer((prevOffer: any) => ({
+        ...prevOffer,
+        proposedTrades: prevOffer.proposedTrades.map((trade: any) => 
+          trade.id === tradeToWithdraw 
+            ? { ...trade, isWithdrawn: true, status: 'withdrawn' }
+            : trade
+        )
+      }))
+
+      // Clear the user's proposed item so they can submit a new offer
+      setUserProposedItem(null)
+      setSubmittedItem(null)
+      setSelectedItem(null)
+      setSelectedInventoryItem(null)
+      setIsOtherSelected(false)
+      setCustomItemText("")
+      setItemPhotoUrl("")
+      setItemPhotoPreview("")
+
+    } catch (error) {
+      alert('Failed to withdraw trade proposal')
+    } finally {
+      setShowWithdrawConfirm(false)
+      setTradeToWithdraw(null)
+    }
+  }
+
+  const handleSubmitOffer = async () => {
+    // Set loading state immediately
+    setIsSubmitting(true)
+    
+    try {
+      let itemName = ""
+      let tradeData: any = { offerId: offer.id }
       
-      if (!itemResponse.ok) {
-        const errorData = await itemResponse.json()
-        setCustomItemError(errorData.error || 'Failed to create item')
-        setIsSubmitting(false)
-        return
+      if (selectedInventoryItem) {
+        itemName = selectedInventoryItem.name
+        tradeData.offeredItemId = selectedInventoryItem.id
+      } else {
+        itemName = isOtherSelected ? customItemText : (selectedItem || "")
+        if (!itemName) {
+          setIsSubmitting(false)
+          return
+        }
+        
+        // Create an item for what the user is offering
+        const itemResponse = await fetch('/api/items', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: itemName,
+            description: '',
+            imageUrl: itemPhotoUrl || null
+          })
+        })
+        
+        if (!itemResponse.ok) {
+          const errorData = await itemResponse.json()
+          setCustomItemError(errorData.error || 'Failed to create item')
+          setIsSubmitting(false)
+          return
+        }
+        
+        const { item } = await itemResponse.json()
+        tradeData.offeredItemId = item.id
       }
       
-      const { item } = await itemResponse.json()
-      tradeData.offeredItemId = item.id
-    }
-    
-    setIsSubmitting(true)
-    try {
       // Create the proposed trade
       const tradeResponse = await fetch('/api/proposed-trades', {
         method: 'POST',
@@ -296,6 +352,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
       setOffer(data)
     } catch (error) {
       console.error('Error submitting offer:', error)
+      setCustomItemError('Failed to submit offer. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -657,6 +714,18 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
               </div>
             )}
             
+            {/* Delete offer button - only for owner and not already deleted */}
+            {isOwner && !isDeleted && (
+              <div className="mb-3">
+                <button
+                  onClick={handleDeleteOffer}
+                  className="flex items-center text-xs text-gray hover:text-red-600 transition-colors"
+                >
+                  <Trash2 size={12} className="mr-1" />
+                  Delete {offer.type === 'ask' ? 'ask' : 'offer'}
+                </button>
+              </div>
+            )}
 
               <div className="flex justify-end">
                 <div className="flex items-center text-gray text-xs">
@@ -735,17 +804,28 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                       )}
                     </div>
                         <div className="flex justify-between items-end mt-3">
-                          {isOwner && (
-                            <button
-                              onClick={() => {
-                                // Just navigate to the conversation - no need for initial message
-                                router.push(`/messages/${offer.id}/${trade.id}?from=offer-${offer.id}`)
-                              }}
-                              className={`${isAccepted ? 'bg-black text-tan border-tan hover:bg-tan hover:text-black' : 'bg-tan text-black border-black hover:bg-black hover:text-tan'} border px-3 py-1 rounded-sm text-sm transition-all shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]`}
-                            >
-                              message
-                            </button>
-                          )}
+                          <div className="flex gap-2">
+                            {isOwner && (
+                              <button
+                                onClick={() => {
+                                  // Just navigate to the conversation - no need for initial message
+                                  router.push(`/messages/${offer.id}/${trade.id}?from=offer-${offer.id}`)
+                                }}
+                                className={`${isAccepted ? 'bg-black text-tan border-tan hover:bg-tan hover:text-black' : 'bg-tan text-black border-black hover:bg-black hover:text-tan'} border px-3 py-1 rounded-sm text-sm transition-all shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]`}
+                              >
+                                message
+                              </button>
+                            )}
+                            {/* Delete button for trade proposer - only if not accepted/rejected/withdrawn */}
+                            {session?.user?.id === trade.proposer?.id && !isAccepted && !trade.isRejected && !trade.isWithdrawn && (
+                              <button
+                                onClick={() => handleDeleteProposedTrade(trade.id)}
+                                className={`${isAccepted ? 'bg-black text-tan border-tan hover:bg-tan hover:text-black' : 'bg-tan text-black border-black hover:bg-black hover:text-tan'} border px-3 py-1 rounded-sm text-sm transition-all shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]`}
+                              >
+                                withdraw
+                              </button>
+                            )}
+                          </div>
                           <div className={`text-xs ${isAccepted ? 'text-tan' : 'text-gray'} flex items-center ${!isOwner ? 'ml-auto' : ''}`}>
                             <MapPin size={10} className="mr-1" />
                             {offer.displayLocation || offer.locationName || "Unknown"}
@@ -871,6 +951,34 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                 className="flex-1 px-4 py-2 bg-red-600 text-white border border-red-600 rounded-sm text-sm hover:bg-red-700 transition-colors disabled:opacity-50"
               >
                 {isDeleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Withdraw Confirmation Modal */}
+      {showWithdrawConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-tan border-2 border-black rounded-sm p-6 max-w-sm w-full">
+            <h3 className="text-lg font-normal mb-4 text-center">
+              Withdraw Trade Proposal?
+            </h3>
+            <p className="text-sm text-gray mb-6 text-center">
+              Are you sure you want to withdraw this trade proposal?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowWithdrawConfirm(false)}
+                className="flex-1 px-4 py-2 bg-tan text-black border border-black rounded-sm text-sm hover:bg-gray/10 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmWithdraw}
+                className="flex-1 px-4 py-2 bg-tan text-black border border-black rounded-sm text-sm hover:bg-black hover:text-tan transition-colors shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
+              >
+                Withdraw
               </button>
             </div>
           </div>

@@ -108,11 +108,44 @@ export async function POST(request: NextRequest) {
         where: { id: offeredItemId }
       })
 
-      if (!offeredItem || offeredItem.currentOwnerId !== session.user.id || !offeredItem.isAvailable) {
+      if (!offeredItem) {
         return NextResponse.json(
-          { error: "Invalid offered item or item not available" },
-          { status: 400 }
+          { error: "Item not found" },
+          { status: 404 }
         )
+      }
+
+      if (offeredItem.currentOwnerId !== session.user.id) {
+        return NextResponse.json(
+          { error: "You don't own this item" },
+          { status: 403 }
+        )
+      }
+
+      if (!offeredItem.isAvailable) {
+        // Check if item is already being offered
+        const existingOffer = await prisma.offers.findFirst({
+          where: {
+            itemId: offeredItemId,
+            status: 'active'
+          }
+        })
+
+        if (existingOffer) {
+          return NextResponse.json(
+            { error: "This item is already being offered in another listing. You can only offer each item once at a time." },
+            { status: 400 }
+          )
+        } else {
+          // Item is marked unavailable but no active offer exists - this is a data inconsistency
+          console.log(`🔧 Fixing availability for orphaned item during trade proposal: ${offeredItemId}`)
+          await prisma.items.update({
+            where: { id: offeredItemId },
+            data: { isAvailable: true }
+          })
+          
+          // Continue with the trade proposal since we fixed the issue
+        }
       }
 
       // Mark the item as not available during the trade proposal

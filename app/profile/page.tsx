@@ -129,7 +129,7 @@ export default function ProfilePage() {
   // Get list of offered items
   const offeredItems = actualOffers.map((offer: any) => offer.item.name)
 
-  const hasEnoughReviewsForSticky = reviewCount >= 3
+  const hasEnoughReviewsForSticky = reviewCount >= 1
 
   return (
     <AuthLayout>
@@ -223,7 +223,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Reviews Section */}
-        <div className={`${hasEnoughReviewsForSticky ? 'flex-1 overflow-y-auto px-4 min-h-0' : 'mb-8'}`}>
+        <div className={`${hasEnoughReviewsForSticky ? 'flex-1 overflow-y-auto px-4 min-h-0' : reviewCount > 0 ? 'max-h-96 overflow-y-auto mb-8' : 'mb-8'}`}>
           <UserReviews userId={user.id} />
         </div>
 

@@ -101,8 +101,14 @@ export default function MessagesPage() {
     fetchConversations()
     refreshUser() // Update unread count when viewing messages
 
+    // Poll for new messages every 5 seconds
+    const interval = setInterval(() => {
+      fetchConversations()
+    }, 5000)
+
     return () => {
       abortController.abort()
+      clearInterval(interval)
     }
   }, [status, router])
 

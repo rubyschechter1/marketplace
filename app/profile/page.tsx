@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useSession } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import AuthLayout from "@/components/AuthLayout"
 import SignOutButton from "@/components/SignOutButton"
@@ -50,6 +50,13 @@ export default function ProfilePage() {
   useEffect(() => {
     if (status === "loading") return
     
+    // If unauthenticated, redirect to home
+    if (status === "unauthenticated") {
+      console.log('User is unauthenticated, redirecting to home')
+      router.push("/")
+      return
+    }
+    
     if (!userId) {
       console.log('No userId found, redirecting to home')
       router.push("/")
@@ -72,6 +79,13 @@ export default function ProfilePage() {
         } else {
           const errorData = await userResponse.json()
           console.error('Failed to fetch user:', errorData)
+          
+          // If we get a 401, the session is invalid - sign out to clear cookies
+          if (userResponse.status === 401) {
+            console.log('Got 401 - signing out to clear invalid session')
+            await signOut({ redirect: false })
+          }
+          
           router.push("/")
           return
         }

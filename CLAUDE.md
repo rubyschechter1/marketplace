@@ -184,3 +184,33 @@ Issues are organized using priority labels to help identify what to work on:
 - **notifications** - Email, push, or in-app notifications
 - **documentation** - Improvements or additions to documentation
 - **good first issue** - Good for newcomers
+
+## Navigation Guidelines
+
+### Back Button Implementation
+We use a standardized navigation system based on browser history to ensure consistent behavior across the app:
+
+1. **All back buttons use the `useSmartNavigation` hook**:
+   ```tsx
+   const { goBack } = useSmartNavigation({ fallbackUrl: '/' })
+   // Then use: <button onClick={goBack}>
+   ```
+
+2. **No URL parameters for navigation context** - We don't use `?from=` parameters. The browser history stack handles this automatically.
+
+3. **Standard navigation behavior**:
+   - Use `router.push()` for forward navigation (adds to history stack)
+   - Use `router.back()` via `useSmartNavigation` for back navigation (pops from stack)
+   - Never use `router.replace()` unless you explicitly want to replace the current history entry
+
+4. **Why this approach**:
+   - Respects browser back/forward buttons
+   - Maintains proper history stack (e.g., Conversation → Offer → Item History)
+   - Back button always returns to the actual previous page
+   - No circular navigation issues
+
+5. **Implementation checklist for new pages**:
+   - Import `useSmartNavigation` hook
+   - Use `goBack` for all back buttons
+   - Don't add `from` parameters to URLs
+   - Use regular `<Link>` or `router.push()` for forward navigation

@@ -8,10 +8,12 @@ import Button from "@/components/ui/Button"
 import BrownHatLoader from "@/components/BrownHatLoader"
 import AuthLayout from "@/components/AuthLayout"
 import Image from "next/image"
+import { useSmartNavigation } from "@/hooks/useSmartNavigation"
 
 export default function NewOfferPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { goBack } = useSmartNavigation({ fallbackUrl: '/' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
   const [useInventory, setUseInventory] = useState(false)
@@ -265,9 +267,9 @@ export default function NewOfferPage() {
       <div className="max-w-md mx-auto p-6">
         {/* Header */}
         <div className="flex items-center mb-8">
-          <Link href="/" className="mr-4">
+          <button onClick={goBack} className="mr-4">
             <ChevronLeft size={24} />
-          </Link>
+          </button>
           <h1 className="text-header font-normal">Offer an item</h1>
         </div>
 

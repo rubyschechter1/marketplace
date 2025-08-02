@@ -203,7 +203,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
       const { proposedTrade } = await tradeResponse.json()
       
       // Navigate to the conversation
-      router.push(`/messages/${offer.id}/${proposedTrade.id}?from=offer-${offer.id}`)
+      router.push(`/messages/${offer.id}/${proposedTrade.id}`)
     } catch (error) {
       console.error('Error sending request:', error)
       alert('Failed to send request')
@@ -404,7 +404,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
             {/* Item History Button - only show if item has history */}
             {offer.item && itemHasHistory && (
               <Link 
-                href={`/history/${offer.item.id}?from=offer-${offer.id}`}
+                href={`/history/${offer.item.id}`}
                 className="absolute -bottom-10 right-0 bg-tan text-black border border-black px-3 py-1 rounded-sm text-sm hover:bg-black hover:text-tan transition-colors shadow-[2px_2px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[1px] hover:translate-y-[1px]"
               >
                 Item History
@@ -806,7 +806,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                               <button
                                 onClick={() => {
                                   // Just navigate to the conversation - no need for initial message
-                                  router.push(`/messages/${offer.id}/${trade.id}?from=offer-${offer.id}`)
+                                  router.push(`/messages/${offer.id}/${trade.id}`)
                                 }}
                                 className={`${isAccepted ? 'bg-black text-tan border-tan hover:bg-tan hover:text-black' : 'bg-tan text-black border-black hover:bg-black hover:text-tan'} border px-3 py-1 rounded-sm text-sm transition-all shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]`}
                               >

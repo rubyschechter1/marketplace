@@ -7,9 +7,11 @@ import Image from "next/image"
 import { Plus, ChevronLeft, PackageOpen } from "lucide-react"
 import Button from "@/components/ui/Button"
 import AuthLayout from "@/components/AuthLayout"
+import { useSmartNavigation } from "@/hooks/useSmartNavigation"
 
 export default function NewAskPage() {
   const router = useRouter()
+  const { goBack } = useSmartNavigation({ fallbackUrl: '/' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
   const [showInventoryModal, setShowInventoryModal] = useState(false)
@@ -129,9 +131,9 @@ export default function NewAskPage() {
       <div className="max-w-md mx-auto p-6">
         {/* Header */}
         <div className="flex items-center mb-8">
-          <Link href="/" className="mr-4">
+          <button onClick={goBack} className="mr-4">
             <ChevronLeft size={24} />
-          </Link>
+          </button>
           <h1 className="text-header font-normal">Post an ask</h1>
         </div>
 

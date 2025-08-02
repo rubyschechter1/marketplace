@@ -10,6 +10,7 @@ import BrownHatLoader from "@/components/BrownHatLoader"
 import { getDisplayName } from "@/lib/formatName"
 import Image from "next/image"
 import BackButton from "@/components/BackButton"
+import { useSmartNavigation } from "@/hooks/useSmartNavigation"
 
 interface HistoryEntry {
   id: string
@@ -45,6 +46,7 @@ export default function ItemHistoryPage({
 }) {
   const { data: session } = useSession()
   const router = useRouter()
+  const { goBack } = useSmartNavigation({ fallbackUrl: '/inventory' })
   const [item, setItem] = useState<Item | null>(null)
   const [loading, setLoading] = useState(true)
   const [itemId, setItemId] = useState("")
@@ -190,18 +192,7 @@ export default function ItemHistoryPage({
         <div className="bg-tan p-6">
           <div className="flex items-center justify-center relative mb-1">
             <button 
-              onClick={() => {
-                if (fromPage.startsWith('offer-')) {
-                  const offerId = fromPage.replace('offer-', '')
-                  router.push(`/offers/${offerId}`)
-                } else if (fromPage === 'inventory') {
-                  router.push('/inventory')
-                } else if (window.history.length > 1) {
-                  router.back()
-                } else {
-                  router.push('/inventory')
-                }
-              }}
+              onClick={goBack}
               className="absolute left-0 p-2 text-brown hover:bg-brown/10 rounded-lg transition-colors" 
               style={{ marginLeft: '-32px' }}
             >

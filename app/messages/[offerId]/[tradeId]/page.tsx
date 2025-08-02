@@ -339,7 +339,16 @@ export default function MessagePage({
               )
             )
             
-            if (hasTradeStatusChange) {
+            // Check for gift mode messages
+            const hasGiftModeChange = data.messages.some((msg: Message) => 
+              !msg.senderId && (
+                msg.content.startsWith('GIFT_MODE_SETTER:') ||
+                msg.content.startsWith('GIFT_MODE_OTHER:') ||
+                msg.content.startsWith('GIFT_MODE_ENABLED:')
+              )
+            )
+            
+            if (hasTradeStatusChange || hasGiftModeChange) {
               // Refresh trade data to update button states
               fetchData()
             }

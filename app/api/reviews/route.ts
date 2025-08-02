@@ -239,8 +239,10 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
     let offeredItemTransferred = false
     let requestedItemTransferred = false
 
-    // Handle offered item transfer (from proposer to offer owner) - always happens
-    if (tradeDetails.offeredItem) {
+    // Handle offered item transfer (from proposer to offer owner)
+    // In trade mode: transfer proposer's item to offer owner
+    // In gift mode: skip this transfer (proposer keeps their item)
+    if (tradeDetails.offeredItem && !isGift) {
       try {
         console.log('📦 Processing offered item transfer:', tradeDetails.offeredItem.name)
         
@@ -294,69 +296,76 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
       } catch (error) {
         console.error('❌ Error transferring offered item:', error)
       }
+    } else if (isGift && tradeDetails.offeredItem) {
+      console.log('ℹ️ Gift mode - proposer keeps their offered item')
     } else {
       console.log('ℹ️ No offered item to transfer')
     }
 
-    // Handle requested item transfer (from offer owner to proposer) - only in bilateral trades
-    if (tradeDetails.offer.item && !isGift) {
-      try {
-        console.log('📦 Processing requested item transfer:', tradeDetails.offer.item.name)
-        
-        // Check if item is still owned by offer owner (hasn't been transferred yet)
-        const currentRequestedItem = await prisma.items.findUnique({
-          where: { id: tradeDetails.offer.item.id },
-          select: { currentOwnerId: true, name: true, isAvailable: true }
-        })
-        
-        console.log('👤 Requested item current state:', {
-          itemId: tradeDetails.offer.item.id,
-          currentOwner: currentRequestedItem?.currentOwnerId,
-          expectedOwner: offerOwner.id,
-          isAvailable: currentRequestedItem?.isAvailable,
-          ownershipMatches: currentRequestedItem?.currentOwnerId === offerOwner.id
-        })
-        
-        if (currentRequestedItem && currentRequestedItem.currentOwnerId === offerOwner.id) {
-          console.log('✅ Transferring requested item from', offerOwner.firstName, 'to', proposer.firstName)
+    // Handle offer item transfer
+    if (tradeDetails.offer.item) {
+      // In gift mode: transfer offer item from owner to proposer (gift)
+      // In trade mode: transfer offer item from owner to proposer (bilateral exchange)
+      const shouldTransferOfferItem = true // Always transfer if item exists
+      
+      if (shouldTransferOfferItem) {
+        try {
+          const transferDescription = isGift ? 'gift item' : 'requested item'
+          console.log(`📦 Processing ${transferDescription} transfer:`, tradeDetails.offer.item.name)
           
-          // Update item ownership
-          await prisma.items.update({
+          // Check if item is still owned by offer owner (hasn't been transferred yet)
+          const currentRequestedItem = await prisma.items.findUnique({
             where: { id: tradeDetails.offer.item.id },
-            data: {
-              currentOwnerId: proposer.id,
-              isAvailable: true
-            }
-          })
-
-          // Create history entry with receiver's avatar
-          await prisma.itemHistory.create({
-            data: {
-              itemId: tradeDetails.offer.item.id,
-              fromOwnerId: offerOwner.id,
-              toOwnerId: proposer.id,
-              tradeId: proposedTradeId,
-              city: proposer.lastCity || "Unknown City",
-              country: proposer.lastCountry || "Unknown Country",
-              transferMethod: "traded",
-              receiverAvatarUrl: proposer.avatarUrl
-            }
+            select: { currentOwnerId: true, name: true, isAvailable: true }
           })
           
-          requestedItemTransferred = true
-          console.log('✅ Requested item transfer completed successfully!')
-        } else if (!currentRequestedItem) {
-          console.log('❌ Requested item not found in database')
-        } else {
-          console.log('⚠️ Requested item not transferred - current owner:', currentRequestedItem.currentOwnerId, 'expected:', offerOwner.id)
+          console.log(`👤 ${transferDescription} current state:`, {
+            itemId: tradeDetails.offer.item.id,
+            currentOwner: currentRequestedItem?.currentOwnerId,
+            expectedOwner: offerOwner.id,
+            isAvailable: currentRequestedItem?.isAvailable,
+            ownershipMatches: currentRequestedItem?.currentOwnerId === offerOwner.id
+          })
+          
+          if (currentRequestedItem && currentRequestedItem.currentOwnerId === offerOwner.id) {
+            console.log(`✅ Transferring ${transferDescription} from`, offerOwner.firstName, 'to', proposer.firstName)
+            
+            // Update item ownership
+            await prisma.items.update({
+              where: { id: tradeDetails.offer.item.id },
+              data: {
+                currentOwnerId: proposer.id,
+                isAvailable: true
+              }
+            })
+
+            // Create history entry with receiver's avatar
+            await prisma.itemHistory.create({
+              data: {
+                itemId: tradeDetails.offer.item.id,
+                fromOwnerId: offerOwner.id,
+                toOwnerId: proposer.id,
+                tradeId: proposedTradeId,
+                city: proposer.lastCity || "Unknown City",
+                country: proposer.lastCountry || "Unknown Country",
+                transferMethod: isGift ? "gifted" : "traded",
+                receiverAvatarUrl: proposer.avatarUrl
+              }
+            })
+            
+            requestedItemTransferred = true
+            console.log(`✅ ${transferDescription} transfer completed successfully!`)
+          } else if (!currentRequestedItem) {
+            console.log(`❌ ${transferDescription} not found in database`)
+          } else {
+            console.log(`⚠️ ${transferDescription} not transferred - current owner:`, currentRequestedItem.currentOwnerId, 'expected:', offerOwner.id)
+          }
+        } catch (error) {
+          console.error(`❌ Error transferring ${isGift ? 'gift' : 'requested'} item:`, error)
         }
-      } catch (error) {
-        console.error('❌ Error transferring requested item:', error)
       }
-    } else if (isGift) {
-      console.log('ℹ️ Gift mode - no requested item to transfer')
     } else {
-      console.log('ℹ️ No requested item to transfer')
+      console.log('ℹ️ No offer item to transfer')
     }
 
     // Mark the offer as completed

@@ -223,7 +223,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Reviews Section */}
-        <div className={`${hasEnoughReviewsForSticky ? 'flex-1 overflow-y-auto px-4 min-h-0' : reviewCount > 0 ? 'max-h-96 overflow-y-auto mb-8' : 'mb-8'}`}>
+        <div className={`${hasEnoughReviewsForSticky ? 'flex-1 overflow-y-auto px-4 min-h-0' : reviewCount > 0 ? 'max-h-[600px] overflow-y-auto mb-8' : 'mb-8'}`}>
           <UserReviews userId={user.id} />
         </div>
 

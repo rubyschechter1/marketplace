@@ -61,6 +61,63 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
 
+  // Format system messages for preview text
+  const formatSystemMessagePreview = (content: string): string => {
+    if (content.startsWith('TRADE_ACCEPTED:')) {
+      const [, actorId, actorName] = content.split(':')
+      const displayName = session?.user?.id === actorId ? 'You' : actorName
+      return `${displayName} accepted the trade`
+    }
+    
+    if (content.startsWith('TRADE_CANCELED:')) {
+      const [, actorId, actorName] = content.split(':')
+      const displayName = session?.user?.id === actorId ? 'You' : actorName
+      return `${displayName} canceled the trade`
+    }
+    
+    if (content.startsWith('GIFT_MODE_SETTER:')) {
+      return `You set the offer to gift mode`
+    }
+    
+    if (content.startsWith('GIFT_MODE_OTHER:')) {
+      const [, actorId, actorName] = content.split(':')
+      return `${actorName} set the offer to gift mode`
+    }
+    
+    if (content.startsWith('GIFT_MODE_ENABLED:')) {
+      const [, actorId, actorName] = content.split(':')
+      const displayName = session?.user?.id === actorId ? 'You' : actorName
+      return `${displayName} set this to gift mode`
+    }
+    
+    if (content === 'Trade rejected') {
+      return 'Trade was rejected'
+    }
+    
+    if (content === 'Trade withdrawn') {
+      return 'Trade was withdrawn'
+    }
+    
+    if (content.includes('Trade completed! Both parties have reviewed each other')) {
+      return 'Trade completed'
+    }
+    
+    if (content.includes('Gift completed! Both parties have reviewed each other')) {
+      return 'Gift completed'
+    }
+    
+    if (content.includes('This item is no longer available - another trade was accepted')) {
+      return 'Item no longer available'
+    }
+    
+    if (content.includes('This item is available again - the previous trade was cancelled')) {
+      return 'Item available again'
+    }
+    
+    // Return original content for non-system messages or unrecognized system messages
+    return content
+  }
+
   console.log('MessagesPage render - loading:', loading, 'status:', status, 'conversations:', conversations.length)
 
   useEffect(() => {
@@ -306,7 +363,7 @@ export default function MessagesPage() {
                         <p className="text-sm italic text-gray">
                           {message.senderId ? (
                             message.senderId === session?.user?.id ? 'You: ' : `${formatDisplayName(message.sender?.firstName || 'Unknown', message.sender?.lastName)}: `
-                          ) : ''}{message.content}
+                          ) : ''}{formatSystemMessagePreview(message.content)}
                         </p>
                       </div>
                       {message.unreadCount != null && message.unreadCount > 0 && (

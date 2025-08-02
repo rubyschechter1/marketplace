@@ -292,21 +292,21 @@ export default function MessagesPage() {
                     </div>
                   )}
                   <div className={`flex-1 bg-tan border ${message.unreadCount && message.unreadCount > 0 ? 'border-2 border-black' : 'border-black'} rounded-sm p-4 transition-all cursor-pointer relative shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]`}>
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-body font-normal mb-1">
-                        {contextTitle}
-                      </h3>
+                    <div className="flex items-center">
+                      <div className="flex-1">
+                        <h3 className="text-body font-normal mb-1">
+                          {contextTitle}
+                        </h3>
+                        <p className="text-sm italic text-gray">
+                          {message.senderId ? (
+                            message.senderId === session?.user?.id ? 'You: ' : `${formatDisplayName(message.sender?.firstName || 'Unknown', message.sender?.lastName)}: `
+                          ) : ''}{message.content}
+                        </p>
+                      </div>
                       {message.unreadCount != null && message.unreadCount > 0 && (
-                        <div className="bg-black text-white text-xs rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center font-medium flex-shrink-0">
-                          {message.unreadCount}
-                        </div>
+                        <div className="bg-black rounded-full h-3 w-3 ml-4"></div>
                       )}
                     </div>
-                    <p className="text-sm italic text-gray">
-                      {message.senderId ? (
-                        message.senderId === session?.user?.id ? 'You: ' : `${formatDisplayName(message.sender?.firstName || 'Unknown', message.sender?.lastName)}: `
-                      ) : ''}{message.content}
-                    </p>
                   </div>
                 </div>
               )

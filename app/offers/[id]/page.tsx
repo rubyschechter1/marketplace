@@ -449,30 +449,34 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
           {/* Offer Details Box with Profile Thumbnail */}
           <div className="flex justify-center items-start gap-3 mb-6" style={{ marginLeft: '-50px' }}>
             {offer.traveler && (
-              <ProfileThumbnail 
-                user={offer.traveler}
-                size="sm"
-                clickable={!isOwner}
-                className=""
-              />
+              <div className="w-10 h-10 flex-shrink-0">
+                <ProfileThumbnail 
+                  user={offer.traveler}
+                  size="sm"
+                  clickable={!isOwner}
+                />
+              </div>
             )}
             <div className="w-64 rounded-sm p-4 border border-black">
               <div className="flex-1">
-              <div className="text-body mb-3">
-                {offer.type === 'ask' ? (
-                  <>
-                    <span className="font-normal">{displayName}</span> {isOwner ? 'are' : 'is'} asking for{' '}
-                    <span className="italic">{offer.title}</span>
-                    {offer.askDescription && (
-                      <div className="mt-2 text-sm text-gray">{offer.askDescription}</div>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <span className="font-normal">{displayName}</span> {isOwner ? 'are' : 'is'} offering a{' '}
-                    <span className="italic">{offer.item?.name || offer.title}</span>
-                  </>
-                )}
+              <div className="mb-3">
+                <p className="font-normal mb-1 text-left">{displayName}</p>
+                <div className="text-body">
+                  {offer.type === 'ask' ? (
+                    <>
+                      {isOwner ? 'are' : 'is'} asking for{' '}
+                      <span className="italic">{offer.title}</span>
+                      {offer.askDescription && (
+                        <div className="mt-2 text-sm text-gray">{offer.askDescription}</div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {isOwner ? 'are' : 'is'} offering a{' '}
+                      <span className="italic">{offer.item?.name || offer.title}</span>
+                    </>
+                  )}
+                </div>
               </div>
             
             {!isDeleted && (
@@ -750,11 +754,12 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                 }, 'accepted')
                 return (
                   <div key={trade.id} className="flex justify-center items-start gap-3" style={{ marginLeft: '-50px' }}>
-                    <ProfileThumbnail 
-                      user={trade.proposer}
-                      size="sm"
-                      className=""
-                    />
+                    <div className="w-10 h-10 flex-shrink-0">
+                      <ProfileThumbnail 
+                        user={trade.proposer}
+                        size="sm"
+                      />
+                    </div>
                     <div className={`w-64 rounded-sm p-4 border border-black ${isAccepted ? 'bg-black text-tan' : ''}`}>
                       <div className="flex items-start gap-3">
                         <div className="flex-1">
@@ -763,28 +768,30 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                               <span className="font-bold">Accepted</span>
                             </div>
                           )}
-                          <div className={`text-body ${isAccepted ? 'text-tan' : ''}`}>
-                            <span className="font-normal">
+                          <div className="mb-2">
+                            <p className={`font-normal mb-1 text-left ${isAccepted ? 'text-tan' : ''}`}>
                               {getDisplayName(
-              { id: trade.proposer?.id || '', firstName: trade.proposer?.firstName || '', lastName: trade.proposer?.lastName },
-              session?.user?.id
-            )}
-                            </span>{' '}
-{trade.offeredItem ? (
-                              <>
-                                {isAccepted 
-                                  ? (session?.user?.id === trade.proposer?.id ? 'offered' : 'offered')
-                                  : (session?.user?.id === trade.proposer?.id ? 'offer' : 'offers')
-                                } <span className="italic">{trade.offeredItem.name}</span>
-                              </>
-                            ) : (
-                              <>
-                                {isAccepted 
-                                  ? (session?.user?.id === trade.proposer?.id ? 'requested this as a gift' : 'requested this as a gift')
-                                  : (session?.user?.id === trade.proposer?.id ? 'request this as a gift' : 'requests this as a gift')
-                                }
-                              </>
-                            )}
+                                { id: trade.proposer?.id || '', firstName: trade.proposer?.firstName || '', lastName: trade.proposer?.lastName },
+                                session?.user?.id
+                              )}
+                            </p>
+                            <div className={`text-body ${isAccepted ? 'text-tan' : ''}`}>
+                              {trade.offeredItem ? (
+                                <>
+                                  {isAccepted 
+                                    ? (session?.user?.id === trade.proposer?.id ? 'offered' : 'offered')
+                                    : (session?.user?.id === trade.proposer?.id ? 'offer' : 'offers')
+                                  } <span className="italic">{trade.offeredItem.name}</span>
+                                </>
+                              ) : (
+                                <>
+                                  {isAccepted 
+                                    ? (session?.user?.id === trade.proposer?.id ? 'requested this as a gift' : 'requested this as a gift')
+                                    : (session?.user?.id === trade.proposer?.id ? 'request this as a gift' : 'requests this as a gift')
+                                  }
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
                       {/* Show item image for asks */}

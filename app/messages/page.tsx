@@ -175,7 +175,7 @@ export default function MessagesPage() {
     console.log('offerId:', message.offerId)
     
     if (message.proposedTradeId) {
-      const conversationUrl = `/messages/${message.offerId}/${message.proposedTradeId}?from=messages`
+      const conversationUrl = `/messages/${message.offerId}/${message.proposedTradeId}`
       console.log('Navigating to conversation:', conversationUrl)
       router.push(conversationUrl)
     } else {

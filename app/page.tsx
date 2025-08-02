@@ -121,7 +121,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
                     {offers.map((offer: any) => (
                       <Link 
                         key={offer.id}
-                        href={`/offers/${offer.id}?from=home`}
+                        href={`/offers/${offer.id}`}
                         className="block relative border border-black rounded-sm transition-all shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
                         style={{ 
                           padding: '12px 12px 30px 12px'
@@ -170,7 +170,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
                     {asks.map((ask: any) => (
                       <Link 
                         key={ask.id}
-                        href={`/offers/${ask.id}?from=home`}
+                        href={`/offers/${ask.id}`}
                         className="block bg-tan border border-black rounded-sm p-8 transition-all relative aspect-square flex items-center justify-center shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
                       >
                         <div className="text-center">

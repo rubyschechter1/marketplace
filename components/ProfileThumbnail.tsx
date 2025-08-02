@@ -12,15 +12,13 @@ interface ProfileThumbnailProps {
   size?: 'sm' | 'md' | 'lg'
   clickable?: boolean
   className?: string
-  fromPage?: string
 }
 
 export default function ProfileThumbnail({ 
   user, 
   size = 'sm', 
   clickable = true,
-  className = "",
-  fromPage
+  className = ""
 }: ProfileThumbnailProps) {
   const { data: session } = useSession()
   const isOwnProfile = session?.user?.id === user.id
@@ -64,9 +62,7 @@ export default function ProfileThumbnail({
   )
 
   if (clickable) {
-    const profileUrl = fromPage 
-      ? `/profile?id=${user.id}&from=${encodeURIComponent(fromPage)}`
-      : `/profile?id=${user.id}`
+    const profileUrl = `/profile?id=${user.id}`
     
     return (
       <Link href={profileUrl} className="block">

@@ -10,6 +10,7 @@ import ProfileHeader from "@/components/ProfileHeader"
 import UserReviews from "@/components/UserReviews"
 import BrownHatLoader from "@/components/BrownHatLoader"
 import { ChevronLeft } from "lucide-react"
+import { useSmartNavigation } from "@/hooks/useSmartNavigation"
 
 interface UserWithOffers {
   id: string
@@ -41,8 +42,8 @@ export default function ProfilePage() {
   const [reviewCount, setReviewCount] = useState(0)
   
   const userId = searchParams.get('id') || session?.user?.id
-  const fromPage = searchParams.get('from')
   const isOwnProfile = session?.user?.id === userId
+  const { goBack } = useSmartNavigation({ fallbackUrl: '/' })
 
   console.log('Profile page - Session status:', status, 'Session:', session, 'userId:', userId)
 
@@ -91,16 +92,7 @@ export default function ProfilePage() {
     fetchUser()
   }, [userId, status, router])
 
-  const handleBackClick = () => {
-    if (fromPage) {
-      // Decode the fromPage parameter and navigate back
-      const decodedFromPage = decodeURIComponent(fromPage)
-      router.push(decodedFromPage)
-    } else {
-      // Default back behavior
-      router.back()
-    }
-  }
+  const handleBackClick = goBack
 
   if (loading) {
     return (

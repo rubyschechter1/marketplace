@@ -1,7 +1,7 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { ChevronLeft } from "lucide-react"
+import { useSmartNavigation } from "@/hooks/useSmartNavigation"
 
 interface BackButtonProps {
   fallbackUrl?: string
@@ -16,21 +16,14 @@ export default function BackButton({
   children = "Back",
   onClick
 }: BackButtonProps) {
-  const router = useRouter()
-
-  const handleClick = () => {
-    if (onClick) {
-      onClick()
-    } else if (window.history.length > 1) {
-      router.back()
-    } else {
-      router.push(fallbackUrl)
-    }
-  }
+  const { goBack } = useSmartNavigation({ 
+    fallbackUrl,
+    onNavigate: onClick 
+  })
 
   return (
     <button 
-      onClick={handleClick}
+      onClick={goBack}
       className={className}
     >
       <ChevronLeft size={24} className="mr-1" />

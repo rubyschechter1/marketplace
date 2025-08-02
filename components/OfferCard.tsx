@@ -34,10 +34,9 @@ interface OfferCardProps {
     distance?: number
   }
   currentUserId: string
-  fromPage?: string
 }
 
-export default function OfferCard({ offer, currentUserId, fromPage }: OfferCardProps) {
+export default function OfferCard({ offer, currentUserId }: OfferCardProps) {
   const isOwnOffer = offer.traveler.id === currentUserId
   const hasActivity = (offer._count?.messages || 0) > 0 || (offer._count?.proposedTrades || 0) > 0
 
@@ -48,12 +47,11 @@ export default function OfferCard({ offer, currentUserId, fromPage }: OfferCardP
         user={offer.traveler}
         size="sm"
         clickable={true}
-        fromPage={fromPage}
       />
 
       {/* Card content */}
       <Link 
-        href={`/offers/${offer.id}${fromPage ? `?from=${encodeURIComponent(fromPage)}` : ''}`}
+        href={`/offers/${offer.id}`}
         className="flex-1 bg-tan border border-black rounded-sm p-4 pb-8 block relative"
       >
         <div className="flex items-start gap-3">

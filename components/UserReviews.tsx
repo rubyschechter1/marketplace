@@ -95,7 +95,6 @@ export default function UserReviews({ userId }: UserReviewsProps) {
               <ProfileThumbnail 
                 user={review.reviewer} 
                 size="sm"
-                fromPage={`/users/${userId}`}
               />
             </div>
             <div className="flex-1 text-left">

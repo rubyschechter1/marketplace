@@ -12,13 +12,14 @@ import { useLocation } from "@/contexts/LocationContext"
 import BrownHatLoader from "@/components/BrownHatLoader"
 import { getDisplayName } from "@/lib/formatName"
 import { getTradeStatus, isTradeStatus } from "@/lib/trade-status"
+import { useSmartNavigation } from "@/hooks/useSmartNavigation"
 
 export default function OfferPage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
   const { location } = useLocation()
-  const fromPage = searchParams.get('from')
+  const { goBack } = useSmartNavigation({ fallbackUrl: '/' })
   const [offer, setOffer] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [offerId, setOfferId] = useState<string>("")
@@ -381,18 +382,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
         {/* Header */}
         <div className="p-4 pb-0 flex justify-between items-center">
           <button 
-            onClick={() => {
-              // Try using window.history.back() if from conversation
-              if (fromPage?.startsWith('conversation-')) {
-                window.history.back()
-              } else if (fromPage === 'home') {
-                router.push('/')
-              } else if (fromPage === '/search') {
-                router.push('/search')
-              } else {
-                router.push('/')
-              }
-            }}
+            onClick={goBack}
             className="inline-flex items-center text-black hover:text-gray ml-[3px]"
           >
             <ChevronLeft size={24} />

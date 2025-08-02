@@ -14,6 +14,7 @@ import ReviewForm from "@/components/ReviewForm"
 import Image from "next/image"
 import { formatDisplayName, getDisplayName } from "@/lib/formatName"
 import { getTradeStatus, isTradeStatus } from "@/lib/trade-status"
+import { useSmartNavigation } from "@/hooks/useSmartNavigation"
 
 interface Message {
   id: string
@@ -84,9 +85,9 @@ export default function MessagePage({
   const router = useRouter()
   const { refreshUser } = useUser()
   const { location, refreshLocation } = useLocation()
+  const { goBack } = useSmartNavigation({ fallbackUrl: '/messages' })
   const [offerId, setOfferId] = useState<string>("")
   const [tradeId, setTradeId] = useState<string>("")
-  const [fromPage, setFromPage] = useState<string>("")
   const [messages, setMessages] = useState<Message[]>([])
   const [tradeData, setTradeData] = useState<TradeData | null>(null)
   const [newMessage, setNewMessage] = useState("")
@@ -179,9 +180,6 @@ export default function MessagePage({
       setTradeId(p.tradeId)
       // Reset the ref when conversation changes
       hasRefreshedUser.current = false
-    })
-    searchParams.then(sp => {
-      setFromPage(sp.from || 'messages')
     })
   }, [params, searchParams])
 
@@ -774,23 +772,12 @@ export default function MessagePage({
         {/* Fixed Header */}
         <div className="p-4 border-b border-gray/20 flex items-center bg-tan z-20 relative flex-shrink-0">
           <button 
-            onClick={() => {
-              if (fromPage === 'messages') {
-                router.push('/messages')
-              } else if (fromPage === 'search') {
-                router.push('/search')
-              } else if (fromPage.startsWith('offer-')) {
-                const returnOfferId = fromPage.replace('offer-', '')
-                router.push(`/offers/${returnOfferId}`)
-              } else {
-                router.push('/')
-              }
-            }}
+            onClick={goBack}
             className="mr-3"
           >
             <ChevronLeft size={24} />
           </button>
-          <Link href={`/offers/${offerId}?from=${encodeURIComponent(`conversation-${offerId}-${tradeId}`)}`} className="flex items-center justify-center flex-1 -ml-12">
+          <Link href={`/offers/${offerId}`} className="flex items-center justify-center flex-1">
             {/* Show offer item image for regular offers, or proposed item image for asks */}
             {(tradeData.offer.item?.imageUrl || tradeData.offeredItem?.imageUrl) && (
               <img
@@ -811,7 +798,6 @@ export default function MessagePage({
               user={tradeData.proposer} 
               size="sm" 
               className="mr-2"
-              fromPage={`/messages/${offerId}/${tradeId}`}
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm">
@@ -1093,7 +1079,6 @@ export default function MessagePage({
                     <ProfileThumbnail 
                       user={message.sender} 
                       size="sm" 
-                      fromPage={`/messages/${offerId}/${tradeId}`}
                     />
                   </div>
                   <div className="flex-1 mr-4">

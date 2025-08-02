@@ -14,6 +14,22 @@ export async function GET(req: Request) {
 
     console.log("🔍 Fetching conversations for user:", session.user.id)
 
+    // First, get all archived conversations for this user
+    const userArchivedConversations = await prisma.conversationArchives.findMany({
+      where: { userId: session.user.id },
+      select: {
+        offerId: true,
+        proposedTradeId: true
+      }
+    })
+
+    // Create a set for quick lookup
+    const archivedByUser = new Set(
+      userArchivedConversations.map(c => 
+        `${c.offerId}:${c.proposedTradeId || 'no_trade'}`
+      )
+    )
+
     // Get the latest message from each conversation (grouped by offer and proposed trade)
     const conversations = await prisma.$queryRaw`
       WITH ranked_messages AS (
@@ -109,11 +125,44 @@ export async function GET(req: Request) {
       (conversations as any[]).map((c, index) => [c.id, index])
     )
 
+    // Get all archived conversations (by any user) to determine which are closed
+    const allArchivedConversations = await prisma.conversationArchives.findMany({
+      where: {
+        OR: enrichedConversations.map((conv: any) => ({
+          offerId: conv.offerId,
+          proposedTradeId: conv.proposedTradeId
+        }))
+      },
+      select: {
+        offerId: true,
+        proposedTradeId: true,
+        userId: true
+      }
+    })
+
+    // Create a map to track which conversations are closed
+    const closedConversations = new Map<string, boolean>()
+    const archivedByOther = new Map<string, boolean>()
+    
+    allArchivedConversations.forEach(archive => {
+      const key = `${archive.offerId}:${archive.proposedTradeId || 'no_trade'}`
+      closedConversations.set(key, true)
+      if (archive.userId !== session.user.id) {
+        archivedByOther.set(key, true)
+      }
+    })
+
     const conversationsWithUnread = enrichedConversations
-      .map((conv: any) => ({
-        ...conv,
-        unreadCount: unreadMap.get(conv.offerId) || 0
-      }))
+      .map((conv: any) => {
+        const convKey = `${conv.offerId}:${conv.proposedTradeId || 'no_trade'}`
+        return {
+          ...conv,
+          unreadCount: unreadMap.get(conv.offerId) || 0,
+          isArchivedByMe: archivedByUser.has(convKey),
+          isArchivedByOther: archivedByOther.get(convKey) || false,
+          isClosedForMessaging: closedConversations.has(convKey)
+        }
+      })
       .sort((a, b) => {
         // Sort by the original chronological order (most recent first)
         const orderA = conversationOrderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER

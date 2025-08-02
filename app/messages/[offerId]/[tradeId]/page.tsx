@@ -112,6 +112,7 @@ export default function MessagePage({
   const [itemAlreadyGiven, setItemAlreadyGiven] = useState(false)
   const [settingGiftMode, setSettingGiftMode] = useState(false)
   const [showGiftModal, setShowGiftModal] = useState(false)
+  const [isConversationClosed, setIsConversationClosed] = useState(false)
   const hasRefreshedUser = useRef(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
@@ -195,6 +196,17 @@ export default function MessagePage({
         }
         const trade = await tradeResponse.json()
         setTradeData(trade)
+
+        // Check if conversation is archived/closed
+        try {
+          const archiveResponse = await fetch(`/api/messages/conversations/archive?offerId=${offerId}&proposedTradeId=${tradeId}`)
+          if (archiveResponse.ok) {
+            const archiveData = await archiveResponse.json()
+            setIsConversationClosed(archiveData.isClosedForMessaging || false)
+          }
+        } catch (error) {
+          console.error('Error checking archive status:', error)
+        }
 
         // Check if the offered item is available (not accepted in another trade)
         // Only check if current user is the offer owner and trade is not already accepted
@@ -371,6 +383,17 @@ export default function MessagePage({
               setNewMessageIds(new Set())
             }, 500)
           }
+        }
+
+        // Also check archive status
+        try {
+          const archiveResponse = await fetch(`/api/messages/conversations/archive?offerId=${offerId}&proposedTradeId=${tradeId}`)
+          if (archiveResponse.ok) {
+            const archiveData = await archiveResponse.json()
+            setIsConversationClosed(archiveData.isClosedForMessaging || false)
+          }
+        } catch (error) {
+          console.error('Error checking archive status:', error)
         }
       } catch (error) {
         console.error('Error polling for new messages:', error)
@@ -1100,12 +1123,18 @@ export default function MessagePage({
           </div>
         </div>
 
-        {/* Fixed Bottom Section - either deleted message or input */}
+        {/* Fixed Bottom Section - either deleted message, closed conversation, or input */}
         <div className="border-t border-gray/20 bg-tan relative z-10 flex-shrink-0">
           {tradeData.offer.status === 'deleted' ? (
             <div className="bg-gray/10 p-4">
               <p className="text-center text-gray text-sm">
                 {tradeData.offer.type === 'ask' ? 'Ask' : 'Offer'} deleted
+              </p>
+            </div>
+          ) : isConversationClosed ? (
+            <div className="bg-gray/10 p-4">
+              <p className="text-center text-gray text-sm">
+                This conversation is closed
               </p>
             </div>
           ) : (

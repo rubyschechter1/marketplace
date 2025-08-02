@@ -28,6 +28,21 @@ export async function POST(req: Request) {
       )
     }
 
+    // Check if conversation is archived/closed
+    const isArchived = await prisma.conversationArchives.findFirst({
+      where: {
+        offerId,
+        proposedTradeId: proposedTradeId || null
+      }
+    })
+
+    if (isArchived) {
+      return NextResponse.json(
+        { error: "This conversation is closed and cannot receive new messages" },
+        { status: 403 }
+      )
+    }
+
     // Validate message content
     const validation = await validateContent(content, "Message content", "message")
     if (!validation.isValid) {

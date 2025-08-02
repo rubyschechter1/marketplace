@@ -73,10 +73,10 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
         const data = await response.json()
         setOffer(data)
         
-        // Check if current user has already proposed a trade
+        // Check if current user has already proposed a trade (excluding withdrawn trades)
         if (session?.user?.id && data.proposedTrades) {
           const userTrade = data.proposedTrades.find((trade: any) => 
-            trade.proposer?.id === session.user.id
+            trade.proposer?.id === session.user.id && !trade.isWithdrawn
           )
           if (userTrade) {
             setUserProposedItem(userTrade.offeredItem?.name || 'gift_request')
@@ -743,7 +743,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
             <h2 className="text-body font-normal mb-4 text-center">Proposed trades</h2>
             
             <div className="space-y-3">
-              {offer.proposedTrades?.map((trade: any) => {
+              {offer.proposedTrades?.filter((trade: any) => !trade.isWithdrawn).map((trade: any) => {
                 const isAccepted = isTradeStatus({
                   ...trade,
                   offer: { acceptedTradeId: offer.acceptedTradeId }
@@ -837,7 +837,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                   )
                 })}
 
-              {(!offer.proposedTrades || offer.proposedTrades.length === 0) && (
+              {(!offer.proposedTrades || offer.proposedTrades.filter((trade: any) => !trade.isWithdrawn).length === 0) && (
                 <p className="text-body text-gray text-center">No proposed trades yet</p>
               )}
             </div>

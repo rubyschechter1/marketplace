@@ -3,6 +3,11 @@ import type { NextRequest } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 
 export async function middleware(request: NextRequest) {
+  // Allow the auth clear page to always be accessible
+  if (request.nextUrl.pathname === '/auth/clear') {
+    return NextResponse.next()
+  }
+  
   // Only check auth on protected routes
   const protectedPaths = ['/profile', '/offers/new', '/asks/new', '/messages', '/inventory']
   const isProtectedPath = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))
@@ -41,9 +46,10 @@ export async function middleware(request: NextRequest) {
 }
 
 function clearAuthAndRedirect(request: NextRequest) {
-  const response = NextResponse.redirect(new URL('/', request.url))
+  // Redirect to the auth clear page instead of home
+  const response = NextResponse.redirect(new URL('/auth/clear', request.url))
   
-  // Clear all auth-related cookies
+  // Clear all auth-related cookies with all possible options
   const cookiesToClear = [
     'next-auth.session-token',
     'next-auth.csrf-token',
@@ -55,10 +61,23 @@ function clearAuthAndRedirect(request: NextRequest) {
   ]
   
   cookiesToClear.forEach(cookieName => {
+    // Try multiple approaches to ensure cookies are cleared
     response.cookies.set(cookieName, '', {
       expires: new Date(0),
       path: '/',
+      domain: undefined, // Clear for current domain
     })
+    
+    response.cookies.delete(cookieName)
+    
+    // Also try with domain variations
+    if (request.url.includes('localhost')) {
+      response.cookies.set(cookieName, '', {
+        expires: new Date(0),
+        path: '/',
+        domain: 'localhost',
+      })
+    }
   })
   
   return response

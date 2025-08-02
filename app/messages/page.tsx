@@ -360,11 +360,18 @@ export default function MessagesPage() {
                         <h3 className="text-body font-normal mb-1">
                           {contextTitle}
                         </h3>
-                        <p className="text-sm italic text-gray">
-                          {message.senderId ? (
-                            message.senderId === session?.user?.id ? 'You: ' : `${formatDisplayName(message.sender?.firstName || 'Unknown', message.sender?.lastName)}: `
-                          ) : ''}{formatSystemMessagePreview(message.content)}
-                        </p>
+                        <div className="text-sm italic text-gray">
+                          <div className="flex">
+                            {message.senderId && (
+                              <span className="font-medium not-italic w-16 flex-shrink-0 truncate">
+                                {message.senderId === session?.user?.id ? 'You' : formatDisplayName(message.sender?.firstName || 'Unknown', message.sender?.lastName)}:
+                              </span>
+                            )}
+                            <span className={message.senderId ? 'ml-1 flex-1' : 'flex-1'}>
+                              {formatSystemMessagePreview(message.content)}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                       {message.unreadCount != null && message.unreadCount > 0 && (
                         <div className="bg-black rounded-full h-3 w-3 ml-4"></div>

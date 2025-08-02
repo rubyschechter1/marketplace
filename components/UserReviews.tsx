@@ -46,6 +46,7 @@ export default function UserReviews({ userId }: UserReviewsProps) {
   const [reviews, setReviews] = useState<Review[]>([])
   const [reputationScore, setReputationScore] = useState<ReputationScore | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showAllReviews, setShowAllReviews] = useState(false)
 
   useEffect(() => {
     async function fetchReviews() {
@@ -82,25 +83,30 @@ export default function UserReviews({ userId }: UserReviewsProps) {
     )
   }
 
+  const displayedReviews = showAllReviews ? reviews : reviews.slice(0, 3)
+  const remainingReviews = reviews.length - 3
+
   return (
     <div className="space-y-4">
-      {reviews.map((review) => (
+      {displayedReviews.map((review) => (
         <div key={review.id} className="border-b border-gray/20 pb-4">
           <div className="flex items-start gap-3">
-            <ProfileThumbnail 
-              user={review.reviewer} 
-              size="sm"
-              fromPage={`/users/${userId}`}
-            />
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-1">
-                <p className="font-medium">
+            <div className="w-10 h-10 flex-shrink-0">
+              <ProfileThumbnail 
+                user={review.reviewer} 
+                size="sm"
+                fromPage={`/users/${userId}`}
+              />
+            </div>
+            <div className="flex-1 text-left">
+              <div className="mb-2">
+                <p className="font-medium mb-1 text-left">
                   {getDisplayName(
                     { id: review.reviewer.id, firstName: review.reviewer.firstName, lastName: review.reviewer.lastName },
                     session?.user?.id
                   )}
                 </p>
-                <div className="flex gap-0.5">
+                <div className="flex gap-0.5 justify-start">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <img
                       key={star}
@@ -113,10 +119,10 @@ export default function UserReviews({ userId }: UserReviewsProps) {
               </div>
               
               {review.content && (
-                <p className="text-body mb-2">{review.content}</p>
+                <p className="text-body mb-2 text-left">{review.content}</p>
               )}
               
-              <p className="text-xs text-gray">
+              <p className="text-xs text-gray text-left">
                 Traded: {review.proposedTrade.offer.type === 'ask' 
                   ? review.proposedTrade.offeredItem.name 
                   : review.proposedTrade.offer.title
@@ -127,6 +133,18 @@ export default function UserReviews({ userId }: UserReviewsProps) {
           </div>
         </div>
       ))}
+      
+      {/* See more button */}
+      {!showAllReviews && reviews.length > 3 && (
+        <div className="text-center pt-4 pb-4">
+          <button
+            onClick={() => setShowAllReviews(true)}
+            className="bg-tan text-black border border-black px-4 py-2 rounded-sm text-sm hover:bg-black hover:text-tan transition-colors shadow-[3px_3px_0px_#000000] hover:shadow-[0px_0px_0px_transparent] hover:translate-x-[2px] hover:translate-y-[2px]"
+          >
+            See more {remainingReviews} review{remainingReviews !== 1 ? 's' : ''}
+          </button>
+        </div>
+      )}
     </div>
   )
 }

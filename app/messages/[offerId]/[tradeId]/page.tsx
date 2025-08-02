@@ -1089,12 +1089,13 @@ export default function MessagePage({
                     }
                   }}
                 >
-                  <ProfileThumbnail 
-                    user={message.sender} 
-                    size="sm" 
-                    className="mr-3 ml-4"
-                    fromPage={`/messages/${offerId}/${tradeId}`}
-                  />
+                  <div className="w-10 min-h-10 flex-shrink-0 mr-3 ml-4">
+                    <ProfileThumbnail 
+                      user={message.sender} 
+                      size="sm" 
+                      fromPage={`/messages/${offerId}/${tradeId}`}
+                    />
+                  </div>
                   <div className="flex-1 mr-4">
                     <div className="bg-tan border border-black rounded-sm p-3">
                       <p className="text-body">{message.content}</p>

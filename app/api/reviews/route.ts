@@ -420,7 +420,8 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
     })
 
     // Create error message if transfers failed
-    if (tradeDetails.offeredItem && !offeredItemTransferred) {
+    // Only check offered item transfer in non-gift mode (in gift mode, proposer keeps their item)
+    if (tradeDetails.offeredItem && !offeredItemTransferred && !isGift) {
       console.error('❌ Offered item transfer failed')
       await prisma.messages.create({
         data: {
@@ -436,6 +437,18 @@ async function completeTradeWithItemTransfer(proposedTrade: any, proposedTradeId
       await prisma.messages.create({
         data: {
           content: `Error: Requested item transfer failed. Please contact support.`,
+          offerId: tradeDetails.offerId,
+          proposedTradeId: proposedTradeId,
+        }
+      })
+    }
+    
+    // Check gift transfer separately
+    if (tradeDetails.offer.item && isGift && !requestedItemTransferred) {
+      console.error('❌ Gift item transfer failed')
+      await prisma.messages.create({
+        data: {
+          content: `Error: Gift transfer failed. Please contact support.`,
           offerId: tradeDetails.offerId,
           proposedTradeId: proposedTradeId,
         }

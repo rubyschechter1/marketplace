@@ -77,8 +77,8 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
                 <Text style={bulletPoint}>•</Text>
                 <Img
                   src={`${process.env.NEXTAUTH_URL}/images/new_mail.png`}
-                  width="20"
-                  height="20"
+                  width="22"
+                  height="14"
                   alt=""
                   style={bulletIcon}
                 />
@@ -228,8 +228,8 @@ const hr = {
 
 const footer = {
   color: '#5e5e5e',
-  fontSize: '16px',
-  lineHeight: '24px',
+  fontSize: '14px',
+  lineHeight: '20px',
   textAlign: 'left' as const,
   padding: '0 48px',
 };

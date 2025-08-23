@@ -104,8 +104,8 @@ const title = {
 
 const text = {
   color: '#000000',
-  fontSize: '18px',
-  lineHeight: '28px',
+  fontSize: '16px',
+  lineHeight: '24px',
   textAlign: 'left' as const,
   margin: '0 0 48px 0',
 };

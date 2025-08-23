@@ -638,7 +638,7 @@ export default function OfferPage({ params }: { params: Promise<{ id: string }> 
                             autoFocus
                           />
                           {customItemError && (
-                            <div className="text-red-600 text-xs">{customItemError}</div>
+                            <div className="text-blue text-xs">{customItemError}</div>
                           )}
                         </div>
                       </>

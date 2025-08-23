@@ -271,7 +271,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
                 autoFocus
               />
               {bioError && (
-                <div className="text-red-600 text-xs">{bioError}</div>
+                <div className="text-blue text-xs">{bioError}</div>
               )}
             </div>
             <div className="flex gap-2">
@@ -553,7 +553,7 @@ export default function ProfileEditor({ user }: ProfileEditorProps) {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-tan border border-red-600 rounded-md text-sm text-red-600">
+        <div className="mb-4 p-3 bg-tan border border-blue rounded-md text-sm text-blue">
           {error}
         </div>
       )}

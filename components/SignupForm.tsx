@@ -208,11 +208,11 @@ export default function SignupForm({ onSwitch, onBack }: { onSwitch: () => void;
         </div>
 
         {error && (
-          <div className="text-red-600 text-body">{error}</div>
+          <div className="text-blue text-body">{error}</div>
         )}
 
         {success && (
-          <div className="bg-green-50 border border-green-300 text-green-800 px-4 py-3 rounded-sm text-body">
+          <div className="bg-tan border border-blue text-blue px-4 py-3 rounded-sm text-body">
             {success}
           </div>
         )}

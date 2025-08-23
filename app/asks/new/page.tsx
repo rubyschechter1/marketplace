@@ -216,7 +216,7 @@ export default function NewAskPage() {
           </div>
 
           {error && (
-            <div className="text-red-600 text-body">{error}</div>
+            <div className="text-blue text-body">{error}</div>
           )}
 
           {/* Submit Button */}

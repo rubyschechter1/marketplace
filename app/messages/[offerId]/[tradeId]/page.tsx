@@ -1156,7 +1156,7 @@ export default function MessagePage({
                 className="w-full p-3 border border-black rounded-sm resize-none h-20 text-body bg-tan placeholder-gray focus:outline-none focus:ring-1 focus:ring-black"
               />
               {messageError && (
-                <div className="text-red-600 text-xs">{messageError}</div>
+                <div className="text-blue text-xs">{messageError}</div>
               )}
             </div>
             <div className="flex justify-between mt-3">

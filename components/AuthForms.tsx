@@ -34,8 +34,8 @@ export default function AuthForms({ verified, error }: AuthFormsProps) {
         {message && (
           <div className={`px-4 py-3 rounded-sm text-body ${
             message.type === 'success' 
-              ? 'bg-green-50 border border-green-300 text-green-800' 
-              : 'bg-red-50 border border-red-300 text-red-800'
+              ? 'bg-tan border border-blue text-blue' 
+              : 'bg-tan border border-blue text-blue'
           }`}>
             {message.text}
           </div>
@@ -61,8 +61,8 @@ export default function AuthForms({ verified, error }: AuthFormsProps) {
       {message && (
         <div className={`px-4 py-3 rounded-sm text-body mb-4 ${
           message.type === 'success' 
-            ? 'bg-green-50 border border-green-300 text-green-800' 
-            : 'bg-red-50 border border-red-300 text-red-800'
+            ? 'bg-tan border border-blue text-blue' 
+            : 'bg-tan border border-blue text-blue'
         }`}>
           {message.text}
         </div>

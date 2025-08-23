@@ -311,7 +311,7 @@ export default function ProfileHeader({ user, isOwnProfile, reputationScore }: P
 
           {/* Error message */}
           {error && (
-            <p className="text-sm text-red-600 mt-2">{error}</p>
+            <p className="text-sm text-blue mt-2">{error}</p>
           )}
         </div>
       </div>

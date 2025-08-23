@@ -87,7 +87,7 @@ export default function ReviewForm({
       />
 
       {error && (
-        <p className="text-red-600 text-sm mt-2">{error}</p>
+        <p className="text-blue text-sm mt-2">{error}</p>
       )}
 
       <button

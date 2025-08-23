@@ -86,8 +86,8 @@ function ResetPasswordForm() {
         </div>
 
         {!token ? (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <p className="text-body text-red-600">
+          <div className="bg-tan border border-blue rounded-lg p-4 mb-6">
+            <p className="text-body text-blue">
               Invalid or missing reset token. 
               <Link href="/auth/forgot-password" className="ml-1 underline">
                 Request a new one
@@ -131,7 +131,7 @@ function ResetPasswordForm() {
             </div>
 
             {error && (
-              <div className="text-red-600 text-body">{error}</div>
+              <div className="text-blue text-body">{error}</div>
             )}
 
             <Button

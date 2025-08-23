@@ -11,6 +11,7 @@ module.exports = {
         black: '#000000',
         gray: '#5e5e5e',
         tan: '#ffebb5',
+        blue: '#6264FB',
       },
       fontFamily: {
         serif: ['Instrument Serif', 'serif'],

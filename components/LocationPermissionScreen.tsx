@@ -32,7 +32,7 @@ export default function LocationPermissionScreen() {
           
           {location.error ? (
             <div className="mb-6">
-              <p className="text-body text-red-600 mb-4">
+              <p className="text-body text-blue mb-4">
                 {getErrorMessage()}
               </p>
               {location.error.includes("denied") && (

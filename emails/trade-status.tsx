@@ -165,7 +165,7 @@ const text = {
 };
 
 const offerBox = {
-  backgroundColor: '#ffffff',
+  backgroundColor: '#ffebb5',
   borderRadius: '3px',
   padding: '16px',
   margin: '16px 0',

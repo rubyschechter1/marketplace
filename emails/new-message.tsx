@@ -122,7 +122,7 @@ const text = {
 };
 
 const offerBox = {
-  backgroundColor: '#ffffff',
+  backgroundColor: '#ffebb5',
   borderRadius: '3px',
   padding: '16px',
   margin: '16px 0',
@@ -137,7 +137,7 @@ const offerTitleStyle = {
 };
 
 const messageBox = {
-  backgroundColor: '#ffffff',
+  backgroundColor: '#ffebb5',
   borderLeft: '4px solid #000000',
   padding: '16px',
   margin: '16px 0',

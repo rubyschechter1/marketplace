@@ -68,7 +68,7 @@ export default function AuthForms({ verified, error }: AuthFormsProps) {
         </div>
       )}
       {mode === 'login' ? (
-        <LoginForm onSwitch={() => setMode('signup')} onBack={() => setMode('buttons')} />
+        <LoginForm onSwitch={() => setMode('signup')} onBack={() => setMode('buttons')} isVerified={verified === 'true'} />
       ) : (
         <SignupForm onSwitch={() => setMode('login')} onBack={() => setMode('buttons')} />
       )}

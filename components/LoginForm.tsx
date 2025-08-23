@@ -5,7 +5,7 @@ import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Button from "./ui/Button"
 
-export default function LoginForm({ onSwitch, onBack }: { onSwitch: () => void; onBack: () => void }) {
+export default function LoginForm({ onSwitch, onBack, isVerified = false }: { onSwitch: () => void; onBack: () => void; isVerified?: boolean }) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -37,10 +37,16 @@ export default function LoginForm({ onSwitch, onBack }: { onSwitch: () => void; 
           setError("Invalid email or password")
         }
       } else if (result?.ok) {
-        console.log("✅ Login successful, refreshing page...")
-        // Small delay to ensure session is set, then reload
+        console.log("✅ Login successful, redirecting...")
+        // Small delay to ensure session is set
         setTimeout(() => {
-          window.location.reload()
+          if (isVerified) {
+            // Redirect to profile if coming from email verification
+            router.push('/profile')
+          } else {
+            // Otherwise reload to go to home page
+            window.location.reload()
+          }
         }, 100)
       } else {
         console.log("⚠️ Unexpected login result:", result)

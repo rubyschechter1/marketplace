@@ -41,6 +41,18 @@ The core React patterns (hooks, state, props) remain consistent across platforms
 - **Database**: Neon Postgres
 - **Design**: Mobile-first responsive web
 
+### Design System & Colors
+The app uses a minimal color palette for consistency:
+- **Black (#000000)** - Primary text, borders, and UI elements
+- **Tan (#ffebb5)** - Backgrounds, form fields, and fill colors
+- **Blue (#6264FB)** - Accent color for informational elements (errors, success messages, links)
+  - Blue is used ONLY for borders and text, never for backgrounds
+  - All message backgrounds use tan with blue borders
+- **Red** - Reserved exclusively for destructive actions (delete, archive)
+  - This maintains important UX conventions for user safety
+
+**Important**: Avoid introducing new colors. Use only this palette to maintain visual consistency.
+
 ### Application Concept
 A barter marketplace for travelers with:
 - User profiles

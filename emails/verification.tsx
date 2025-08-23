@@ -29,36 +29,35 @@ export function VerificationEmail({
       <Body style={main}>
         <Container style={container}>
           <Img
-            src={`${process.env.NEXTAUTH_URL}/images/brownhat_final.png`}
-            width="48"
-            height="48"
+            src={`${process.env.NEXTAUTH_URL}/images/brownhat.png`}
+            width="120"
+            height="64"
             alt="Brown Straw Hat"
             style={logo}
           />
           <Text style={title}>
-            <strong>Welcome to Brown Straw Hat, {firstName}!</strong>
+            Welcome to Brown Straw Hat, {firstName}!
           </Text>
           <Section style={section}>
             <Text style={text}>
-              Thanks for signing up! To get started trading items with fellow travelers, 
-              please verify your email address by clicking the button below.
+              Thanks for signing up! To get started trading items with fellow travelers, please verify your email address by clicking the button below.
             </Text>
             <Button style={button} href={verificationUrl}>
-              Verify Email Address
+              Verify Email
             </Button>
-            <Text style={text}>
+            <Text style={altText}>
               Or copy and paste this link into your browser:
+              <br />
+              <Link href={verificationUrl} style={link}>
+                {verificationUrl}
+              </Link>
             </Text>
-            <Link href={verificationUrl} style={link}>
-              {verificationUrl}
-            </Link>
           </Section>
           <Hr style={hr} />
           <Text style={footer}>
-            This link will expire in 24 hours. If you didn't create an account with Brown Straw Hat, 
-            you can safely ignore this email.
-          </Text>
-          <Text style={footer}>
+            This link will expire in 24 hours. If you didn't create an account with Brown Straw Hat, you can safely ignore this email.
+            <br />
+            <br />
             Happy trading!
             <br />
             The Brown Straw Hat Team
@@ -69,74 +68,90 @@ export function VerificationEmail({
   );
 }
 
+// Email clients block external fonts, so we use system serif fonts that look similar to Instrument Serif
 const main = {
-  backgroundColor: '#f6f9fc',
+  backgroundColor: '#ffebb5',
   fontFamily:
-    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
+    'Palatino, Palatino Linotype, Palatino LT STD, Book Antiqua, Georgia, serif',
 };
 
 const container = {
-  backgroundColor: '#ffffff',
+  backgroundColor: '#ffebb5',
   margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '64px',
+  padding: '48px 20px',
+  maxWidth: '600px',
 };
 
 const logo = {
   margin: '0 auto',
-  marginBottom: '16px',
+  marginBottom: '32px',
+  display: 'block',
 };
 
 const section = {
   padding: '0 48px',
+  textAlign: 'center' as const,
 };
 
 const title = {
-  color: '#333',
-  fontSize: '24px',
-  fontWeight: 'bold',
+  color: '#000000',
+  fontSize: '28px',
+  fontWeight: '400',
   padding: '0',
   textAlign: 'center' as const,
-  margin: '30px 0',
+  margin: '0 0 48px 0',
 };
 
 const text = {
-  color: '#333',
-  fontSize: '16px',
-  lineHeight: '26px',
+  color: '#000000',
+  fontSize: '18px',
+  lineHeight: '28px',
   textAlign: 'left' as const,
+  margin: '0 0 48px 0',
+};
+
+const altText = {
+  color: '#000000',
+  fontSize: '16px',
+  lineHeight: '24px',
+  textAlign: 'left' as const,
+  margin: '0 0 8px 0',
 };
 
 const button = {
-  backgroundColor: '#D2B48C',
-  borderRadius: '4px',
+  backgroundColor: '#ffebb5',
+  border: '2px solid #000000',
+  borderRadius: '3px',
   color: '#000',
-  fontSize: '16px',
+  fontSize: '18px',
+  fontWeight: '400',
   textDecoration: 'none',
   textAlign: 'center' as const,
   display: 'block',
   width: '100%',
-  padding: '12px',
-  marginTop: '16px',
-  marginBottom: '16px',
+  maxWidth: '400px',
+  padding: '16px 32px',
+  margin: '0 auto 48px auto',
+  boxShadow: '3px 3px 0px #000000',
 };
 
 const link = {
-  color: '#2754C5',
-  fontSize: '14px',
+  color: '#000000',
+  fontSize: '16px',
   textDecoration: 'underline',
   wordBreak: 'break-all' as const,
 };
 
 const hr = {
-  borderColor: '#e6ebf1',
-  margin: '20px 0',
+  borderColor: '#000000',
+  borderTop: '1px solid #000000',
+  margin: '48px 0 32px 0',
 };
 
 const footer = {
-  color: '#8898aa',
-  fontSize: '14px',
-  lineHeight: '20px',
+  color: '#5e5e5e',
+  fontSize: '16px',
+  lineHeight: '24px',
   textAlign: 'left' as const,
   padding: '0 48px',
 };

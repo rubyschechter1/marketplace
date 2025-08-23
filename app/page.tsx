@@ -49,7 +49,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
 
   console.log("🏠 Home page - session:", session ? "EXISTS" : "NULL")
 
-  if (!session) {
+  if (!session || !session.user || !session.user.id) {
     return (
       <main className="min-h-screen p-4 max-w-md mx-auto flex flex-col justify-center">
         <div className="text-center mb-8">
@@ -71,12 +71,25 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ w
     getCurrentUser(session.user.id)
   ])
 
-  const userData = currentUser || {
-    id: session.user.id,
-    firstName: session.user.name?.split(' ')[0] || 'User',
-    lastName: session.user.name?.split(' ')[1] || '',
-    avatarUrl: null
+  // If user doesn't exist in database, show login page
+  if (!currentUser) {
+    console.log("🏠 Home page - user not found in database, showing login")
+    return (
+      <main className="min-h-screen p-4 max-w-md mx-auto flex flex-col justify-center">
+        <div className="text-center mb-8">
+          <img 
+            src="/images/brownhat.png" 
+            alt="Marketplace" 
+            className="w-48 h-48 mx-auto mb-4 object-contain"
+          />
+        </div>
+        
+        <AuthForms verified={params.verified} error={params.error} />
+      </main>
+    )
   }
+
+  const userData = currentUser
 
   return (
     <AuthLayout>

@@ -62,13 +62,19 @@ export const authOptions: NextAuthOptions = {
       console.log("📋 Session callback - token.sub:", token.sub, "token.uid:", token.uid, "session.user:", session?.user?.email)
       if (session?.user) {
         // Try token.sub first (standard JWT field), then token.uid (custom field)
-        session.user.id = token.sub || token.uid || undefined
+        const userId = token.sub || token.uid
         
         // If still no ID, this is an invalid session
-        if (!session.user.id) {
+        if (!userId) {
           console.error("❌ Session has no user ID - invalid token structure")
-          return null  // This will force re-authentication
+          // Return session without the user to force re-authentication
+          return {
+            ...session,
+            user: undefined
+          } as any
         }
+        
+        session.user.id = userId as string
       }
       console.log("📋 Session callback result:", session)
       return session

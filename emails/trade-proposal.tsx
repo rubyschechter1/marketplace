@@ -12,10 +12,13 @@ import {
   Section,
   Text,
 } from '@react-email/components';
+import { formatNameWithLastInitial } from '@/lib/utils/name-formatter';
 
 interface TradeProposalEmailProps {
   recipientName: string;
+  recipientLastName?: string | null;
   proposerName: string;
+  proposerLastName?: string | null;
   offerTitle: string;
   offeredItemName: string;
   proposalLink: string;
@@ -23,7 +26,9 @@ interface TradeProposalEmailProps {
 
 export const TradeProposalEmail: React.FC<TradeProposalEmailProps> = ({
   recipientName,
+  recipientLastName,
   proposerName,
+  proposerLastName,
   offerTitle,
   offeredItemName,
   proposalLink,
@@ -31,7 +36,7 @@ export const TradeProposalEmail: React.FC<TradeProposalEmailProps> = ({
   return (
     <Html>
       <Head />
-      <Preview>{proposerName} wants to trade with you</Preview>
+      <Preview>{formatNameWithLastInitial(proposerName, proposerLastName)} wants to trade with you</Preview>
       <Body style={main}>
         <Container style={container}>
           <Img
@@ -49,7 +54,7 @@ export const TradeProposalEmail: React.FC<TradeProposalEmailProps> = ({
               Hi {recipientName},
             </Text>
             <Text style={text}>
-              Good news! <strong>{proposerName}</strong> is interested in your offer:
+              Good news! <strong>{formatNameWithLastInitial(proposerName, proposerLastName)}</strong> is interested in your offer:
             </Text>
             
             <Section style={offerBox}>
@@ -69,11 +74,11 @@ export const TradeProposalEmail: React.FC<TradeProposalEmailProps> = ({
             </Button>
             
             <Text style={text}>
-              You can accept or decline this trade proposal, or start a conversation with {proposerName} to discuss the details.
+              You can accept or decline this trade proposal, or start a conversation with {formatNameWithLastInitial(proposerName, proposerLastName)} to discuss the details.
             </Text>
             
             <Text style={text}>
-              If you're not interested, you can simply ignore this email or decline the proposal to let {proposerName} know.
+              If you're not interested, you can simply ignore this email or decline the proposal to let {formatNameWithLastInitial(proposerName, proposerLastName)} know.
             </Text>
           </Section>
           <Hr style={hr} />

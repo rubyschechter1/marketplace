@@ -12,10 +12,13 @@ import {
   Section,
   Text,
 } from '@react-email/components';
+import { formatNameWithLastInitial } from '@/lib/utils/name-formatter';
 
 interface NewMessageEmailProps {
   recipientName: string;
+  recipientLastName?: string | null;
   senderName: string;
+  senderLastName?: string | null;
   messagePreview: string;
   offerTitle: string;
   conversationLink: string;
@@ -23,7 +26,9 @@ interface NewMessageEmailProps {
 
 export const NewMessageEmail: React.FC<NewMessageEmailProps> = ({
   recipientName,
+  recipientLastName,
   senderName,
+  senderLastName,
   messagePreview,
   offerTitle,
   conversationLink,
@@ -31,7 +36,7 @@ export const NewMessageEmail: React.FC<NewMessageEmailProps> = ({
   return (
     <Html>
       <Head />
-      <Preview>New message from {senderName}</Preview>
+      <Preview>New message from {formatNameWithLastInitial(senderName, senderLastName)}</Preview>
       <Body style={main}>
         <Container style={container}>
           <Img
@@ -49,7 +54,7 @@ export const NewMessageEmail: React.FC<NewMessageEmailProps> = ({
               Hi {recipientName},
             </Text>
             <Text style={text}>
-              <strong>{senderName}</strong> sent you a message about:
+              <strong>{formatNameWithLastInitial(senderName, senderLastName)}</strong> sent you a message about:
             </Text>
             
             <Section style={offerBox}>

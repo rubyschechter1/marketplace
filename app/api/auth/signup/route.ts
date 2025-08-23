@@ -74,6 +74,7 @@ export async function POST(req: Request) {
           html: await render(
             React.createElement(VerificationEmail, {
               firstName,
+              lastName,
               verificationUrl,
             })
           ),

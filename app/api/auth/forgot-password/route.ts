@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
         html: await render(
           React.createElement(PasswordResetEmail, {
             firstName: user.firstName,
+            lastName: user.lastName,
             resetLink: resetUrl,
           })
         ),

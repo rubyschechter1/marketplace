@@ -248,7 +248,9 @@ export async function POST(request: NextRequest) {
           html: await render(
             React.createElement(TradeProposalEmail, {
               recipientName: proposedTrade.offer.traveler.firstName,
+              recipientLastName: proposedTrade.offer.traveler.lastName,
               proposerName: proposedTrade.proposer.firstName,
+              proposerLastName: proposedTrade.proposer.lastName,
               offerTitle: proposedTrade.offer.title,
               offeredItemName: offeredItemName,
               proposalLink,

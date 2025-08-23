@@ -450,7 +450,9 @@ export async function PUT(
           html: await render(
             React.createElement(TradeStatusEmail, {
               recipientName: updatedProposedTrade.proposer.firstName,
+              recipientLastName: updatedProposedTrade.proposer.lastName,
               offerOwnerName: updatedProposedTrade.offer.traveler?.firstName || 'User',
+              offerOwnerLastName: updatedProposedTrade.offer.traveler?.lastName,
               offerTitle: updatedProposedTrade.offer.title,
               status: status === 'rejected' ? 'declined' : 'accepted',
               conversationLink,

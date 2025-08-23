@@ -99,7 +99,8 @@ export async function POST(req: Request) {
           select: {
             id: true,
             email: true,
-            firstName: true
+            firstName: true,
+            lastName: true
           }
         },
         offer: {
@@ -128,7 +129,9 @@ export async function POST(req: Request) {
           html: await render(
             React.createElement(NewMessageEmail, {
               recipientName: message.recipient.firstName,
+              recipientLastName: message.recipient.lastName,
               senderName: message.sender?.firstName || 'User',
+              senderLastName: message.sender?.lastName,
               messagePreview,
               offerTitle: message.offer?.title || 'Offer',
               conversationLink,

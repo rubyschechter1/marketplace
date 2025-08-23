@@ -12,14 +12,17 @@ import {
   Section,
   Text,
 } from '@react-email/components';
+import { formatNameWithLastInitial } from '@/lib/utils/name-formatter';
 
 interface VerificationEmailProps {
   firstName: string;
+  lastName?: string | null;
   verificationUrl: string;
 }
 
 export function VerificationEmail({
   firstName,
+  lastName,
   verificationUrl,
 }: VerificationEmailProps) {
   return (

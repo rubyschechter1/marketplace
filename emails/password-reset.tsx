@@ -12,14 +12,17 @@ import {
   Section,
   Text,
 } from '@react-email/components';
+import { formatNameWithLastInitial } from '@/lib/utils/name-formatter';
 
 interface PasswordResetEmailProps {
   firstName: string;
+  lastName?: string | null;
   resetLink: string;
 }
 
 export const PasswordResetEmail: React.FC<PasswordResetEmailProps> = ({
   firstName,
+  lastName,
   resetLink,
 }) => {
   return (

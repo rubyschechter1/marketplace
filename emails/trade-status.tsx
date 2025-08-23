@@ -12,10 +12,13 @@ import {
   Section,
   Text,
 } from '@react-email/components';
+import { formatNameWithLastInitial } from '@/lib/utils/name-formatter';
 
 interface TradeStatusEmailProps {
   recipientName: string;
+  recipientLastName?: string | null;
   offerOwnerName: string;
+  offerOwnerLastName?: string | null;
   offerTitle: string;
   status: 'accepted' | 'declined';
   conversationLink?: string;
@@ -23,7 +26,9 @@ interface TradeStatusEmailProps {
 
 export const TradeStatusEmail: React.FC<TradeStatusEmailProps> = ({
   recipientName,
+  recipientLastName,
   offerOwnerName,
+  offerOwnerLastName,
   offerTitle,
   status,
   conversationLink,
@@ -55,11 +60,11 @@ export const TradeStatusEmail: React.FC<TradeStatusEmailProps> = ({
             <Text style={text}>
               {isAccepted ? (
                 <>
-                  Great news! <strong>{offerOwnerName}</strong> has accepted your trade proposal for:
+                  Great news! <strong>{formatNameWithLastInitial(offerOwnerName, offerOwnerLastName)}</strong> has accepted your trade proposal for:
                 </>
               ) : (
                 <>
-                  <strong>{offerOwnerName}</strong> has declined your trade proposal for:
+                  <strong>{formatNameWithLastInitial(offerOwnerName, offerOwnerLastName)}</strong> has declined your trade proposal for:
                 </>
               )}
             </Text>
@@ -71,7 +76,7 @@ export const TradeStatusEmail: React.FC<TradeStatusEmailProps> = ({
             {isAccepted ? (
               <>
                 <Text style={text}>
-                  You can now coordinate with {offerOwnerName} to arrange the exchange. Use the conversation feature to discuss meeting details, timing, and location.
+                  You can now coordinate with {formatNameWithLastInitial(offerOwnerName, offerOwnerLastName)} to arrange the exchange. Use the conversation feature to discuss meeting details, timing, and location.
                 </Text>
                 
                 {conversationLink && (

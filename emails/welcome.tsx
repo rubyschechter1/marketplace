@@ -12,14 +12,17 @@ import {
   Section,
   Text,
 } from '@react-email/components';
+import { formatNameWithLastInitial } from '@/lib/utils/name-formatter';
 
 interface WelcomeEmailProps {
   firstName: string;
+  lastName?: string | null;
   email: string;
 }
 
 export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
   firstName,
+  lastName,
   email,
 }) => {
   return (
